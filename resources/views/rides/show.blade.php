@@ -413,22 +413,73 @@
 								<div class="card-body">
 									<div class="col-12">
 										<div class="row">
-										<label class="col-3 control-label">{{trans('lang.select_driver')}}:</label>
+											<div class="col-md-6 p-0">
+											<div class="select_driverblk">
+												<label class="control-label">{{trans('lang.select_driver')}}:</label>
+												
+												<div id="select_driver" class="selectblk"></div>
+
+												
+					
+											</div>
+ <div id="driver_list" class="scrollable-container">
+	@foreach ($drivers as $key => $value)
+                        <div class="driver_item" data-id="{{ $value->id }}">
+							@if (!empty($value->photo_path))
+							<img class="driver_img rounded" src="{{asset('assets/images/driver').'/'.$value->photo_path}}" alt="image">
+							@else
+									<img class="vehicle_img rounded" src="{{ asset('assets/images/placeholder_image.jpg')}}" alt="image">
+										
+									@endif
+                                <p class="driver_txt">{{ $value->nom }} {{$value->prenom}}</p>
+                            </div>
+							@endforeach
+                        </div>
+
+					</div>
+					<div class="col-md-6 p-0">
+                        <div class="select_driverblk">
+							<label class="control-label">Select Vehicle:</label>
+                    
+							<div id="select_vehicle" class="selectblk"></div>
+						 
+		
+						</div>
+						<div id="vehicle_list" class="scrollable-container">
+							@foreach ($vehicles as $key => $value)
+							<div class="vehicle_item" data-id="{{$value->id}}">
+								@if (!empty($value->primary_image_id))
+								<img class="vehicle_img rounded" src="{{asset('assets/images/vehicle').'/'.$value->primary_image_id}}" alt="image">
+									
+														@else
+														<img class="vehicle_img rounded" src="{{ asset('assets/images/placeholder_img_car.png')}}" alt="image">
+															
+														@endif
+								<p class="vehicle_txt">{{ $value->numberplate }}</p>
+							</div>
+							@endforeach
+							<input type="hidden" id="selected_driver_id"  name="order_status">
+							<input type="hidden" id="selectedvehicleid" name="selectedvehicleid">
+						</div>
+					</div>
+
+										{{-- <label class="col-3 control-label">{{trans('lang.select_driver')}}:</label>
 										<div class="col-9">
+
 											<select name="order_status" class="form-control">
 												@foreach ($drivers as $key => $value)
 												<option value="{{ $value->id }}" > {{ $value->nom }} {{$value->prenom}} </option>
 												@endforeach
 
 											</select>
-										</div>
+										</div> --}}
 									</div>
 									<div class="col-12">
-									<div class="row">
+									{{-- <div class="row">
 										<label class="col-4 control-label">{{trans('lang.select_vehicle')}}:</label>
 										<div class="col-9">
 											<div class="scrollable-container">
-											<!-- <select name="order_status" class="form-control"> -->
+												
 												@foreach ($vehicles as $key => $value)
 													<div data-id="{{$value->id}}">
 													@if (!empty($value->primary_image_id))
@@ -444,11 +495,11 @@
 														<label class="switch"><input type="checkbox" class="chkbox" id="{{$value->id}}" name="publish" ><span class="slider round"></span></label>
 														</div>
 												@endforeach
-											<!-- </select> -->
+												
 											<input type="hidden" name="selectedvehicleid" id="selectedvehicleid" />
 											</div>
 										</div>
-									</div>
+									</div> --}}
 									<div class="row">
 									<div class="form-group col-12 text-center btm-btn">
                                         <button type="submit" class="btn btn-primary save_driver_btn"><i
@@ -459,6 +510,8 @@
 									</div>
 								</div>
 						</div>
+					</div>
+				</div>
 						</form>
 						@else
 						<div class="card">
@@ -824,10 +877,58 @@
     var id = this.id;
     
     console.log(id);
+	// $("#selectedvehicleid").val(id);
 	$("#selectedvehicleid").val(id);
+	
 	$('.chkbox').not(this).prop('checked', false);
    
     });
+
+
+	
+$(document).ready(function() {
+    // Function to handle item selection
+    function handleItemSelection($item, $selectArea, $hiddenInput) {
+
+		 // Clone the entire clicked item
+		 const $selectedItem = $item.clone();
+        
+        // Clear and append the cloned item to select area
+        $selectArea.empty().append($selectedItem);
+
+
+        // Remove 'active' class from all items
+        $item.siblings().removeClass('active');
+        
+        // Add 'active' class to the clicked item
+        $item.addClass('active');
+        
+       
+        
+        // Retrieve and store the selected item's ID into the hidden input
+        const selectedItemId = $item.attr('data-id'); // Assuming you have a data-id attribute for storing IDs
+        $hiddenInput.val(selectedItemId);
+    }
+
+    // Click event handler for driver items
+    $('.driver_item').on('click', function() {
+        const $driverItem = $(this);
+        const $selectDriver = $('#select_driver');
+        const $selectedDriverId = $('#selected_driver_id');
+        
+        handleItemSelection($driverItem, $selectDriver, $selectedDriverId);
+    });
+
+    // Click event handler for vehicle items
+    $('.vehicle_item').on('click', function() {
+        const $vehicleItem = $(this);
+        const $selectVehicle = $('#select_vehicle');
+        const $selectedVehicleId = $('#selectedvehicleid');
+        
+        handleItemSelection($vehicleItem, $selectVehicle, $selectedVehicleId);
+    });
+});
+
 </script>
 
 @endsection

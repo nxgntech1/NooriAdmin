@@ -340,7 +340,9 @@ Route::get('/getlang', [App\Http\Controllers\languageController::class, 'getLang
         Route::get('/tax/changeStatus/{id}', [App\Http\Controllers\TaxController::class, 'changeStatus'])->name('tax.changeStatus');
         Route::get('/tax/search', [App\Http\Controllers\TaxController::class, 'searchTax'])->name('tax.search');
 
-        
+        Route::get('cash_collection',[App\Http\Controllers\CashCollectionController:: class, 'index'])->name('cash_collection');
+        Route::get('cash_collection/detail/{id}',[App\Http\Controllers\CashCollectionController:: class, 'detail'])->name('cash_collection.detail');
+        Route::get('cash_collection/collected',[App\Http\Controllers\CashCollectionController:: class, 'collected'])->name('cash_collection.collected');
 
         Route::get('/homepageTemplate', [App\Http\Controllers\LandingPageTempController::class, 'index'])->name('homepageTemplate');
         Route::post('/homepageTemplate/save', [App\Http\Controllers\LandingPageTempController::class, 'save'])->name('homepageTemplate.save');

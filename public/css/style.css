@@ -12371,3 +12371,127 @@ nav.custom-pagination > nav > div:last-child {
     transition: 0.5s !important;
 }
 }
+
+.select_driverblk .control-label {
+    font-weight: 400;
+    color: #000000;
+}
+.select_driverblk .selectblk {
+    min-height: 90px;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    box-shadow: 0 0px 10px #dddddd;
+}
+.selectblk{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 6px;
+}
+.select_driverblk{
+    margin-bottom: 30px;
+}
+.driver_img, .vehicle_img {
+    height: 60px;
+    border-radius: 50% !important;
+    width: 60px;
+    object-fit: cover;
+    border: 1px solid #dddddd;
+}
+
+.driver_txt, .vehicle_txt {
+    padding-left: 15px;
+    margin: 0;
+    font-weight: 500;
+    color: #000000;
+    font-size: 15px;
+}
+.driver_item, .vehicle_item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 6px;
+    border: 1px solid #efefef;
+    border-radius: 5px;
+    box-shadow: 0 0px 5px #ececec;
+}
+.selectblk img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.selectblk p {
+    padding-left: 15px;
+    margin: 0;
+    font-weight: 500;
+    color: #000000;
+    font-size: 15px;
+}
+
+.select_driverblk {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dddddd;
+    padding-left: 10px;
+    padding-right: 15px;
+}
+#driver_list, #vehicle_list{
+    padding-left: 10px;
+    padding-right: 15px;
+}
+.selectblk .vehicle_item, .selectblk .driver_item  {
+    border: 0;
+    box-shadow: 0 0 0;
+    margin: 0;
+    padding: 0 6px;
+}
+.vehicle_item.active, .driver_item.active {
+    border: 1px solid #937308;
+}
+.vehicle_item.active .vehicle_txt, .driver_item.active .driver_txt{
+    color:  #937308;
+}
+.driver_item.active .driver_img, .vehicle_item.active .vehicle_img {
+    border: 1px solid #937308;
+}
+
+
+
+.collection_blk{
+    display: flex;
+}
+.collection_blk.user-detail label {
+    margin: 0;
+    font-size: 15px;
+}
+.collection_blk .col-group {
+    margin: 0 0 0 15px;
+}
+.collection_blk.user-detail label span {
+    color: #937308;
+    font-size: 18px;
+    font-weight: 600;
+}
+.driver_namecollect span{
+    padding-top: 15px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #000000;
+}
+.driver_namecollect {
+    padding-top: 15px;
+}
+body .alert {
+    min-width: 540px;
+    margin: 0 auto;
+    position: absolute;
+    top: 40px;
+    z-index: 99;
+    width: 40%;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
