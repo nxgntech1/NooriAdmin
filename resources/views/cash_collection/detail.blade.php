@@ -5,13 +5,13 @@
 
                 <div class="row page-titles">
                     <div class="col-md-5 align-self-center">
-                        <h3 class="text-themecolor"> Cash Collection Detail </h3>
+                        <h3 class="text-themecolor"> {{trans('lang.cash_collection_detail')}} </h3>
                     </div>
                     <div class="col-md-7 align-self-center">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="http://127.0.0.1:8000/dashboard">Dashboard</a></li>
-                            <li class="breadcrumb-item active"> Cash Collections </li>
-                            <li class="breadcrumb-item active"> Details </li>
+                            <li class="breadcrumb-item"><a href="{{url('/dashboard')}}">{{trans('lang.dashboard')}}</a></li>
+                            <li class="breadcrumb-item active"> <a href="{{url('cash_collection')}}">{{trans('lang.pending_cash_collection')}}</a> </li>
+                            <li class="breadcrumb-item active"> {{trans('lang.cash_collection_detail')}} </li>
                         </ol>
                     </div>
                     <div>
@@ -29,17 +29,28 @@
                                     </div>
                                     <div class="userlist-topsearch d-flex mb-3">
                                         <div class="userlist-top-left">
-                                           <div class="driver_namecollect"> Name : <span> Swamy Goud </span></div> 
+                                           <div class="driver_namecollect"> {{trans('lang.driver_name')}} : <span> {{$drivername}} </span></div> 
                                             <!-- <a class="nav-link" href="http://127.0.0.1:8000/users/create"><i
                                                     class="fa fa-plus mr-2"></i>Create User</a> -->
                                         </div>
                                         <div class="ml-auto collection_blk user-detail">
                                             <div class="col-group">
-												<label>Total Trips: <span>15</span></label>
+												<label>{{trans('lang.total_trips')}}: <span>{{$totaltrips}}</span></label>
 											</div>
                                             <div class="col-group">
-												<label>Pending Amount: <span>30,000</span></label>
+												<label>{{trans('lang.pending_amount')}}: <span>{{$currency->symbole . "" . number_format($totalamount,$currency->decimal_digit)}}</span></label>
 											</div>
+                                            <div class="form-group col-group text-center btm-btn">
+                                                <form action="{{ route('cash_collection.collect') }}" method="post"  enctype="multipart/form-data">
+                                                @csrf
+                                                <input type="hidden" value="{{$driverid}}" name="driverid" >
+                                                <input type="hidden" value="{{$totaltrips}}" name="total_rides" >
+                                                <input type="hidden" value="{{$totalamount}}" name="tatal_amount" >
+                                                
+                                                <button type="submit" class="btn btn-primary  create_user_btn" ><i class="fa fa-save"></i> {{ trans('lang.collected')}}</button>
+                                                <a href="{!! route('cash_collection') !!}" class="btn btn-default"><i class="fa fa-undo"></i>{{ trans('lang.cancel')}}</a>
+                                                </form>
+                                            </div>
                                         </div>
                                         <!-- <div id="users-table_filter" class="ml-auto">
                                             <label>Search By :
@@ -72,56 +83,38 @@
                                             cellspacing="0" width="100%">
                                             <thead>
                                                 <tr>
-                                                    <th class="delete-all"><input type="checkbox" id="is_active"><label
-                                                            class="col-3 control-label" for="is_active"><a
-                                                                id="deleteAll" class="do_not_delete"
-                                                                href="javascript:void(0)"><i class="fa fa-trash"></i>
-                                                                All</a></label></th>
-                                                              
-                                                    <th>Image</th>
-                                                    <th>Date</th>
-                                                    <th>Booking Type</th>
-                                                    <th>Car Brand-Model</th>
-                                                    <th>Amount Collected</th>
+                                                    <th>{{trans('lang.extra_image')}}</th>
+                                                    <th>{{trans('lang.car_model_brand')}}</th>
+                                                    <th>{{trans('lang.bookingtype_name')}}</th>
+                                                    <th>{{trans('lang.trip_date_time')}}</th>
+                                                    <th>{{trans('lang.total_amount')}} </th>
                                                    
-                                                    <!-- <th>Actions</th> -->
                                                 </tr>
                                             </thead>
                                             <tbody id="append_list12">
+                                            @if(count($pendingcollections) > 0)
+                                            @foreach($pendingcollections as $value)
                                                 <tr>
-                                                    <td class="delete-all"><input type="checkbox" id="is_open_11"
-                                                            class="is_open" dataid="11"><label
-                                                            class="col-3 control-label" for="is_open_11"></label></td>
+                                                @if (!empty($value->primary_image_id))
+                                                        <td> <img class="rounded" style="width:50px"
+                                                                src="{{asset('assets/images/vehicle').'/'.$value->primary_image_id}}"
+                                                                alt="image"></td>
+                                                        @else
+                                                        <td><img class="rounded" style="width:50px"
+                                                                src="{{ asset('assets/images/placeholder_img_car.png')}}" alt="image"></td>
 
-
-
-                                                    <td><img class="rounded" style="width:50px"
-                                                            src="http://127.0.0.1:8000/assets/images/placeholder_image.jpg"
-                                                            alt="image"></td>
-                                                            <td>25-July-2024</td>
-                                                    <td>Airport - City</td>
-                                                    <td>BMW-xy20</td>
-                                                    <td>10,000</td>
-                                                    
+                                                        @endif
+                                                        <td>{{$value->brandname}} / {{$value->modelname}} / {{$value->numberplate}}</td>
+                                                            
+                                                    <td>{{$value->bookingtype}}</td>
+                                                    <td>{{$value->ride_required_on_date}}</td>
+                                                    <td>{{$currency->symbole . "" . number_format( $value->montant,$currency->decimal_digit)}}</td>
 
                                                 </tr>
-                                                <tr>
-                                                    <td class="delete-all"><input type="checkbox" id="is_open_10"
-                                                            class="is_open" dataid="10"><label
-                                                            class="col-3 control-label" for="is_open_10"></label></td>
-
-
-
-                                                    <td><img class="rounded" style="width:50px"
-                                                            src="http://127.0.0.1:8000/assets/images/placeholder_image.jpg"
-                                                            alt="image"></td>
-                                                            <td>28-July-2024</td>
-                                                            <td>City - Airport</td>
-                                                            <td>Audi-S6</td>
-                                                            <td>10,000</td>
-                                                </tr>
-                                             
-                                            
+                                            @endforeach
+                                            @else
+		                                		<tr><td colspan="11" align="center">{{trans("lang.no_result")}}</td></tr>
+		                                	@endif
                                             </tbody>
                                         </table>
 

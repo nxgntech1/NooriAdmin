@@ -342,7 +342,10 @@ Route::get('/getlang', [App\Http\Controllers\languageController::class, 'getLang
 
         Route::get('cash_collection',[App\Http\Controllers\CashCollectionController:: class, 'index'])->name('cash_collection');
         Route::get('cash_collection/detail/{id}',[App\Http\Controllers\CashCollectionController:: class, 'detail'])->name('cash_collection.detail');
+        Route::post('cash_collection/collect', [App\Http\Controllers\CashCollectionController::class, 'collect'])->name('cash_collection.collect');
         Route::get('cash_collection/collected',[App\Http\Controllers\CashCollectionController:: class, 'collected'])->name('cash_collection.collected');
+        Route::get('cash_collection/coldetail/{id}/transaction/{transactionid}',[App\Http\Controllers\CashCollectionController:: class, 'coldetail'])->name('cash_collection.coldetail');
+        
 
         Route::get('/homepageTemplate', [App\Http\Controllers\LandingPageTempController::class, 'index'])->name('homepageTemplate');
         Route::post('/homepageTemplate/save', [App\Http\Controllers\LandingPageTempController::class, 'save'])->name('homepageTemplate.save');

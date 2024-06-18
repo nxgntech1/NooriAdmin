@@ -5,12 +5,13 @@
 
                 <div class="row page-titles">
                     <div class="col-md-5 align-self-center">
-                        <h3 class="text-themecolor">{{trans('lang.pending_cash_collection')}}</h3>
+                        <h3 class="text-themecolor"> {{trans('lang.cash_collection_detail')}} </h3>
                     </div>
                     <div class="col-md-7 align-self-center">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{{url('/dashboard')}}">{{trans('lang.dashboard')}}</a></li>
-                            <li class="breadcrumb-item active">{{trans('lang.pending_cash_collection')}}</li>
+                            <li class="breadcrumb-item active"> <a href="{{url('cash_collection/collected')}}">{{trans('lang.cash_collected')}}</a> </li>
+                            <li class="breadcrumb-item active"> {{trans('lang.cash_collection_detail')}} </li>
                         </ol>
                     </div>
                     <div>
@@ -28,7 +29,8 @@
                                     </div>
                                     <div class="userlist-topsearch d-flex mb-3">
                                         <div class="userlist-top-left">
-                                            <!-- Swamy Goud -->
+                                           <div class="driver_namecollect"> {{trans('lang.driver_name')}} : <span> {{$drivername}} </span><br>
+                                           {{trans('lang.collected_date')}} : {{$transactionDate}} </div> 
                                             <!-- <a class="nav-link" href="http://127.0.0.1:8000/users/create"><i
                                                     class="fa fa-plus mr-2"></i>Create User</a> -->
                                         </div>
@@ -37,7 +39,7 @@
 												<label>{{trans('lang.total_trips')}}: <span>{{$totaltrips}}</span></label>
 											</div>
                                             <div class="col-group">
-												<label>{{trans('lang.pending_amount')}}: <span>{{$currency->symbole . "" . number_format($totalamount,$currency->decimal_digit)}}</span></label>
+												<label>{{trans('lang.total_amount')}}: <span>{{$currency->symbole . "" . number_format($totalamount,$currency->decimal_digit)}}</span></label>
 											</div>
                                         </div>
                                         <!-- <div id="users-table_filter" class="ml-auto">
@@ -72,44 +74,34 @@
                                             <thead>
                                                 <tr>
                                                     <th>{{trans('lang.extra_image')}}</th>
-                                                    <th>{{trans('lang.driver_name')}}</th>
-                                                    <th>{{trans('lang.total_cash_trips')}}</th>
-                                                    <th>{{trans('lang.pending_amount')}}</th>
-                                                    <th>{{trans('lang.view')}}</th>
+                                                    <th>{{trans('lang.car_model_brand')}}</th>
+                                                    <th>{{trans('lang.bookingtype_name')}}</th>
+                                                    <th>{{trans('lang.trip_date_time')}}</th>
+                                                    <th>{{trans('lang.total_amount')}} </th>
                                                 </tr>
                                             </thead>
                                             <tbody id="append_list12">
                                             @if(count($pendingcollections) > 0)
                                             @foreach($pendingcollections as $value)
                                                 <tr>
-                                                    
-                                                        @if (!empty($value->photo_path))
+                                                @if (!empty($value->primary_image_id))
                                                         <td> <img class="rounded" style="width:50px"
-                                                                src="{{asset('assets/images/driver').'/'.$value->photo_path}}"
+                                                                src="{{asset('assets/images/vehicle').'/'.$value->primary_image_id}}"
                                                                 alt="image"></td>
                                                         @else
                                                         <td><img class="rounded" style="width:50px"
-                                                                src="{{ asset('assets/images/placeholder_image.jpg')}}" alt="image"></td>
+                                                                src="{{ asset('assets/images/placeholder_img_car.png')}}" alt="image"></td>
 
                                                         @endif
-
-                                                    <td>{{$value->drivername}}
-                                                    </td>
-                                                    <td>{{$value->rides}}</td>
-                                                    <td>{{$currency->symbole . "" . number_format($value->pendingamount,$currency->decimal_digit)}}</td>
-                                                    
-
-                                                    <td class="action-btn"><a
-                                                        href="{{route('cash_collection.detail', ['id' => $value->id])}}" data-toggle="tooltip" data-original-title="Details"><i
-                                                            class="fa fa-eye"></i></a>
-                                               </td>
+                                                        <td>{{$value->brandname}} / {{$value->modelname}} / {{$value->numberplate}}</td>
+                                                        <td>{{$value->bookingtype}}</td>
+                                                        <td>{{$value->ride_required_on_date}}</td>
+                                                        <td>{{$currency->symbole . "" . number_format( $value->montant,$currency->decimal_digit)}}</td>
                                                 </tr>
                                             @endforeach
                                             @else
 		                                		<tr><td colspan="11" align="center">{{trans("lang.no_result")}}</td></tr>
 		                                	@endif
-                                              
-                                            
                                             </tbody>
                                         </table>
 

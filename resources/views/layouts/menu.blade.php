@@ -39,6 +39,8 @@
             	<li><a href="{!! url('drivers') !!}">{{trans('lang.all_drivers')}}</a></li>
                 <li><a href="{!! url('drivers/approved') !!}">{{trans('lang.approved_drivers')}}</a></li>
                 <li><a href="{!! url('drivers/pending') !!}">{{trans('lang.pending_drivers')}}</a></li>
+                <li><a href="{!! url('cash_collection') !!}">{{trans('lang.pending_cash_collection')}}</a></li>
+                <li><a href="{!! url('cash_collection/collected') !!}">{{trans('lang.cash_collected')}}</a></li>
             </ul>
         </li>
 

@@ -122,6 +122,7 @@ return [
     'app_setting_payfast_notify_url' => 'Notify url',
     'app_setting_payfast_return_url' => 'Return url',
     'airport_to_city' => "Airport to City",
+    'amount_collected' => "Amount Collected",
 
     'app_setting_twitter' => 'Authentication using twitter',
     'app_setting_twitter_app_id' => 'Application ID',
@@ -181,6 +182,11 @@ return [
     'car_model_help' => "Select Car Model",
     'create_web_user' => "Create Web User",
     'city_to_airport' => "City to Airport",
+    'cash_collection_detail' => "Cash Collection Detail",
+    'car_model_brand' => "Car Model-Brand",
+    'collected' => "Collected",
+    'cash_collected' => "Cash Collected",
+    'collected_date' => "Collected Date",
     'vehicle_km' => "KM",
     'vehicle_km_help' => "Insert Kilometer",
     'vehicle_milage' => "Milage",
@@ -442,6 +448,8 @@ return [
     'profile_image' => "Profile Image",
     'profile_image_help' => "Insert Profile Image",
     'pending_rides' => "Pending Rides",
+    'pending_cash_collection' => 'Pending Cash collection',
+    'pending_amount' => "Pending Amount",
     'lic_image' => "Licence Document",
     'lic_image_help' => "Insert Licence Document",
     'nic_image' => "Nic Image",
@@ -553,6 +561,9 @@ return [
     'total_brands' => "Total brands",
     'total_verified_drivers' => "Total verified drivers",
     'today_bookings' => "Today's bookings",
+    'total_cash_trips' => "Total Cash Trips",
+    'total_trips' => "Total Trips",
+    
     
     //---------------------------------------UUUU---------------------------------------
     'upload_app_logo' => 'Application Logo',
@@ -598,6 +609,7 @@ return [
     'vehicles_count' => "Vehicles Count",
     'vehicle_images_help' => "Insert Vehicle Images",
     'vehicle_assigned' => "Vehicle Assigned",
+    'view' => "View",
 
     //---------------------------------------WWW---------------------------------------
     'web_users' => "Web Users",

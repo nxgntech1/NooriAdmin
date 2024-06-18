@@ -5,12 +5,12 @@
 
                 <div class="row page-titles">
                     <div class="col-md-5 align-self-center">
-                        <h3 class="text-themecolor">Cash Collected </h3>
+                        <h3 class="text-themecolor">{{trans('lang.cash_collected')}} </h3>
                     </div>
                     <div class="col-md-7 align-self-center">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="http://127.0.0.1:8000/dashboard">Dashboard</a></li>
-                            <li class="breadcrumb-item active"> Cash Collected </li>
+                            <li class="breadcrumb-item"><a href="{{url('/dashboard')}}">{{trans('lang.dashboard')}}</a></li>
+                            <li class="breadcrumb-item active"> {{trans('lang.cash_collected')}} </li>
                         </ol>
                     </div>
                     <div>
@@ -34,10 +34,10 @@
                                         </div>
                                         <div class="ml-auto collection_blk user-detail">
                                             <div class="col-group">
-												<label>Total Trips: <span>15</span></label>
+												<label>{{trans('lang.total_trips')}}: <span>{{$totaltrips}}</span></label>
 											</div>
                                             <div class="col-group">
-												<label>Amount: <span>30,000</span></label>
+												<label>{{trans('lang.pending_amount')}}: <span>{{$currency->symbole . "" . number_format($totalamount,$currency->decimal_digit)}}</span></label>
 											</div>
                                         </div>
                                         <!-- <div id="users-table_filter" class="ml-auto">
@@ -71,106 +71,44 @@
                                             cellspacing="0" width="100%">
                                             <thead>
                                                 <tr>
-                                                    <th class="delete-all"><input type="checkbox" id="is_active"><label
-                                                            class="col-3 control-label" for="is_active"><a
-                                                                id="deleteAll" class="do_not_delete"
-                                                                href="javascript:void(0)"><i class="fa fa-trash"></i>
-                                                                All</a></label></th>
-                                                              
-                                                    <th>Image</th>
-                                                    <th>Date</th>
-                                                    <th>Driver Name</th>
-                                                    <th>Total Cash Trips</th>
-                                                    <th>Amount Collected</th>
-                                                   
-                                                    <th>Actions</th>
+                                                    <th>{{trans('lang.extra_image')}}</th>
+                                                    <th>{{trans('lang.driver_name')}}</th>
+                                                    <th>{{trans('lang.total_cash_trips')}}</th>
+                                                    <th>{{trans('lang.amount_collected')}}</th>
+                                                    <th>{{trans('lang.collected_date')}}</th>
+                                                    <th>{{trans('lang.view')}}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="append_list12">
+                                            @if(count($cashcollections) > 0)
+                                            @foreach($cashcollections as $value)
                                                 <tr>
-                                                    <td class="delete-all"><input type="checkbox" id="is_open_11"
-                                                            class="is_open" dataid="11"><label
-                                                            class="col-3 control-label" for="is_open_11"></label></td>
-
-
-
-                                                    <td><img class="rounded" style="width:50px"
-                                                            src="http://127.0.0.1:8000/assets/images/placeholder_image.jpg"
-                                                            alt="image"></td>
-                                                            <td>25-July-2024</td>
-                                                    <td>Sandeep Kumar</td>
-                                                    <td>10</td>
-                                                    <td>10,000</td>
                                                     
+                                                @if (!empty($value->photo_path))
+                                                <td> <img class="rounded" style="width:50px"
+                                                        src="{{asset('assets/images/driver').'/'.$value->photo_path}}"
+                                                        alt="image"></td>
+                                                @else
+                                                <td><img class="rounded" style="width:50px"
+                                                        src="{{ asset('assets/images/placeholder_image.jpg')}}" alt="image"></td>
+
+                                                @endif
+                                                            
+                                                    <td>{{$value->drivername}}</td>
+                                                    <td>{{$value->rides}}</td>
+                                                    <td>{{$currency->symbole . "" . number_format($value->pendingamount,$currency->decimal_digit)}}</td>
+                                                    <td>{{$value->updated_at}}</td>
 
                                                     <td class="action-btn">
-                                                        <a href="http://127.0.0.1:8000/users/show/11" class=""
+                                                        <a href="{{route('cash_collection.coldetail', ['id' => $value->id,'transactionid'=> $value->cod_collected_transaction_id])}}" class=""
                                                             data-toggle="tooltip" data-original-title="Details"><i
                                                                 class="fa fa-eye"></i></a>
-                                                        <a href="http://127.0.0.1:8000/users/edit/11"><i
-                                                                class="fa fa-edit"></i></a><a id="'+val.id+'"
-                                                            class="do_not_delete" name="user-delete"
-                                                            href="http://127.0.0.1:8000/user/delete/11"><i
-                                                                class="fa fa-trash"></i></a>
                                                     </td>
                                                 </tr>
-                                                <tr>
-                                                    <td class="delete-all"><input type="checkbox" id="is_open_10"
-                                                            class="is_open" dataid="10"><label
-                                                            class="col-3 control-label" for="is_open_10"></label></td>
-
-
-
-                                                    <td><img class="rounded" style="width:50px"
-                                                            src="http://127.0.0.1:8000/assets/images/placeholder_image.jpg"
-                                                            alt="image"></td>
-                                                            <td>28-July-2024</td>
-                                                    <td>Jagan Mohan
-                                                    </td>
-                                                    <td>15</td>
-                                                    <td>15,000</td>
-                                                    
-
-                                                    <td class="action-btn">
-                                                        <a href="http://127.0.0.1:8000/users/show/10" class=""
-                                                            data-toggle="tooltip" data-original-title="Details"><i
-                                                                class="fa fa-eye"></i></a>
-                                                        <a href="http://127.0.0.1:8000/users/edit/10"><i
-                                                                class="fa fa-edit"></i></a><a id="'+val.id+'"
-                                                            class="do_not_delete" name="user-delete"
-                                                            href="http://127.0.0.1:8000/user/delete/10"><i
-                                                                class="fa fa-trash"></i></a>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="delete-all"><input type="checkbox" id="is_open_9"
-                                                            class="is_open" dataid="9"><label
-                                                            class="col-3 control-label" for="is_open_9"></label></td>
-
-
-
-                                                    <td><img class="rounded" style="width:50px"
-                                                            src="http://127.0.0.1:8000/assets/images/placeholder_image.jpg"
-                                                            alt="image"></td>
-                                                            <td>30-July-2024</td>
-                                                    <td>Uma Challa
-                                                    </td>
-                                                    <td>5</td>
-                                                    <td>5,000</td>
-
-
-                                                    <td class="action-btn">
-                                                        <a href="http://127.0.0.1:8000/users/show/9" class=""
-                                                            data-toggle="tooltip" data-original-title="Details"><i
-                                                                class="fa fa-eye"></i></a>
-                                                        <a href="http://127.0.0.1:8000/users/edit/9"><i
-                                                                class="fa fa-edit"></i></a><a id="'+val.id+'"
-                                                            class="do_not_delete" name="user-delete"
-                                                            href="http://127.0.0.1:8000/user/delete/9"><i
-                                                                class="fa fa-trash"></i></a>
-                                                    </td>
-                                                </tr>
-                                            
+                                                @endforeach
+                                            @else
+		                                		<tr><td colspan="11" align="center">{{trans("lang.no_result")}}</td></tr>
+		                                	@endif
                                             </tbody>
                                         </table>
 
