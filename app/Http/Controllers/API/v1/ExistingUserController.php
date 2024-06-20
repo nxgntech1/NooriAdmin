@@ -41,17 +41,17 @@ class ExistingUserController extends Controller {
 					$response['data'] = True;
 				}
 				else{
-					 $checkdriver = Driver::where('phone', $phone) -> first();
-					 if($checkdriver){
-						 $response['success'] = 'Failed';
-						 $response['error'] = 'User already exist, please try with different number';
-						 $response['data'] = False;
-					 }else{
+					//  $checkdriver = Driver::where('phone', $phone) -> first();
+					//  if($checkdriver){
+					// 	 $response['success'] = 'Failed';
+					// 	 $response['error'] = 'User already exist, please try with different number';
+					// 	 $response['data'] = False;
+					//  }else{
 						 $response['success'] = 'success';
 						 $response['error'] = null;
 						 $response['message'] = 'User Not exist';
 						 $response['data'] = False;
-					 }
+					//  }
 
 
 				}
@@ -64,19 +64,18 @@ class ExistingUserController extends Controller {
 							$response['error'] = null;
 							$response['data'] = true;
 						}
-
 						else{
-							$checkuser = UserApp::where('phone', $phone) -> first();
-								if($checkuser){
-									$response['success'] = 'Failed';
-									$response['error'] = 'User already exist, please try with different number';
-									$response['data'] = False;
-								}else{
+							// $checkuser = UserApp::where('phone', $phone) -> first();
+							// 	if($checkuser){
+							// 		$response['success'] = 'Failed';
+							// 		$response['error'] = 'User already exist, please try with different number';
+							// 		$response['data'] = False;
+							// 	}else{
 									$response['success'] = 'success';
 									$response['error'] = null;
 									$response['message'] = 'User Not exist';
 									$response['data'] = False;
-								}
+							// 	}
 
 						}
 				}

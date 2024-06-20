@@ -16,7 +16,10 @@ use App\Services;
 
 use Google\Client as Google_Client;
 
-
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+//require 'C:\Personal\NxGn\Projects\NoorieTravels\NooriAdminPortal\vendor\autoload.php';
+require 'C:\Websites\NooriTravels\cabme-admin-panel\vendor\autoload.php';
 
 
 class NotificationsController extends Controller
@@ -43,73 +46,67 @@ class NotificationsController extends Controller
     // --------------------END Twilio SMS -----------------------------
 
 
-    public function __construct(TextLocalService $textLocalService,FcmService $fcmService)
+    public function __construct()
     {
-        $this->textLocalService = $textLocalService;
-        $this->fcmService = $fcmService;
+        $this->textLocalService = new TextLocalService();
+        $this->fcmService = new FcmService();
     }
 
-    public function sendTextLocalSMS(Request $request)
+    public function sendSMS($number,$message)
     {
-        $request->validate([
-            'numbers' => 'required|array',
-            'message' => 'required|string',
-        ]);
+        // $request->validate([
+        //     'numbers' => 'required|array',
+        //     'message' => 'required|string',
+        // ]);
 
-        $response = $this->textLocalService->sendSMS($request->numbers, $request->message);
+        $response = $this->textLocalService->sendSMS($number, $message);
 
         return response()->json($response);
     }
 
 
-    public function sendFcmNotification(Request $request)
+    public function sendNotification($tokens,$message,$data)
     {
-        
-        // Sending Notifications 
-            //if (count($tokens) > 0) {
-
-            $tmsg = '';
-            $terrormsg = '';
-
-            $title = str_replace("'", "\'", "New ride");
-            $msg = str_replace("'", "\'", "You have just received a request from a client");
-            $msg1 = "You have just received a request from a client - Kanna";
-
-            $tab[] = array();
-            $tab = explode("\\", $msg);
-            $msg_ = "";
-            for ($i = 0; $i < count($tab); $i++) {
-                $msg_ = $msg_ . "" . $tab[$i];
-            }
-            $message = array("body" => $msg_, "title" => $title, "sound" => "mySound", "tag" => "ridenewrider");
-
-
-
-            // if ($id > 0) {
-                $get_user = Requests::where('id', '140')->first();
-                $rowData = $get_user->toArray();
-            // }
-
-            //$tokens = array();
-            $tokens = 'cC9i9w3_S9-MdNPhCAUoFf:APA91bHE3_RsMUm5Y_UXN9dvcC7ALUgk7DfsTj5mEGAyLIDaHsZZtTKm_LibaAyTKRvMWhzfq_Q9f28jB8vPLpJOa62saag7Gd4wE4dm_GZrVca3XFPyNFS7AAJI8Lvgi4KRQNf7GgiD';
-            $data = $rowData;
-
-            //$tokens = $request->input('tokens');
-            $message1 = [
-                'title' => 'Test message from API',
-                'body' => 'You got a notification from backend'
-            ];
-            //$data = $request->input('data');
-
-            $response['notifiaction_data'] = $this->fcmService->sendNotification($tokens, $message1,null);
-            
+            $response['notifiaction_data'] = $this->fcmService->sendNotification($tokens, $message,$data);
             return response()->json($response);
 
-        //}
-        // End Sending Notifications 
     }
 
 
+    public function sendEmail($to, $emailsubject, $emailmessage)
+    {
+        $mail = new PHPMailer(true);
+
+        try {
+            // Server settings
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.mailgun.org';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'postmaster@nxgnemail.com';
+            $mail->Password   = 'nxgnsmtp';
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+            $mail->CharSet = 'UTF-8';
+
+            // Recipients
+            $mail->setFrom('noori@nxgnemail.com', 'Noori');
+            //$mail->addAddress('kanna.ganasala@nxgntech.com', 'Joe User');
+            $mail->addAddress($to);
+
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = $emailsubject;
+            $mail->Body    = $emailmessage;
+            //$mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+
+            $mail->send();
+            $response['emailResonse'] =  'Message has been sent';
+        } catch (Exception $e) {
+            $response['emailResonse']= "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        }
+
+        return response()->json($response);
+    }
     
     
 }

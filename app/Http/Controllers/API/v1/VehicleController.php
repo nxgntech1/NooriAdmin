@@ -480,6 +480,7 @@ public function getCarModels(Request $request)
           
           $row->imageid = $image_path;
           $row->modelid = $row->modelid;
+          $row->brandid = $row->brandid;
           $row->brandname = $row->brandname;
           $row->modelname = $row->modelname;
           $row->allow_cod = $row->allow_cod;

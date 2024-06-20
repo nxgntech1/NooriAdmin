@@ -30,6 +30,282 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    public function userSignup(Request $request)
+    {
+    
+        $phone = $request->get('phone');
+        $account_type = $request->get('account_type');
+        $date_heure = date('Y-m-d H:i:s');
+        $otp = random_int(1000, 9999);
+        //$otp = '1234';
+
+             $chkephone = DB::table('noori_app_users')
+                        ->select('noori_app_users.mobileno')
+                        ->where('noori_app_users.mobileno', '=', $phone)
+                        ->first();
+
+
+            if (!empty($chkephone)) {
+                
+                $updatedata =  DB::update('update noori_app_users set otp = ?,otp_sent_datetime = ? where mobileno = ?',[$otp, $date_heure, $phone]);
+
+                // // // $notifications= new NotificationsController();
+                // // // $SMS_Notifiaction = $notifications->sendSMS($phone,'OTP is for ' . $otp . ' TeamPlay app. Do not share the OTP with anyone for security reasons');
+                
+                // $response['data'] = '1';
+                // $response['success'] = 'success';
+            }else{
+            
+                $insertdata = DB::insert("insert into noori_app_users(mobileno,otp,user_type,otp_sent_datetime)
+                    values('" . $phone . "','" . $otp . "','customer','". $date_heure ."')");
+
+                $id = DB::getPdo()->lastInsertId();
+
+                
+            }
+
+            $notifications= new NotificationsController();
+            $SMS_Notifiaction = $notifications->sendSMS($phone,'OTP is for ' . $otp . ' TeamPlay app. Do not share the OTP with anyone for security reasons');
+
+            $response['data'] = '1';
+            $response['success'] = 'success';
+
+
+        // if ($account_type == "customer") {
+
+        //     $chkephone = DB::table('noori_app_users')
+        //                 ->select('noori_app_users.mobileno')
+        //                 ->where('noori_app_users.mobileno', '=', $phone)
+        //                 ->where('noori_app_users.user_type', '=', 'customer')
+        //                 ->where('noori_app_users.registration_completed', '=', 'yes')
+        //                 ->first();
+
+        //     $chkephonewithoutcomplition = DB::table('noori_app_users')
+        //                 ->select('noori_app_users.mobileno')
+        //                 ->where('noori_app_users.mobileno', '=', $phone)
+        //                 ->where('noori_app_users.user_type', '=', 'customer')
+        //                 ->where('noori_app_users.registration_completed', '=', 'no')
+        //                 ->first();
+
+        //    // $chkephone = DB::select('phone', $phone)->first();
+ 
+        //     if (!empty($chkephone)) {
+        //         $response['success'] = 'Failed';
+        //         $response['error'] = 'Phone number already exist...';
+        //     }
+        //     else if (!empty($chkephonewithoutcomplition)){
+                
+        //         $updatedata =  DB::update('update noori_app_users set otp = ?,otp_sent_datetime = ? where mobileno = ?',[$otp, $date_heure, $phone]);
+
+        //         // // // $notifications= new NotificationsController();
+        //         // // // $SMS_Notifiaction = $notifications->sendSMS($phone,'OTP is for ' . $otp . ' TeamPlay app. Do not share the OTP with anyone for security reasons');
+                
+        //         $response['data'] = '1';
+        //         $response['success'] = 'success';
+
+        //     }else{
+            
+        //         $insertdata = DB::insert("insert into noori_app_users(mobileno,otp,registration_completed,user_type,otp_sent_datetime)
+        //             values('" . $phone . "','" . $otp . "','no','customer','". $date_heure ."')");
+
+        //         $id = DB::getPdo()->lastInsertId();
+
+        //         // // // // $notifications= new NotificationsController();
+        //         // // // // $SMS_Notifiaction = $notifications->sendSMS($phone,'OTP is for ' . $otp . ' TeamPlay app. Do not share the OTP with anyone for security reasons');
+
+        //         $response['data'] = '1';
+        //         $response['success'] = 'success';
+        //     }
+        // }elseif ($account_type == "driver") {
+            
+        //     // $chkephone = Driver::where('phone', $phone)->first();
+        //     // if (!empty($chkephone)) {
+
+        //     //     if (!empty($chkephone)) {
+        //     //         $response['success'] = 'Failed';
+        //     //         $response['error'] = 'Phone number already exist...';
+        //     //         } else {
+                        
+        //     //             $insertdata = DB::insert("insert into noori_app_users(mobileno,otp,user_type)
+        //     //             values('" . $phone . "','" . $otp . "','driver'");
+
+        //     //             $id = DB::getPdo()->lastInsertId();
+
+        //     //             // Generate OTP
+
+        //     //         }
+        //     //     }
+
+        //         $chkephone = DB::table('noori_app_users')
+        //         ->select('noori_app_users.mobileno')
+        //         ->where('noori_app_users.mobileno', '=', $phone)
+        //         ->where('noori_app_users.user_type', '=', 'driver')
+        //         ->where('noori_app_users.registration_completed', '=', 'yes')
+        //         ->first();
+
+        //         $chkephonewithoutcomplition = DB::table('noori_app_users')
+        //                     ->select('noori_app_users.mobileno')
+        //                     ->where('noori_app_users.mobileno', '=', $phone)
+        //                     ->where('noori_app_users.user_type', '=', 'driver')
+        //                     ->where('noori_app_users.registration_completed', '=', 'no')
+        //                     ->first();
+
+        //         if (!empty($chkephone)) {
+        //             $response['success'] = 'Failed';
+        //             $response['error'] = 'Phone number already exist...';
+        //         }
+        //         else if (!empty($chkephonewithoutcomplition)){
+                    
+        //             $updatedata =  DB::update('update noori_app_users set otp = ?,otp_sent_datetime = ? where mobileno = ?',[$otp, $date_heure, $phone]);
+
+        //             // // // $notifications= new NotificationsController();
+        //             // // // $SMS_Notifiaction = $notifications->sendSMS($phone,'OTP is for ' . $otp . ' TeamPlay app. Do not share the OTP with anyone for security reasons');
+                    
+        //             $response['data'] = '1';
+        //             $response['success'] = 'success';
+
+        //         }else{
+
+        //             $insertdata = DB::insert("insert into noori_app_users(mobileno,otp,registration_completed,user_type,otp_sent_datetime)
+        //                 values('" . $phone . "','" . $otp . "','no','driver','". $date_heure ."')");
+
+        //             $id = DB::getPdo()->lastInsertId();
+
+        //             // // // // $notifications= new NotificationsController();
+        //             // // // // $SMS_Notifiaction = $notifications->sendSMS($phone,'OTP is for ' . $otp . ' TeamPlay app. Do not share the OTP with anyone for security reasons');
+
+        //             $response['data'] = '1';
+        //             $response['success'] = 'success';
+        //         }
+        
+        //     }
+
+        return response()->json($response);
+    }
+
+    public function getotp(Request $request)
+    {
+    
+        $phone = $request->get('phone');
+     
+        $chkephone = DB::table('noori_app_users')
+        ->select('noori_app_users.otp')
+        ->where('noori_app_users.mobileno', '=', $phone)
+        ->first();
+
+        $response = $chkephone;
+
+        
+        return response()->json($response);
+    }
+
+    public function checkSignupOtp(Request $request)
+    {
+    
+        $phone = $request->get('phone');
+        $account_type = $request->get('account_type');
+        $otp = $request->get('otp');
+        $date_heure = date('Y-m-d H:i:s');
+        //$otp = random_int(1000, 9999);
+
+            $checkopt = DB::table('noori_app_users')
+                        ->select('noori_app_users.mobileno')
+                        ->where('noori_app_users.mobileno', '=', $phone)
+                        // ->where('noori_app_users.user_type', '=', 'customer')
+                        // ->where('noori_app_users.registration_completed', '=', 'no')
+                        ->where('noori_app_users.otp', '=', $otp)
+                        ->first();
+
+        if (!empty($checkopt)) {
+                $updatedata =  DB::update('update noori_app_users set otp = ? where mobileno = ?',['', $phone]);
+
+            $response['success'] = 'success';
+            $response['data'] = '1';
+            //$response['error'] = 'Phone number already exist...';
+        }else {
+            
+            $response['success'] = 'Failed';
+            $response['error'] = 'Invalid otp, Please check ...';
+
+        }
+
+        // if ($account_type == "customer") {
+
+        //     $checkopt = DB::table('noori_app_users')
+        //                 ->select('noori_app_users.mobileno')
+        //                 ->where('noori_app_users.mobileno', '=', $phone)
+        //                 // ->where('noori_app_users.user_type', '=', 'customer')
+        //                 // ->where('noori_app_users.registration_completed', '=', 'no')
+        //                 ->where('noori_app_users.otp', '=', $otp)
+        //                 ->first();
+
+        //    // $chkephone = DB::select('phone', $phone)->first();
+ 
+        //     if (!empty($checkopt)) {
+
+        //         $updatedata =  DB::update('update noori_app_users set otp = ? where mobileno = ?',['', $phone]);
+
+        //         $response['success'] = 'success';
+        //         $response['data'] = '1';
+        //         //$response['error'] = 'Phone number already exist...';
+        //     }
+        //     else {
+                
+        //         $response['success'] = 'Failed';
+        //         $response['error'] = 'Invalid otp, Please check ...';
+
+        //     }
+        // }elseif ($account_type == "driver") {
+
+        //     // $chkephone = Driver::where('phone', $phone)->first();
+        //     // if (!empty($chkephone)) {
+
+        //     //     if (!empty($chkephone)) {
+        //     //         $response['success'] = 'Failed';
+        //     //         $response['error'] = 'Phone number already exist...';
+        //     //         } else {
+                        
+        //     //             $insertdata = DB::insert("insert into noori_app_users(mobileno,otp,user_type)
+        //     //             values('" . $phone . "','" . $otp . "','driver'");
+
+        //     //             $id = DB::getPdo()->lastInsertId();
+
+        //     //             // Generate OTP
+
+        //     //         }
+        //     //     }
+
+
+        //     $checkopt = DB::table('noori_app_users')
+        //                 ->select('noori_app_users.mobileno')
+        //                 ->where('noori_app_users.mobileno', '=', $phone)
+        //                 ->where('noori_app_users.user_type', '=', 'driver')
+        //                 ->where('noori_app_users.registration_completed', '=', 'no')
+        //                 ->where('noori_app_users.otp', '=', $otp)
+        //                 ->first();
+
+        //    // $chkephone = DB::select('phone', $phone)->first();
+ 
+        //     if (!empty($checkopt)) {
+
+        //         $updatedata =  DB::update('update noori_app_users set otp = ? where mobileno = ?',['', $phone]);
+
+        //         $response['success'] = 'success';
+        //         $response['data'] = '1';
+        //         //$response['error'] = 'Phone number already exist...';
+        //     }
+        //     else {
+                
+        //         $response['success'] = 'Failed';
+        //         $response['error'] = 'Invalid otp, Please check ...';
+
+        //     }
+
+        // }
+
+        return response()->json($response);
+    }
+
     public function register(Request $request)
     {
         $prenom = $request->get('firstname');
@@ -102,6 +378,9 @@ class UserController extends Controller
                     }
 
                 }
+
+                $updatedata =  DB::update('update noori_app_users set registration_completed = ? where mobileno = ? and user_type = ?',['yes', $phone, 'customer']);
+
                 $uniqid = uniqid();
                 $rand_start = rand(1,5);
                 $userReferralCode= substr($uniqid,$rand_start,5);
@@ -221,6 +500,8 @@ class UserController extends Controller
 
                     }
 
+                    $updatedata =  DB::update('update noori_app_users set registration_completed = ? where mobileno = ? and user_type = ?',['yes', $phone, 'driver']);
+
                     $get_admin_commission = DB::table('tj_commission')->select('*')->where('statut', '=', 'yes')->get();
                     foreach ($get_admin_commission as $row_commission) {
                         $row['admin_commission'] = $row_commission->value;
@@ -232,6 +513,7 @@ class UserController extends Controller
                     $response['error'] = 'Id Not Found';
 
                 }
+
                 $emailsubject = '';
                 $emailmessage = '';
                 $emailtemplate = DB::table('email_template')->select('*')->where('type', 'new_registration')->first();
@@ -248,7 +530,7 @@ class UserController extends Controller
                     $to = $email;
                 }
 
-                $app_name = env('APP_NAME', 'Cabme');
+                $app_name = env('APP_NAME', 'NooriTravels');
                 $date = date('d F Y');
                 $emailmessage = str_replace("{AppName}", $app_name, $emailmessage);
                 $emailmessage = str_replace("{UserName}", $row['nom'] . " " . $row['prenom'], $emailmessage);
@@ -258,10 +540,13 @@ class UserController extends Controller
                 $emailmessage = str_replace('{Date}', $date, $emailmessage);
                 
                 // Always set content-type when sending HTML email
-                $headers = "MIME-Version: 1.0" . "\r\n";
-                $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-                $headers .= 'From: ' . $app_name . '<' . $email . '>' . "\r\n";
-                mail($to, $emailsubject, $emailmessage, $headers);
+                // // $headers = "MIME-Version: 1.0" . "\r\n";
+                // // $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+                // // $headers .= 'From: ' . $app_name . '<' . $email . '>' . "\r\n";
+                // // mail($to, $emailsubject, $emailmessage, $headers);
+
+                 $notifications= new NotificationsController();
+                 $notifcationres = $notifications->sendEmail($to, $emailsubject, $emailmessage);
                 
             }
         } else {
@@ -272,7 +557,6 @@ class UserController extends Controller
 
         return response()->json($response);
     }
-
     public static function url()
     {
         $actual_link = ($_SERVER['HTTPS'] && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\API\v1\GcmController;
+use App\Http\Controllers\API\v1\NotificationsController;
 use App\Http\Controllers\Controller;
 use App\Models\Requests;
+use App\Services\FcmService;
 use DB;
 use PDO;
 use Illuminate\Http\Request;
@@ -16,6 +18,7 @@ class RequeteRegisterController extends Controller
     public function __construct()
     {
         $this->limit = 20;
+        
     }
 
     /**
@@ -193,6 +196,7 @@ class RequeteRegisterController extends Controller
 
         $user_id = $request->get('user_id');
         $car_model_id = $request->get('car_model_id');
+        $brand_Id = $request->get('car_brand_id');
         //$user_detail = json_encode($request->get('user_detail'));
         $finalAmont = $request->get('finalAmount');
         $lat1 = $request->get('lat1');
@@ -208,6 +212,8 @@ class RequeteRegisterController extends Controller
         $id_payment = $request->get('id_payment_method');
         $ride_date = $request->get('ride_date');
         $ride_time = $request->get('ride_time');
+        $otp = random_int(1000, 9999);
+
         if (!empty($request->get('bookfor_others_mobileno')))
         {
             $bookfor_others_mobileno = $request->get('bookfor_others_mobileno');
@@ -268,12 +274,17 @@ class RequeteRegisterController extends Controller
 
         if (!empty($id_payment)) {
            
+                if ($id_payment = '5')
+                    $ridestatus = 'new';
+
                 $date_heure = date('Y-m-d H:i:s');
 
                 $insertdata = DB::insert("insert into tj_requete(ride_required_on_date,
                 ride_required_on_time,
                 model_id,
+                brand_id,
                 id_payment_method,
+                otp,
                 booking_type_id,
                 depart_name,
                 destination_name,
@@ -297,7 +308,9 @@ class RequeteRegisterController extends Controller
                 values('" . $ride_date . "',
                 '" . $ride_time . "',
                 '" . $car_model_id . "',
+                '" . $brand_Id . "',
                 '" . $id_payment . "',
+                '" . $otp . "',
                 '" . $booking_type_id . "',
                 '" . $depart_name . "',
                 '" . $destination_name . "',
@@ -308,7 +321,7 @@ class RequeteRegisterController extends Controller
                 '" . $lng1 . "',
                 '" . $lat2 . "',
                 '" . $lng2 . "',
-                '',
+                '" . $ridestatus . "',
                 '" . $date_heure . "',
                 '" . $distance . "',
                 '" . $distance_unit . "',
@@ -355,13 +368,15 @@ class RequeteRegisterController extends Controller
                 // // // // //     }
                 // // // // // }
 
-                // // // // // $temp = array();
-                // // // // // $data = $rowData;
-                // // // // // if (count($tokens) > 0) {
-                // // // // //     GcmController::send_notification($tokens, $message,$data);
-                // // // // // }
+                // $temp = array();
+                // $data = $rowData;
+                // if (count($tokens) > 0) {
+                     //GcmController::send_notification($tokens, $message,$data);
+                    
+                     
+                // }
 
-
+                
             
             if ($id > 0) {
 
@@ -391,7 +406,52 @@ class RequeteRegisterController extends Controller
                 //     $row['trajet'] = $image_user;
                 // }
 
+
+                // if ($id_payment = '5')
+                // {
+                    
+                 $EmailResponse = $this->SendBookRideEmailNotifiaction($id);
+
+                // // // //     $tmsg = '';
+                // // // //     $terrormsg = '';
+
+                // // // //     $title = str_replace("'", "\'", "New ride");
+                // // // //     $msg = str_replace("'", "\'", "You have just received a request from a client");
+                
+                // // // //     $tab[] = array();
+                // // // //     $tab = explode("\\", $msg);
+                // // // //     $msg_ = "";
+                // // // //     for ($i = 0; $i < count($tab); $i++) {
+                // // // //         $msg_ = $msg_ . "" . $tab[$i];
+                // // // //     }
+
+                // // // //     // if ($id > 0) {
+                // // // //     //     $get_user = Requests::where('id', '140')->first();
+                // // // //     //     $rowData = $get_user->toArray();
+                // // // //     // // }
+
+                // // // //     $tokens = 'cC9i9w3_S9-MdNPhCAUoFf:APA91bHE3_RsMUm5Y_UXN9dvcC7ALUgk7DfsTj5mEGAyLIDaHsZZtTKm_LibaAyTKRvMWhzfq_Q9f28jB8vPLpJOa62saag7Gd4wE4dm_GZrVca3XFPyNFS7AAJI8Lvgi4KRQNf7GgiD';
+                // // // // // $data = $rowData;
+
+                
+                // // // //     $message1 = [
+                // // // //         'title' => $title,
+                // // // //         'body' => $msg_,
+                // // // //         'sound'=> 'mySound',
+                // // // //         'tag' => 'ridenewrider'
+                // // // //     ];
+
+
+
+                // // // //     $notifications= new NotificationsController();
+                // // // //     $notifcationres = $notifications->sendNotification($tokens, $message1,null);
+
+                    //$SMS_Notifiaction = $notifications->sendSMS('919885084010','OTP is for 3456 TeamPlay app. Do not share the OTP with anyone for security reasons');
+                //} 
+
+
             }
+
             if (!empty($intout)){
                 if ($intout = "1")
                 {
@@ -400,6 +460,7 @@ class RequeteRegisterController extends Controller
                     $response['success'] = 'success';
                     $response['error'] = null;
                     $response['message'] = 'Successfully created';
+                    $response['EmailResponse'] = $EmailResponse;
                 }else{
                     $response['success'] = 'Failed';
                     $response['error'] = 'Failed';    
@@ -447,6 +508,126 @@ class RequeteRegisterController extends Controller
         }
         return response()->json($response);
 
+    }
+
+    public function SendBookRideEmailNotifiaction($ride_id)
+    {
+
+        $sql = DB::table('tj_requete')
+        ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
+        ->Join('car_model', 'car_model.id', '=', 'tj_requete.model_id')
+        ->Join('brands', 'brands.id', '=', 'tj_requete.brand_id')
+        ->Join('tj_payment_method', 'tj_payment_method.id', '=', 'tj_requete.id_payment_method')
+        ->select('tj_requete.id','tj_requete.id_user_app', 'tj_requete.depart_name',
+            'tj_requete.distance_unit', 'tj_requete.destination_name', 'tj_requete.latitude_depart',
+            'tj_requete.longitude_depart', 'tj_requete.latitude_arrivee', 'tj_requete.longitude_arrivee',
+            'tj_requete.statut', 'tj_requete.id_conducteur',
+            'tj_requete.creer', 'tj_requete.tax_amount','tj_requete.discount',
+            'tj_user_app.nom', 'tj_user_app.prenom', 'tj_requete.otp','tj_user_app.email as customeremail',
+            'tj_requete.distance', 'tj_user_app.phone','tj_requete.date_retour', 'tj_requete.heure_retour',
+            'tj_requete.montant', 'tj_requete.duree', 'tj_requete.statut_paiement',
+            'tj_requete.car_Price','tj_requete.sub_total',
+            'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time','tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
+            'tj_requete.vehicle_Id','tj_requete.id_conducteur','car_model.name as carmodel','brands.name as brandname',
+            'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image','tj_requete.id_payment_method as paymentmethodid')
+            ->where('tj_requete.id', '=', $ride_id)
+            ->get();
+
+            $response['EmailResponseSql'] = $sql;
+
+            foreach ($sql as $row) {
+
+            //if (!empty($row->customeremail)) {
+
+                $emailsubject = '';
+                $emailmessage = '';
+                $emailtemplate = DB::table('email_template')->select('*')->where('type', 'newride_to_consumer')->first();
+                if (!empty($emailtemplate)) {
+                    $emailsubject = $emailtemplate->subject;
+                    $emailmessage = $emailtemplate->message;
+                    $send_to_admin = $emailtemplate->send_to_admin;
+                }
+               
+                $currency = DB::table('tj_currency')->select('*')->where('statut', 'yes')->first();
+
+                // if ($currencyData->symbol_at_right == "true") {
+                //     $amount = number_format($amount, $currencyData->decimal_digit) . $currencyData->symbole;
+                //     $newBalance = number_format($driver['amount'], $currencyData->decimal_digit) . $currencyData->symbole;
+                // } else {
+                //     $amount = $currencyData->symbole . number_format($amount, $currencyData->decimal_digit);
+                //     $newBalance = $currencyData->symbole . number_format($driver['amount'], $currencyData->decimal_digit);
+    
+                // }
+                // $contact_us_email = DB::table('tj_settings')->select('contact_us_email')->value('contact_us_email');
+                // $contact_us_email = $contact_us_email ? $contact_us_email : 'none@none.com';
+    
+    
+                
+                
+                // if($send_to_admin=="true"){
+                //     $to = $email . "," . $contact_us_email;
+                // }else{
+                //     $to = $email;
+    
+                // }
+
+                $customer_name = $row->nom;
+                $carmodelandbrand = $row->brandname .' / '. $row->carmodel;
+                $pickup_Location = $row->depart_name;
+                $drop_Location = $row->destination_name;
+                $booking_date = $row->ride_required_on_date;
+                $booking_time = $row->ride_required_on_time;
+                $payment_method = $row->payment;
+                
+                $car_Price = $row->car_Price;
+                if(!empty($car_Price))
+                    $car_Price = $currency->symbole . "" . number_format($row->car_Price,$currency->decimal_digit);
+
+                $coupon_discount = $row->discount;
+                if(!empty($coupon_discount))
+                    $coupon_discount = $currency->symbole . "" . number_format($coupon_discount,$currency->decimal_digit);
+                else
+                    $coupon_discount = $currency->symbole . "" . number_format($coupon_discount,$currency->decimal_digit); 
+
+                $tax_amount = $row->tax_amount;
+                if(!empty($tax_amount))
+                    $tax_amount = $currency->symbole . "" . number_format($tax_amount,$currency->decimal_digit);
+
+                $sub_total = $row->sub_total;
+                if(!empty($sub_total))
+                    $sub_total = $currency->symbole . "" . number_format($sub_total,$currency->decimal_digit);
+
+                $final_amount = $row->montant;
+                if(!empty($sub_tfinal_amountotal))
+                    $final_amount = $currency->symbole . "" . number_format($final_amount,$currency->decimal_digit);
+
+
+                $app_name = env('APP_NAME', 'Noori Travels');
+                $to = env('ADMIN_EMAILID', 'kannababu.g@gmail.com');
+    
+                $emailmessage = str_replace("{AppName}", $app_name, $emailmessage);
+                $emailmessage = str_replace("{CustomerName}", $customer_name, $emailmessage);
+                $emailmessage = str_replace("{carmodel}", $carmodelandbrand, $emailmessage);
+                $emailmessage = str_replace("{PickupLocation}", $pickup_Location, $emailmessage);
+                $emailmessage = str_replace("{DropoffLocation}", $drop_Location, $emailmessage);
+                $emailmessage = str_replace("{bookingDate}", $booking_date, $emailmessage);
+                $emailmessage = str_replace("{BookingTime}", $booking_time, $emailmessage);
+                $emailmessage = str_replace("{TripCharge}", $car_Price, $emailmessage);
+                $emailmessage = str_replace("{coupondiscount}", $coupon_discount, $emailmessage);
+                $emailmessage = str_replace("{TripTax}", $tax_amount, $emailmessage);
+                $emailmessage = str_replace("{SubTotal}", $sub_total, $emailmessage);
+                $emailmessage = str_replace("{PaymentMethod}", $payment_method, $emailmessage);
+                $emailmessage = str_replace("{TotalAmount}", $final_amount, $emailmessage);
+
+
+               $notifications= new NotificationsController();
+               $response['EmailResponse'] = $notifications->sendEmail($to, $emailsubject,$emailmessage);
+
+               
+           // }
+        }
+
+                return response()->json($response);
     }
 
 }

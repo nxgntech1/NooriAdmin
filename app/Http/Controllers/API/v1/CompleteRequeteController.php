@@ -8,7 +8,14 @@ use App\Models\Referral;
 use App\Models\Settings;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\v1\GcmController;
+use App\Http\Controllers\API\v1\NotificationListController;
 use DB;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+//require 'C:\Personal\NxGn\Projects\NoorieTravels\NooriAdminPortal\vendor\autoload.php';
+require 'C:\Websites\NooriTravels\cabme-admin-panel\vendor\autoload.php';
+
+
 class CompleteRequeteController extends Controller
 {
 
@@ -29,11 +36,13 @@ class CompleteRequeteController extends Controller
         $driver_lat = $request->get('driver_lat');
         $driver_lon=$request->get('driver_lon');
         $distance_to_pickup=$request->get('distance_to_pickup');
-        $date_heure=date('Y-m-d 00:00:00');
+        $odometer_start_reading=$request->get('odometer_start_reading');
+
+        $date_heure=date('Y-m-d H:i:s');
 
         if(!empty($id_requete) && !empty($id_user)){
 
-            $updatedata =  DB::update('update tj_requete set statut = ?,distance_to_pickup = ? where id = ?',['Start Trip', $distance_to_pickup, $id_requete]);
+            $updatedata =  DB::update('update tj_requete set statut = ?,distance_to_pickup = ?,odometer_start_reading = ? where id = ?',['Start Trip', $distance_to_pickup, $odometer_start_reading, $id_requete]);
         
             if (!empty($updatedata)) {
                 $query = DB::insert("insert into ride_status_change_log(ride_id,status,driver_id, latitude,longitude,created_on)
@@ -62,7 +71,7 @@ class CompleteRequeteController extends Controller
         $id_user = $request->get('id_user');
         $driver_lat = $request->get('driver_lat');
         $driver_lon=$request->get('driver_lon');
-        $date_heure=date('Y-m-d 00:00:00');
+        $date_heure=date('Y-m-d H:i:s');
 
         if(!empty($id_requete) && !empty($id_user)){
 
@@ -95,7 +104,7 @@ class CompleteRequeteController extends Controller
         $driver_lat = $request->get('driver_lat');
         $driver_lon=$request->get('driver_lon');
         $otp=$request->get('otp');
-        $date_heure=date('Y-m-d 00:00:00');
+        $date_heure=date('Y-m-d H:i:s');
 
         if(!empty($id_requete) && !empty($id_user)){
 
@@ -128,11 +137,12 @@ class CompleteRequeteController extends Controller
         $id_user = $request->get('id_user');
         $driver_lat = $request->get('driver_lat');
         $driver_lon=$request->get('driver_lon');
-        $date_heure=date('Y-m-d 00:00:00');
+        $odometer_end_reading=$request->get('odometer_end_reading');
+        $date_heure=date('Y-m-d H:i:s');
 
         if(!empty($id_requete) && !empty($id_user)){
 
-            $updatedata =  DB::update('update tj_requete set statut = ? where id = ?',['Completed', $id_requete]);
+            $updatedata =  DB::update('update tj_requete set statut = ?,odometer_end_reading = ? where id = ?',['Completed', $odometer_end_reading, $id_requete]);
         
             if (!empty($updatedata)) {
                 $query = DB::insert("insert into ride_status_change_log(ride_id,status,driver_id, latitude,longitude,created_on)
@@ -140,7 +150,7 @@ class CompleteRequeteController extends Controller
             }
 
             $sqlride = DB::table('tj_requete')
-                    ->select('tj_requete.id_payment_method,tj_requete.montant')
+                    ->select('tj_requete.id_payment_method', 'tj_requete.montant')
                     ->where('tj_requete.id', '=', $id_requete)
                     ->get();
 
@@ -180,7 +190,7 @@ class CompleteRequeteController extends Controller
     {
         $id_requete = $request->get('id_ride');
         $id_user = $request->get('id_user_app');
-        $date_heure=date('Y-m-d 00:00:00');
+        $date_heure=date('Y-m-d H:i:s');
 
         if(!empty($id_requete) && !empty($id_user)){
 
@@ -216,181 +226,112 @@ class CompleteRequeteController extends Controller
     }
 
 
+    public function TestAppNotification(Request $request)
+    {
+        $id_requete = $request->get('id_ride');
+        $id_user = $request->get('id_user');
+        $driver_lat = $request->get('driver_lat');
+        $driver_lon=$request->get('driver_lon');
+        $date_heure=date('Y-m-d H:i:s');
 
+        //if(!empty($id_requete) && !empty($id_user)){
 
-  public function completeRequest(Request $request)
-  {
-    $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+            // Sending Notifications 
+            //if (count($tokens) > 0) {
 
-    $id_requete = $request->get('id_ride');
-    $id_user = $request->get('id_user');
-    $driver_name = $request->get('driver_name');
-    $from_id=$request->get('from_id');
-    $date_heure=date('Y-m-d 00:00:00');
-    if(!empty($id_requete) && !empty($driver_name) && !empty($id_user) && !empty($from_id)){
+            $tmsg = '';
+            $terrormsg = '';
 
-    $updatedata =  DB::update('update tj_requete set statut = ? where id = ?',['completed',$id_requete]);
-
-    if (!empty($updatedata)) {
-        $referral=Referral::where('user_id','=',$id_user)->where('code_used','=','false')->first();
-        if(!empty($referral)){
-          if($referral->referral_by_id!=null){
-              $referBy=$referral->referral_by_id;
-              $setting=Settings::first();
-              $refAmount=$setting->referral_amount;
-              $amount=0;
-              $sql = DB::table('tj_user_app')
-              ->select('amount')
-              ->where('id','=',$referBy)
-              ->first();
-              //echo $sql->amount;
-              if($sql->amount!=null){
-                $amount=$sql->amount;
-              }
-
-              $newAmount=$amount+$refAmount;
-              $updateDataUser=DB::table('tj_user_app')
-              ->where('id', $referBy)
-              ->update(['amount' => $newAmount,'modifier'=>$date_heure]);
-              
-              $paymethod='Referral';
-
-              $query = DB::insert("insert into tj_transaction(amount,deduction_type,payment_method,id_user_app, creer,modifier)
-              values('".$refAmount."',1,'".$paymethod."','".$referBy."','".$date_heure."','".$date_heure."')");
-
-              $updateDataRef = DB::update('update referral set code_used = ? where user_id = ?',['true',$id_user]);
-
-
-          }
-        }
-        $sql = Requests::where('id',$id_requete)->first();
-        $row = $sql->toArray();
-        $row['id'] = (string) $row['id'];
-
-        $row['creer'] = date("d", strtotime($row['creer'])) . " " . $months[date("F", strtotime($row['creer']))] . ", " . date("Y", strtotime($row['creer']));
-        $row['date_retour'] = date("d", strtotime($row['date_retour'])) . " " . $months[date("F", strtotime($row['date_retour']))] . ", " . date("Y", strtotime($row['date_retour']));
-
-
-        if($row['ride_type'] == 'dispatcher'){
-            DB::update('update tj_requete set statut_paiement= ? where id = ?',['yes',$id_requete]);
-        }
-        if($row['trajet'] != ''){
-            if(file_exists(public_path('images/recu_trajet_course'.'/'.$row['trajet'] )))
-            {
-                $image_user = asset('images/recu_trajet_course').'/'. $row['trajet'];
-            }
-            else
-            {
-                $image_user =asset('assets/images/placeholder_image.jpg');
-
-            }
-            $row['trajet'] = $image_user;
-        }
-
-            $driver=DB::table('tj_conducteur')->where('id', $row['id_conducteur'])->first();
-            $row['prenomConducteur'] = $driver->prenom;
-            $row['nomConducteur'] = $driver->nom;
-            $row['photo_path'] = $driver->photo_path;
-                if ($row['photo_path'] != '') {
-                    if (file_exists(public_path('assets/images/driver' . '/' . $row['photo_path']))) {
-                        $image_user = asset('assets/images/driver') . '/' . $row['photo_path'];
-                    } else {
-                        $image_user = asset('assets/images/placeholder_image.jpg');
-
-                    }
-                }else{
-                    $image_user = asset('assets/images/placeholder_image.jpg');
-
-                }
-            $row['photo_path'] = $image_user;
-
-            $sql_nb_avis = DB::table('tj_note')
-                ->select(DB::raw("COUNT(id) as nb_avis"), DB::raw("SUM(niveau) as somme"))
-                ->where('id_conducteur', '=', $row['id_conducteur'])
-                ->get();
-
-            if (!empty($sql_nb_avis)) {
-                foreach ($sql_nb_avis as $row_nb_avis)
-                    $somme = $row_nb_avis->somme;
-                $nb_avis = $row_nb_avis->nb_avis;
-                if ($nb_avis != "0")
-                    $moyenne = $somme / $nb_avis;
-                else
-                    $moyenne = 0;
-            } else {
-                $somme = "0";
-                $nb_avis = "0";
-                $moyenne = 0;
-            }
-        $row['moyenne']=$moyenne;
-
-        $tmsg='';
-        $terrormsg='';
-
-        $title=str_replace("'","\'","End of your ride");
-        $msg=str_replace("'","\'",$driver_name." is completed your ride.");
-
-        $tab[] = array();
-        $tab = explode("\\",$msg);
-        $msg_ = "";
-        for($i=0; $i<count($tab); $i++){
-            $msg_ = $msg_."".$tab[$i];
-        }
-        $message=array("body"=>$msg_,"title"=>$title,"sound"=>"mySound","tag"=>"ridecompleted");
-
-        $query = DB::table('tj_user_app')
-        ->select('fcm_id','nom','prenom','email')
-        ->where('fcm_id','<>','')
-        ->where('id','=',$id_user)
-        ->get();
-
-        $tokens = array();
-        if ($query->count() > 0) {
-            foreach ($query as $user) {
-                if (!empty($user->fcm_id)) {
-                    $tokens[] = $user->fcm_id;
-                }
+            $title = str_replace("'", "\'", "New ride");
+            $msg = str_replace("'", "\'", "You have just received a request from a client");
+         
+            $tab[] = array();
+            $tab = explode("\\", $msg);
+            $msg_ = "";
+            for ($i = 0; $i < count($tab); $i++) {
+                $msg_ = $msg_ . "" . $tab[$i];
             }
 
-        }
-        $temp = array();
-         $data = $row;
-        if (count($tokens) > 0) {
-            GcmController::send_notification($tokens, $message, $row);
-            $date_heure = date('Y-m-d H:i:s');
-            $to_id=$request->get('id_user');
-            $insertdata = DB::insert("insert into tj_notification(titre,message,statut,creer,modifier,to_id,from_id,type)
-            values('".$title."','".$msg."','yes','".$date_heure."','".$date_heure."','".$to_id."','".$from_id."','ridecompleted')");
-            $sql_notification = Notification::orderby('modifier','desc')->first();
-            $data = $sql_notification->toArray();
-                $row['titre'] = $data['titre'];
-                $row['message'] = $data['message'];
-                $row['statut_notification'] = $data['statut'];
-                $row['to_id'] = $data['to_id'];
-                $row['from_id'] = $data['from_id'];
-                $row['type'] = $data['type'];
-        }
-        $row['tax'] = json_decode($row['tax'], true);
-        $row['stops'] = json_decode($row['stops'], true);
-        $row['user_info'] = json_decode($row['user_info'], true);
+            // if ($id > 0) {
+            //     $get_user = Requests::where('id', '140')->first();
+            //     $rowData = $get_user->toArray();
+            // // }
 
-        $response['success'] = 'success';
-        $response['error'] = null;
-        $response['message'] = 'status successfully updated';
-        $response['data'] = $row;
+            $tokens = 'cC9i9w3_S9-MdNPhCAUoFf:APA91bHE3_RsMUm5Y_UXN9dvcC7ALUgk7DfsTj5mEGAyLIDaHsZZtTKm_LibaAyTKRvMWhzfq_Q9f28jB8vPLpJOa62saag7Gd4wE4dm_GZrVca3XFPyNFS7AAJI8Lvgi4KRQNf7GgiD';
+           // $data = $rowData;
 
-        }
-    else {
-        $response['success'] = 'Failed';
-        $response['error'] = 'Failed to update data';
+          
+            $message1 = [
+                'title' => $title,
+                'body' => $msg_,
+                'sound'=> 'mySound',
+                'tag' => 'ridenewrider'
+            ];
+
+            //$data = $request->input('data');
+
+            // $notifications= new NotificationsController();
+            // $notifcationres = $notifications->sendNotification($tokens, $message1,null);
+            // $SMS_Notifiaction = $notifications->sendSMS('919885084010','OTP is for 3456 TeamPlay app. Do not share the OTP with anyone for security reasons');
+            
+
+            // $app_name = 'Noori';
+            // $contact_us_email = 'noori@nxgnemail.com';
+            // $headers = "MIME-Version: 1.0" . "\r\n";
+            // $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+            // $headers .= 'From: ' . $app_name . '<' . $contact_us_email . '>' . "\r\n";
+            // $headers .= 'Return-Path: ' . $app_name . '<' . $contact_us_email . '>' . "\r\n";
+
+            //$mailresponse = mail('kanna.ganasala@nxgntech.com', 'Test Mail from Noori', 'Test message body from Noori', $headers);
+             
+            $notifications= new NotificationsController();
+            $notifications->sendEmail('kannababu.g@gmail.com','test message','Test message body from Noori');
+            // $mail = new PHPMailer(true);
+
+            // try {
+            //     // Server settings
+            //     $mail->isSMTP();
+            //     $mail->Host       = 'smtp.mailgun.org';
+            //     $mail->SMTPAuth   = true;
+            //     $mail->Username   = 'postmaster@nxgnemail.com';
+            //     $mail->Password   = 'nxgnsmtp';
+            //     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            //     $mail->Port       = 587;
+    
+            //     // Recipients
+            //     $mail->setFrom('noori@nxgnemail.com', 'Mailer');
+            //     $mail->addAddress('kanna.ganasala@nxgntech.com', 'Joe User');
+    
+            //     // Content
+            //     $mail->isHTML(true);
+            //     $mail->Subject = 'Here is the subject';
+            //     $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
+            //     $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+    
+            //     $mail->send();
+            //     echo 'Message has been sent';
+            // } catch (Exception $e) {
+            //     echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            // }
+
+            //if (!empty($updatedata)) {
+                $response['success'] = 'success';
+                $response['error'] = null;
+                $response['message'] = 'status successfully updated';
+               // $response['Notification_data'] = $notifcationres;
+              //  $response['mailResponse'] = $mailresponse;
+            // }
+            // else {
+            //     $response['success'] = 'Failed';
+            //     $response['error'] = 'Failed to update data';
+            // }
+        //}
+
+        return response()->json($response);
     }
-}
-else {
-    $response['success'] = 'Failed';
-    $response['error'] = 'some fields are missing';
-}
-    return response()->json($response);
-  }
+
+
+
 
 
 
