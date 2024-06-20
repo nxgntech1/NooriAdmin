@@ -32,7 +32,7 @@ class CarModelPricingController extends Controller
                 ->select('pricing_by_car_models.*','car_model.name as modelname','bookingtypes.bookingtype as BookingType','car_model.brand_id as brandid','brands.name as BrandName','car_model.vehicle_type_id as vehicleid','tj_type_vehicule.libelle as vehicletype')
                 ->where('brands.name', 'LIKE', '%' . $search . '%')
                 ->where('car_model.status', '=', 'yes')
-                ->where('pricing_by_car_models.s_Add_on','=','no')
+                ->where('pricing_by_car_models.is_Add_on','=','no')
                 ->paginate(10);
         } 
         else if ($request->has('search') && $request->search != '' && $request->selected_search == 'model') {
@@ -45,7 +45,7 @@ class CarModelPricingController extends Controller
                 ->select('pricing_by_car_models.*','car_model.name as modelname','bookingtypes.bookingtype as BookingType','car_model.brand_id as brandid','brands.name as BrandName','car_model.vehicle_type_id as vehicleid','tj_type_vehicule.libelle as vehicletype')
                 ->where('car_model.name', 'LIKE', '%' . $search . '%')
                 ->where('car_model.status', '=', 'yes')
-                ->where('pricing_by_car_models.s_Add_on','=','no')
+                ->where('pricing_by_car_models.is_Add_on','=','no')
                 ->paginate(10);
         }
         else if ($request->has('search') && $request->search != '' && $request->selected_search == 'bookingtype') {
@@ -58,7 +58,7 @@ class CarModelPricingController extends Controller
                 ->select('pricing_by_car_models.*','car_model.name as modelname','bookingtypes.bookingtype as BookingType','car_model.brand_id as brandid','brands.name as BrandName','car_model.vehicle_type_id as vehicleid','tj_type_vehicule.libelle as vehicletype')
                 ->where('bookingtypes.BookingType', 'LIKE', '%' . $search . '%')
                 ->where('car_model.status', '=', 'yes')
-                ->where('pricing_by_car_models.s_Add_on','=','no')
+                ->where('pricing_by_car_models.is_Add_on','=','no')
                 ->paginate(10);
         }
         else {

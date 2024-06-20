@@ -12,6 +12,7 @@ use App\Models\Zone;
 use App\Models\UserApp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 class RidesController extends Controller
 {
@@ -122,7 +123,8 @@ class RidesController extends Controller
                 ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                 ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
                 ->select('tj_requete.id', 'tj_requete.statut','tj_requete.ride_type','tj_requete.dispatcher_id','tj_requete.user_info','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image')
-                ->where('tj_requete.deleted_at', '=', NULL);
+                ->where('tj_requete.deleted_at', '=', NULL)
+                ->where('tj_requete.statut', '!=', NULL);
                 
             $rides = $rides->orderBy('tj_requete.id', 'desc')->paginate(20);
 
@@ -814,7 +816,7 @@ class RidesController extends Controller
              ->join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
              ->join('bookingtypes', 'tj_requete.booking_type_id', '=', 'bookingtypes.id' )
              ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-             ->join('tj_vehicule', 'tj_requete.id_conducteur', '=', 'tj_vehicule.id_conducteur')
+             ->join('tj_vehicule', 'tj_requete.vehicle_id', '=', 'tj_vehicule.id')
              ->leftjoin('brands', 'tj_vehicule.brand', '=', 'brands.id')
              ->leftjoin('car_model', 'tj_vehicule.model', '=', 'car_model.id')
              ->select('tj_requete.*')
@@ -831,7 +833,7 @@ class RidesController extends Controller
          $tax = json_decode($ride->tax,true);
          $discount = $ride->discount;
          $tip = $ride->tip_amount;
-         $totalAmount = floatval($montant) - floatval($discount);
+         $totalAmount = floatval($montant);
          $totalTaxAmount = 0;
          $taxHtml = '';
          if (!empty($tax)) {
@@ -858,10 +860,10 @@ class RidesController extends Controller
                  }
                  $taxHtml = $taxHtml."<tr><td class='label'>" . $taxlabel . "(" . $value . ")</td><td><span style='color:green'>+" . $taxValueAmount . "<span></td></tr>";
              }
-            $totalAmount = floatval($totalAmount) + floatval($totalTaxAmount);
+            $totalAmount = floatval($totalAmount) ;
 
         }
-             $totalAmount = floatval($totalAmount) + floatval($tip);
+             $totalAmount = floatval($totalAmount);
              $customer_review = DB::table('tj_note')->where('tj_note.ride_id', $id)->select('comment','niveau')->get();
              $driver_review = DB::table('tj_user_note')->where('tj_user_note.ride_id', $id)->select('comment','niveau_driver')->get();
 
@@ -905,8 +907,40 @@ class RidesController extends Controller
             $ride->zone_name = rtrim($zone_name,', ');
         }
 
-        $drivers = DB::table('tj_conducteur')->where('statut','yes')->where('online','yes')->select('id','nom', 'prenom')->get();
-        $vehicles = DB::table('tj_vehicule')->where('statut','yes')->where('deleted_at',null)->get();
+       // $drivers = DB::table('tj_conducteur')->where('statut','yes')->where('online','yes')->select('id','nom', 'prenom')->get();
+        //$vehicles = DB::table('tj_vehicule')->where('statut','yes')->where('deleted_at',null)->get();
+        // Define the subquery for booked rides
+        $subQuery = DB::table('tj_requete as A')
+            ->join('tj_requete as B', 'A.id', '=', 'B.id')
+            ->select(DB::raw('IFNULL(A.id_conducteur, 0) as conductor_id'))
+            ->whereNotIn('A.statut', ['completed', 'new'])
+            ->whereRaw('date(A.ride_required_on_date) != date(B.ride_required_on_date)')
+            ->where('A.id', $id);
+
+        // Main query to get available conductors
+        $drivers = DB::table('tj_conducteur as A')
+            ->leftJoinSub($subQuery, 'booked_rides', function ($join) {
+                $join->on('A.id', '=', 'booked_rides.conductor_id');
+            })
+            ->whereNull('booked_rides.conductor_id')
+            ->select('A.id','A.nom','A.prenom')
+            ->get();
+
+
+
+        $vehicles =DB::table('tj_vehicule as A')
+        ->join('tj_requete as B', 'A.MODEL', '=', 'B.MODEL_ID')
+        ->where('B.id', $id)
+        ->whereNotIn('A.id', function($query) {
+            $query->select(DB::raw('IFNULL(vehicle_id, 0)'))
+                ->from('tj_requete')
+                ->whereNotIn('statut', ['completed', 'new'])
+                ->whereRaw('date(ride_required_on_date) != date(B.ride_required_on_date)')
+                ->whereColumn('MODEL_ID', 'A.MODEL');
+        })
+        ->select('A.*') // Select columns from both tables as per your requirement
+        ->get();
+        $localTime = Carbon::parse($ride->creer)->timezone('Asia/Kolkata');
         $msg="This is testing";
         //echo json_encode($vehicles,JSON_PRETTY_PRINT);
         return view("rides.show")->with("ride", $ride)->with("currency", $currency)
@@ -916,7 +950,7 @@ class RidesController extends Controller
                  ->with('taxHtml', $taxHtml)
                  ->with('totalAmount', $totalAmount)
                  ->with('driverRating',$driverRating)
-                 ->with('userRating',$userRating)->with('drivers',$drivers)->with('vehicles',$vehicles);
+                 ->with('userRating',$userRating)->with('drivers',$drivers)->with('vehicles',$vehicles)->with('localTime',$localTime);
          
     }
 
@@ -937,7 +971,7 @@ class RidesController extends Controller
             $usertitle = "Booking Confirmed";
             $messages = array("body" => $usermsg, "title" => $usertitle, "sound" => "default", "tag" => "notification");
 
-            $users = UserApp::where('id',$driver)-> where('fcm_id', '!=', '')->first();
+            $users = UserApp::where('id',$rides->id_user_app)-> where('fcm_id', '!=', '')->first();
 
             $tokens = $insert_data = array();
             $temp = array();

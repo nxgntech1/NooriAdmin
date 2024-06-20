@@ -172,22 +172,22 @@
                                             <?php $montant=floatval($ride->montant);
                                                         $total_price =$montant;
                                                        
-                                                          $discount=$ride->discount;
+                                                        //   $discount=$ride->discount;
                                                           
-                                                          if($discount)
-                                                          {
-                                                            $total_price =$montant-$discount;
-                                                          }
+                                                        //   if($discount)
+                                                        //   {
+                                                        //     $total_price =$montant-$discount;
+                                                        //   }
                                                           
-                                                          $tax=floatval($ride->tax);
-                                                          if($tax){
-                                                            $total_price = $total_price + $tax;
-                                                          }
-                                                          $tip=floatval($ride->tip_amount);
-                                                          if($tip)
-                                                          {
-                                                            $total_price = $total_price + $tip;
-                                                          }
+                                                        //   $tax=floatval($ride->tax);
+                                                        //   if($tax){
+                                                        //     $total_price = $total_price + $tax;
+                                                        //   }
+                                                        //   $tip=floatval($ride->tip_amount);
+                                                        //   if($tip)
+                                                        //   {
+                                                        //     $total_price = $total_price + $tip;
+                                                        //   }
                                                           //$total_price= +$tax+$tip; ?>
                                             <td>{{$currency->symbole." ".number_format(floatval($total_price),$currency->decimal_digit)}}</td>
                                             <td>

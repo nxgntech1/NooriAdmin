@@ -224,11 +224,11 @@
 									</div>
 									<div class="form-group row widt-100 gendetail-col">
 											<label class="col-12 control-label"><strong>{{trans('lang.trip_date_time')}}
-													: </strong><span id="createdAt">{{ date('d F Y', strtotime($ride->date_retour)) }} {{ date('h:i A', strtotime($ride->heure_retour)) }} </span></label>
+													: </strong><span id="createdAt">{{ date('d F Y', strtotime($ride->ride_required_on_date)) }} {{ date('h:i A', strtotime($ride->ride_required_on_time)) }} </span></label>
 									</div>
 									<div class="form-group row widt-100 gendetail-col">
 										<label class="col-12 control-label"><strong>{{trans('lang.date_created')}}
-												: </strong><span id="createdAt">{{ date('d F Y', strtotime($ride->creer)) }} {{ date('h:i A', strtotime($ride->creer)) }} </span></label>
+												: </strong><span id="createdAt">{{ $localTime->format('d F Y h:i A') }}  </span></label>
 									</div>
 									<div class="order_addre-edit ">
 										<div class="card-header bg-white">
@@ -264,9 +264,9 @@
 																			<td class="label">{{trans("lang.sub_total")}}</td>
 																			<td>
 																				@if($currency->symbol_at_right=="true")
-																				{{number_format(floatval($ride->montant),$currency->decimal_digit)."".$currency->symbole}}
+																				{{number_format(floatval($ride->SUB_TOTAL),$currency->decimal_digit)."".$currency->symbole}}
 																				@else
-																				{{$currency->symbole."".number_format(floatval($ride->montant),$currency->decimal_digit)}}
+																				{{$currency->symbole."".number_format(floatval($ride->SUB_TOTAL),$currency->decimal_digit)}}
 																				@endif
 																			</td>
 																		</tr>

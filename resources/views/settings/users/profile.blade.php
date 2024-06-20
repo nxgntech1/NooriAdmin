@@ -27,13 +27,23 @@
                 <div id="data-table_processing" class="dataTables_processing panel panel-default" style="display: none;">Processing...</div>
 
                   <div class="column">
-                      <form method="post" action="{{ route('users.profile.update',$user->id) }}">
+                      <form method="post" action="{{ route('users.profile.update',$user->id) }}" enctype="multipart/form-data">
                         @csrf
                    
                    <div class="row restaurant_payout_create">
                     <div class="restaurant_payout_create-inner">
                         <fieldset>     
                    <legend>Profile Details</legend> 
+                   <div class="form-group row center">
+                        <label class="col-3 control-label">{{trans('lang.profile_image')}}</label>
+                        <div class="col-7">
+                            <input type="file" class="" name="profileimage" id="profileimage"
+                                value="{{Request::old('photo')}}" >
+                        </div>
+                        <div id="image_preview" style="display: none; padding-left: 15px;">
+                            
+                        </div>
+                    </div>
                     <div class="form-group row">
                         <label class="col-5 control-label">{{trans('lang.user_name')}}</label>
                        <div class="col-7"> 
@@ -102,5 +112,24 @@
 @endsection
 
 @section('scripts')
+<script>
+    $(document).ready(function () {
+    $('#profileimage').on('change', function() {
+        $('#image_preview').html('');
+        var files = $(this)[0].files;
+
+        if(files.length > 0) {
+            for(var i = 0; i < files.length; i++) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#image_preview').append('<img src="' + e.target.result + '" style="width:150px;height:auto;margin-right:10px" class="img-thumbnail">');
+                    $('#image_preview').show();
+                }
+                reader.readAsDataURL(files[i]);
+            }
+        }
+    });
+    });
+</script>
 
 @endsection

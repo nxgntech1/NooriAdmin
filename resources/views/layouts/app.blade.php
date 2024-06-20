@@ -312,33 +312,33 @@
         return "";
     }
 
-    $(document).ready(function () {
-        setTimeout(function() {
-            $('.alert').fadeOut('slow');
-        }, 5000);
+    // $(document).ready(function () {
+    //     setTimeout(function() {
+    //         $('.alert').fadeOut('slow');
+    //     }, 5000);
 
-        var url = "{{ route('language.header') }}";
-        $.ajax({
-            url: url,
-            type: "GET",
-            data: {
-                _token: '{{csrf_token()}}',
-            },
+    //     var url = "{{ route('language.header') }}";
+    //     $.ajax({
+    //         url: url,
+    //         type: "GET",
+    //         data: {
+    //             _token: '{{csrf_token()}}',
+    //         },
 
-            dataType: 'json',
-            success: function (data) {
-                $.each(data, function (key, value) {
-                    $('#language_dropdown').append($("<option></option>").attr("value", value.code).text(value.language));
-                    //append('<option value="' + value.id + '">' + value.language + '</option>');
-                });
-                <?php if(session()->get('locale')){ ?>
-                $("#language_dropdown").val("<?php echo session()->get('locale'); ?>");
-                <?php } ?>
-            }
-        });
+    //         dataType: 'json',
+    //         success: function (data) {
+    //             $.each(data, function (key, value) {
+    //                 $('#language_dropdown').append($("<option></option>").attr("value", value.code).text(value.language));
+    //                 //append('<option value="' + value.id + '">' + value.language + '</option>');
+    //             });
+    //             <?php if(session()->get('locale')){ ?>
+    //             $("#language_dropdown").val("<?php echo session()->get('locale'); ?>");
+    //             <?php } ?>
+    //         }
+    //     });
 
 
-    });
+    // });
 
     var url1 = "{{ route('changeLang') }}";
 

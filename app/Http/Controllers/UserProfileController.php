@@ -11,11 +11,11 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\UserApp;
 use App\Models\VehicleLocation;
-use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Image;
 use Validator;
@@ -68,10 +68,29 @@ class UserProfileController extends Controller
 
         $user = User::find($id);
         if ($user) {
+            $image = $request->file('profileimage');
+            if($image)
+            {
+            if ($request->hasFile('profileimage')) {
+                if (!File::exists(public_path('assets/images/users'))) {
+                    File::makeDirectory(public_path('assets/images/users'), 0755, true);
+                }
+            }
+            $extenstion = $image->getClientOriginalExtension();
+            $time = time() . '.' . $extenstion;
+            $filename = 'user_' . $time;
+            $path = $image->move(public_path('assets/images/users'), $filename);
+            chmod($path, 0755);
+            }
+
             $user->name = $name;
             $user->email = $email;
             if ($password != '') {
                 $user->password = Hash::make($password);
+            }
+            if($image)
+            {
+                $user->photo_path=$filename;
             }
             $user->save();
         }

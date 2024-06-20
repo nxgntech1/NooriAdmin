@@ -25,7 +25,7 @@
         	<span class="nav-link text-muted waves-effect waves-dark"><?php echo $app_setting->admin_title; ?></span>
         </li>
     </ul>
-    <div  class="language-list icon d-flex align-items-center text-light ml-2" id="language_dropdown_box">
+    <!-- <div  class="language-list icon d-flex align-items-center text-light ml-2" id="language_dropdown_box">
         <div class="language-select">
             <i class="fa fa-globe"></i>
         </div>
@@ -34,16 +34,21 @@
             
             </select>
         </div>
-    </div>
+    </div> -->
     <ul class="navbar-nav my-lg-0">
       
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{{ asset('/images/user.png') }}" alt="user" class="profile-pic"></a>
+            <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <img src="{{ Auth::user()->photo_path ? asset('assets/images/users'.'/'.Auth::user()->photo_path) : asset('/images/user.png') }}" alt="user" class="profile-pic">
+            </a>
             <div class="dropdown-menu dropdown-menu-right scale-up">
                 <ul class="dropdown-user">
                     <li>
                         <div class="dw-user-box">
-                            <div class="u-img"><img src="{{ asset('/images/user.png') }}" alt="user" style="max-width: 45px;"></div>
+                            <div class="u-img">
+                                <img src="{{ Auth::user()->photo_path ? asset('assets/images/users'.'/'.Auth::user()->photo_path) : asset('/images/user.png') }}" alt="Profile Picture" style="max-width: 45px;">
+                           
+                            </div>
                             <div class="u-text">
                                 <h4>{{ Auth::user()->name }}</h4>
                                 @if (Auth::check() && Auth::user()->hasRole('admin'))

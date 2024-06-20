@@ -18,7 +18,7 @@
 
         <li>
         	<a class="waves-effect waves-dark" href="{!! url('webuser') !!}" >
-        		<i class="mdi mdi-account-multiple"></i>
+        		<i class="mdi mdi-account-key"></i>
                 <span class="hide-menu">{{trans('lang.web_users')}}</span>
         	</a>
         </li>

@@ -15,7 +15,7 @@
 
 
     <title>{{ config('app.name', 'Laravel') }}</title>
-
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-small.png') }}">
 
     <!-- Fonts -->
 

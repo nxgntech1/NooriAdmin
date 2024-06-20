@@ -93,7 +93,7 @@ brands.name as brandname,car_model.name as modelname,tj_requete.montant,bookingt
         ->where('tj_requete.id_conducteur', '=', $driverid)
         ->whereNull('tj_requete.cod_collected_transaction_id')
         ->update(['cod_collected_transaction_id' => $transactionid, 'updated_at' => now()]);
-        return redirect('cash_collection.index');
+        return redirect('cash_collection');
     }
 
     public function collected(Request $request)
