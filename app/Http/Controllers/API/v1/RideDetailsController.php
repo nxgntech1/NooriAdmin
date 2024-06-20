@@ -497,7 +497,8 @@ class RideDetailsController extends Controller
                         ->where('tj_requete.id_user_app', '=', $id_user_app)
                         ->orderBy('tj_requete.id', 'desc')
                         ->first();
-        
+        if($sqllatestrideid)
+        {
                   $rideid = $sqllatestrideid->id;
 
         $sql = DB::table('tj_requete')
@@ -636,6 +637,8 @@ class RideDetailsController extends Controller
 
             }
         }
+        
+
         if (!empty($output)) {
             $response['success'] = 'success';
             $response['error'] = null;
@@ -645,6 +648,11 @@ class RideDetailsController extends Controller
             $response['success'] = $rideid;
             $response['error'] = 'Failed to fetch data';
         }
+    }
+    else{
+        $response['success'] = 'Failed';
+            $response['error'] = 'Failed to fetch data';
+    }
 
         return response()->json($response);
     }

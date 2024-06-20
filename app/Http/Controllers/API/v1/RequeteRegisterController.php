@@ -376,7 +376,7 @@ class RequeteRegisterController extends Controller
                      
                 // }
 
-                
+             
             
             if ($id > 0) {
 
@@ -451,7 +451,6 @@ class RequeteRegisterController extends Controller
 
 
             }
-
             if (!empty($intout)){
                 if ($intout = "1")
                 {
@@ -460,7 +459,7 @@ class RequeteRegisterController extends Controller
                     $response['success'] = 'success';
                     $response['error'] = null;
                     $response['message'] = 'Successfully created';
-                    $response['EmailResponse'] = $EmailResponse;
+                    //$response['EmailResponse'] = $EmailResponse;
                 }else{
                     $response['success'] = 'Failed';
                     $response['error'] = 'Failed';    
@@ -512,12 +511,14 @@ class RequeteRegisterController extends Controller
 
     public function SendBookRideEmailNotifiaction($ride_id)
     {
+        $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
 
         $sql = DB::table('tj_requete')
         ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
         ->Join('car_model', 'car_model.id', '=', 'tj_requete.model_id')
         ->Join('brands', 'brands.id', '=', 'tj_requete.brand_id')
         ->Join('tj_payment_method', 'tj_payment_method.id', '=', 'tj_requete.id_payment_method')
+        ->Join('bookingtypes', 'tj_requete.booking_type_id','=','bookingtypes.id')
         ->select('tj_requete.id','tj_requete.id_user_app', 'tj_requete.depart_name',
             'tj_requete.distance_unit', 'tj_requete.destination_name', 'tj_requete.latitude_depart',
             'tj_requete.longitude_depart', 'tj_requete.latitude_arrivee', 'tj_requete.longitude_arrivee',
@@ -529,11 +530,11 @@ class RequeteRegisterController extends Controller
             'tj_requete.car_Price','tj_requete.sub_total',
             'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time','tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
             'tj_requete.vehicle_Id','tj_requete.id_conducteur','car_model.name as carmodel','brands.name as brandname',
-            'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image','tj_requete.id_payment_method as paymentmethodid')
+            'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image','tj_requete.id_payment_method as paymentmethodid', 'bookingtypes.bookingtype as bookingtype')
             ->where('tj_requete.id', '=', $ride_id)
             ->get();
 
-            $response['EmailResponseSql'] = $sql;
+            //$response['EmailResponseSql'] = json_encode($sql,JSON_PRETTY_PRINT);
 
             foreach ($sql as $row) {
 
@@ -544,9 +545,11 @@ class RequeteRegisterController extends Controller
                 $emailtemplate = DB::table('email_template')->select('*')->where('type', 'newride_to_consumer')->first();
                 if (!empty($emailtemplate)) {
                     $emailsubject = $emailtemplate->subject;
-                    $emailmessage = $emailtemplate->message;
+                    $emailmessage = file_get_contents(resource_path('views/emailtemplates/welcomebooking.html'));
                     $send_to_admin = $emailtemplate->send_to_admin;
                 }
+
+            
                
                 $currency = DB::table('tj_currency')->select('*')->where('statut', 'yes')->first();
 
@@ -575,9 +578,14 @@ class RequeteRegisterController extends Controller
                 $carmodelandbrand = $row->brandname .' / '. $row->carmodel;
                 $pickup_Location = $row->depart_name;
                 $drop_Location = $row->destination_name;
-                $booking_date = $row->ride_required_on_date;
-                $booking_time = $row->ride_required_on_time;
+                $booking_date = date("d", strtotime($row->creer)) . " " . $months[date("F", strtotime($row->creer))] . ", " . date("Y", strtotime($row->creer));
+                $booking_time = date("h:m A", strtotime($row->creer)); 
                 $payment_method = $row->payment;
+                $bookingtype = $row->bookingtype;
+                $pickupdate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
+                $pickuptime = date("h:m A", strtotime($row->ride_required_on_time));
+                $brandname = $row->brandname;
+                
                 
                 $car_Price = $row->car_Price;
                 if(!empty($car_Price))
@@ -603,15 +611,19 @@ class RequeteRegisterController extends Controller
 
 
                 $app_name = env('APP_NAME', 'Noori Travels');
-                $to = env('ADMIN_EMAILID', 'kannababu.g@gmail.com');
+                $to = 'govind.p.raj@gmail.com';//env('ADMIN_EMAILID', 'govind.p.raj@gmail.com');
     
                 $emailmessage = str_replace("{AppName}", $app_name, $emailmessage);
                 $emailmessage = str_replace("{CustomerName}", $customer_name, $emailmessage);
                 $emailmessage = str_replace("{carmodel}", $carmodelandbrand, $emailmessage);
+                $emailmessage = str_replace("{BrandName}", $brandname, $emailmessage);
                 $emailmessage = str_replace("{PickupLocation}", $pickup_Location, $emailmessage);
                 $emailmessage = str_replace("{DropoffLocation}", $drop_Location, $emailmessage);
                 $emailmessage = str_replace("{bookingDate}", $booking_date, $emailmessage);
                 $emailmessage = str_replace("{BookingTime}", $booking_time, $emailmessage);
+                $emailmessage = str_replace("{PickupDate}", $pickupdate, $emailmessage);
+                $emailmessage = str_replace("{PickupTime}", $pickuptime, $emailmessage);
+                $emailmessage = str_replace("{BookingType}", $bookingtype, $emailmessage);
                 $emailmessage = str_replace("{TripCharge}", $car_Price, $emailmessage);
                 $emailmessage = str_replace("{coupondiscount}", $coupon_discount, $emailmessage);
                 $emailmessage = str_replace("{TripTax}", $tax_amount, $emailmessage);
@@ -619,7 +631,7 @@ class RequeteRegisterController extends Controller
                 $emailmessage = str_replace("{PaymentMethod}", $payment_method, $emailmessage);
                 $emailmessage = str_replace("{TotalAmount}", $final_amount, $emailmessage);
 
-
+                //$response['EmailResponseSql'] = $emailmessage;
                $notifications= new NotificationsController();
                $response['EmailResponse'] = $notifications->sendEmail($to, $emailsubject,$emailmessage);
 

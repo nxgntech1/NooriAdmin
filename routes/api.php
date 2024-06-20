@@ -148,6 +148,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::group(['middleware' => ['envKeyAuth']], function () {
     /*Guest Request*/
     Route::post('v1/user/', [UserController::class, 'register']);
+    Route::post('v1/usersignup/', [UserController::class, 'userSignup']);
+    Route::post('v1/usersignup_checkotp/', [UserController::class, 'checkSignupOtp']);
+    Route::post('v1/getsignupotp/', [UserController::class, 'getotp']);
     Route::post('v1/user-login/', [UserLoginController::class, 'login']);
 
     Route::post('v1/existing-user/', [ExistingUserController::class, 'getData']);
@@ -233,6 +236,9 @@ Route::group(['middleware' => ['apiKeyAuth']], function () {
     Route::get('v1/requete-book-rejected/', [RequeteBookRejectedController::class, 'getData']);
     Route::get('v1/get-ride-review/', [RideDetailsController::class, 'getRideReview']);
     Route::get('v1/user-all-rides/', [RideDetailsController::class, 'getUserRides']);
+    Route::get('v1/get-user-all-rides/', [RideDetailsController::class, 'getUserAllRides']);
+    Route::post('v1/get-user-latest-rides/', [RideDetailsController::class, 'getUserLatestRides']);
+    Route::post('v1/get-user-rides-details/', [RideDetailsController::class, 'getUserRidesDetails']);
     Route::get('v1/driver-all-rides/', [RideDetailsController::class, 'getDriverRides']);
 
     Route::get('v1/driver/', [DriverController::class, 'getData']);
@@ -278,6 +284,7 @@ Route::group(['middleware' => ['apiKeyAuth']], function () {
     Route::post('v1/changestatus-onride/', [CompleteRequeteController::class, 'onRideRequest']);
     Route::post('v1/changestatus-completed/', [CompleteRequeteController::class, 'RideCompleteRequest']);
     Route::post('v1/cash-paid-request/', [CompleteRequeteController::class, 'RideCashPaidRequest']);
+    Route::post('v1/test-app-notification/', [CompleteRequeteController::class, 'TestAppNotification']);
 
     Route::post('v1/update-fcm/', [UpdatefcmController::class, 'updatefcm']);
     Route::post('v1/user-address/', [UserAddressController::class, 'UpdateUserAddress']);
