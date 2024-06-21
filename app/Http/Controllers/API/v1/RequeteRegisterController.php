@@ -542,38 +542,19 @@ class RequeteRegisterController extends Controller
 
                 $emailsubject = '';
                 $emailmessage = '';
-                $emailtemplate = DB::table('email_template')->select('*')->where('type', 'newride_to_consumer')->first();
-                if (!empty($emailtemplate)) {
-                    $emailsubject = $emailtemplate->subject;
-                    $emailmessage = file_get_contents(resource_path('views/emailtemplates/welcomebooking.html'));
-                    $send_to_admin = $emailtemplate->send_to_admin;
-                }
+               // $emailtemplate = DB::table('email_template')->select('*')->where('type', 'newride_to_consumer')->first();
+
+                // if (!empty($emailtemplate)) {
+                    $emailsubject = "Your Booking is Confirmed!";
+                    $emailmessage = file_get_contents(resource_path('views/emailtemplates/confirmbooking.html'));
+                    //$send_to_admin = $emailtemplate->send_to_admin;
+                //}
 
             
                
                 $currency = DB::table('tj_currency')->select('*')->where('statut', 'yes')->first();
 
-                // if ($currencyData->symbol_at_right == "true") {
-                //     $amount = number_format($amount, $currencyData->decimal_digit) . $currencyData->symbole;
-                //     $newBalance = number_format($driver['amount'], $currencyData->decimal_digit) . $currencyData->symbole;
-                // } else {
-                //     $amount = $currencyData->symbole . number_format($amount, $currencyData->decimal_digit);
-                //     $newBalance = $currencyData->symbole . number_format($driver['amount'], $currencyData->decimal_digit);
-    
-                // }
-                // $contact_us_email = DB::table('tj_settings')->select('contact_us_email')->value('contact_us_email');
-                // $contact_us_email = $contact_us_email ? $contact_us_email : 'none@none.com';
-    
-    
-                
-                
-                // if($send_to_admin=="true"){
-                //     $to = $email . "," . $contact_us_email;
-                // }else{
-                //     $to = $email;
-    
-                // }
-
+             
                 $customer_name = $row->nom;
                 $carmodelandbrand = $row->brandname .' / '. $row->carmodel;
                 $pickup_Location = $row->depart_name;
