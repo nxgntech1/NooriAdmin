@@ -410,7 +410,12 @@ class RequeteRegisterController extends Controller
                 // if ($id_payment = '5')
                 // {
                     
-                 $EmailResponse = $this->SendBookRideEmailNotifiaction($id);
+                 //$EmailResponse = $this->SendBookRideEmailNotifiaction($id);
+                 $AppNotificaton = $this->SendNewRideAppNotification($id);
+
+                 // App Notification 
+
+                 // End App Notification
 
                 // // // //     $tmsg = '';
                 // // // //     $terrormsg = '';
@@ -647,6 +652,70 @@ class RequeteRegisterController extends Controller
         }
 
                 return response()->json($response);
+    }
+
+    public function SendNewRideAppNotification($ride_id)
+    {
+
+        $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+
+        $sql = DB::table('tj_requete')
+        ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
+        ->Join('car_model', 'car_model.id', '=', 'tj_requete.model_id')
+        ->Join('brands', 'brands.id', '=', 'tj_requete.brand_id')
+        ->select('tj_requete.id','tj_requete.id_user_app', 'tj_requete.depart_name',
+            'tj_requete.destination_name', 
+            'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time',
+            'tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
+            'tj_requete.vehicle_Id','tj_requete.id_conducteur',
+            'car_model.name as carmodel','brands.name as brandname','tj_user_app.fcm_id')
+            ->where('tj_requete.id', '=', $ride_id)
+            ->get();
+
+            foreach ($sql as $row) {
+   
+                $carmodelandbrand = $row->brandname .' - '. $row->carmodel;
+                $pickup_Location = $row->depart_name;
+                $drop_Location = $row->destination_name;
+                $pickupdate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
+                $pickuptime = date("h:m A", strtotime($row->ride_required_on_time));
+                $tokens = $row->fcm_id;
+            }
+
+            $tmsg = '';
+            $terrormsg = '';
+
+            $title = "Booking Confirmed";
+            
+            $msg = str_replace("{carmodel}", $carmodelandbrand, "Your ride is confirmed for {carmodel} from {PickupLocation} to {DropoffLocation} on {PickupDate} at {PickupTime}");
+            $msg = str_replace("{PickupLocation}", $pickup_Location, $msg);
+            $msg = str_replace("{DropoffLocation}", $drop_Location, $msg);
+            $msg = str_replace("{PickupDate}", $pickupdate, $msg);
+            $msg = str_replace("{PickupTime}", $pickuptime, $msg);
+            $msg = str_replace("'", "\'", $msg);
+        
+            $tab[] = array();
+            $tab = explode("\\", $msg);
+            $msg_ = "";
+            for ($i = 0; $i < count($tab); $i++) {
+                $msg_ = $msg_ . "" . $tab[$i];
+            }
+
+            $data = [
+                'ride_id' => $ride_id
+            ];
+
+            $message1 = [
+                'title' => $title,
+                'body' => $msg_,
+                'sound'=> 'mySound',
+                'tag' => 'ridenewrider'
+            ];
+
+            $notifications= new NotificationsController();
+            $response['Response'] = $notifications->sendNotification($tokens, $message1,$data);
+
+            return response()->json($response);
     }
 
 }
