@@ -593,7 +593,7 @@ class RequeteRegisterController extends Controller
                     $sub_total = $currency->symbole . "" . number_format($sub_total,$currency->decimal_digit);
 
                 $final_amount = $row->montant;
-                if(!empty($sub_tfinal_amountotal))
+                if(!empty($final_amount))
                     $final_amount = $currency->symbole . "" . number_format($final_amount,$currency->decimal_digit);
 
 
