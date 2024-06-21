@@ -410,7 +410,7 @@ class RequeteRegisterController extends Controller
                 // if ($id_payment = '5')
                 // {
                     
-                 //$EmailResponse = $this->SendBookRideEmailNotifiaction($id);
+                 $EmailResponse = $this->SendBookRideEmailNotifiaction($id);
                  $AppNotificaton = $this->SendNewRideAppNotification($id);
 
                  // App Notification 

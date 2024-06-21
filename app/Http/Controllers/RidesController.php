@@ -961,34 +961,41 @@ class RidesController extends Controller
         $rides = Rides::find($id);
         $driver = $request->input('order_status');
         $vehicleid = $request->input('selectedvehicleid');
+
         if ($rides) {
-            $rides->statut = "vehicle assigned";
-            $rides->id_conducteur= $driver;
-            $rides->vehicle_Id=$vehicleid;
-            $rides->save();
 
-            $driverinfo = Driver::where('id',$driver)->where('fcm_id', '!=', '')->first();
-            $usermsg = "Congratulations your booking got confirmed with the Driver :".$driverinfo->nom ." ".$driverinfo->prenom.", mobile: ".$driverinfo->phone."";
-            $usertitle = "Booking Confirmed";
-            $messages = array("body" => $usermsg, "title" => $usertitle, "sound" => "default", "tag" => "notification");
+            // $rides->statut = "vehicle assigned";
+            // $rides->id_conducteur= $driver;
+            // $rides->vehicle_Id=$vehicleid;
+            // $rides->save();
 
-            $users = UserApp::where('id',$rides->id_user_app)-> where('fcm_id', '!=', '')->first();
+             $driverinfo = Driver::where('id',$driver)->where('fcm_id', '!=', '')->first();
 
-            $tokens = $insert_data = array();
-            $temp = array();
-            array_push($tokens,$users->fcm_id);
-            //Cosumer notification
-            GcmController::send_notification($tokens, $messages,$temp);
+             
 
-            $drivermsg = "You have got a booking with the Customer :".$users->nom ." ".$driverinfo->prenom.", mobile: ".$driverinfo->phone."";
-            $drivertitle = "Booking Assigned";
-            $drivermessages = array("body" => $drivermsg, "title" => $drivertitle, "sound" => "default", "tag" => "notification");
-            $tokens = $insert_data = array();
-            array_push($tokens,$driverinfo->fcm_id);
+            // $usermsg = "Congratulations your booking got confirmed with the Driver :".$driverinfo->nom ." ".$driverinfo->prenom.", mobile: ".$driverinfo->phone."";
+            // $usertitle = "Booking Confirmed";
+            // $messages = array("body" => $usermsg, "title" => $usertitle, "sound" => "default", "tag" => "notification");
 
-            GcmController::send_notification($tokens, $drivermessages,$temp);
+            // $users = UserApp::where('id',$rides->id_user_app)-> where('fcm_id', '!=', '')->first();
 
-            $msg = 'Notification successfully sent';
+            // $tokens = $insert_data = array();
+            // $temp = array();
+            // array_push($tokens,$users->fcm_id);
+            // //Cosumer notification
+            // GcmController::send_notification($tokens, $messages,$temp);
+
+            // $drivermsg = "You have got a booking with the Customer :".$users->nom ." ".$driverinfo->prenom.", mobile: ".$driverinfo->phone."";
+            // $drivertitle = "Booking Assigned";
+            
+            // $drivermessages = array("body" => $drivermsg, "title" => $drivertitle, "sound" => "default", "tag" => "notification");
+
+            // $tokens = $insert_data = array();
+            // array_push($tokens,$driverinfo->fcm_id);
+
+            // GcmController::send_notification($tokens, $drivermessages,$temp);
+
+             $msg = 'Notification successfully sent';
 
 
             $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
@@ -1004,7 +1011,7 @@ class RidesController extends Controller
                 'tj_requete.longitude_depart', 'tj_requete.latitude_arrivee', 'tj_requete.longitude_arrivee',
                 'tj_requete.statut', 'tj_requete.id_conducteur',
                 'tj_requete.creer', 'tj_requete.tax_amount','tj_requete.discount',
-                'tj_user_app.nom', 'tj_user_app.prenom', 'tj_requete.otp','tj_user_app.email as customeremail','tj_user_app.phone as customerphone',
+                'tj_user_app.nom', 'tj_user_app.fcm_id','tj_user_app.prenom', 'tj_requete.otp','tj_user_app.email as customeremail','tj_user_app.phone as customerphone',
                 'tj_requete.distance', 'tj_user_app.phone','tj_requete.date_retour', 'tj_requete.heure_retour',
                 'tj_requete.montant', 'tj_requete.duree', 'tj_requete.statut_paiement',
                 'tj_requete.car_Price','tj_requete.sub_total',
@@ -1078,9 +1085,126 @@ class RidesController extends Controller
             $notifications= new NotificationsController();
             $response['DriverEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
 
+
+            // App Notification to Consumer 
+            $this->CustomerFCMNotification($id, $driverinfo, $sql);
+
+            // App Notification to Driver 
+            $this->DriverFCMNotification($id, $driverinfo, $sql);
+
         }
+
         return redirect()->back()->with('message',$msg);
 
+    }
+
+    public function CustomerFCMNotification($ride_id, $driverinfo, $sql)
+    {
+            $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+
+            $response['Response']="";
+
+            $tmsg = '';
+            $terrormsg = '';
+
+            $title = "Driver Assigned";
+
+            foreach ($sql as $row)
+            {
+                $carmodelandbrand = $row->brandname .' - '. $row->carmodel;
+                $carnumber = $row->numberplate;
+                $tokens = $row->fcm_id;
+            }
+            
+            $msg = str_replace("{carmodel}", $carmodelandbrand, "{carmodel} Reg. no. {carnumber} has been assigned with driver {DriverName} for your ride. The driver can be reachable on {DriverNumber}");
+            $msg = str_replace("{carnumber}", $carnumber, $msg);
+            $msg = str_replace("{DriverName}", $driverinfo->nom, $msg);
+            $msg = str_replace("{DriverNumber}", $driverinfo->phone, $msg);
+            $msg = str_replace("'", "\'", $msg);
+        
+            $tab[] = array();
+            $tab = explode("\\", $msg);
+            $msg_ = "";
+            for ($i = 0; $i < count($tab); $i++) {
+                $msg_ = $msg_ . "" . $tab[$i];
+            }
+
+            $data = [
+                'ride_id' => $ride_id
+            ];
+
+            $message = [
+                'title' => $title,
+                'body' => $msg_,
+                'sound'=> 'mySound',
+                'tag' => 'ridenewrider'
+            ];
+
+            if (!empty($tokens)){
+                $notifications= new NotificationsController();
+                $response['Response'] = $notifications->sendNotification($tokens, $message, $data);
+            }
+
+            return response()->json($response);
+    }
+
+    public function DriverFCMNotification($ride_id, $driverinfo, $sql)
+    {
+
+            $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+            $response['Response']="";
+
+            $tmsg = '';
+            $terrormsg = '';
+
+            $title = "New Ride Assigned";
+
+            // {carmodel} {carnumber} {PickupLocation} {DropoffLocation} {PickupDate} {PickupTime}
+            
+            foreach ($sql as $row)
+            {
+                $carmodelandbrand = $row->brandname .' - '. $row->carmodel;
+                $carnumber = $row->numberplate;
+                $PickUpLocation = $row->depart_name;
+                $DropLocation = $row->destination_name;
+                $PickUpDate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
+                $PickUpTime = date("h:m A", strtotime($row->ride_required_on_time));
+            }
+            
+            $msg = str_replace("{carmodel}", $carmodelandbrand, "You have been assigned for a new ride with {carmodel} Reg. no {carnumber} from {PickupLocation} to {DropoffLocation} on {PickupDate} at {PickupTime}");
+            $msg = str_replace("{carnumber}", $carnumber, $msg);
+            $msg = str_replace("{PickupLocation}", $PickUpLocation, $msg);
+            $msg = str_replace("{DropoffLocation}", $DropLocation, $msg);
+            $msg = str_replace("{PickupDate}", $PickUpDate, $msg);
+            $msg = str_replace("{PickupTime}", $PickUpTime, $msg);
+            $msg = str_replace("'", "\'", $msg);
+        
+            $tab[] = array();
+            $tab = explode("\\", $msg);
+            $msg_ = "";
+            for ($i = 0; $i < count($tab); $i++) {
+                $msg_ = $msg_ . "" . $tab[$i];
+            }
+
+            $data = [
+                'ride_id' => $ride_id
+            ];
+
+            $message = [
+                'title' => $title,
+                'body' => $msg_,
+                'sound'=> 'mySound',
+                'tag' => 'ridenewrider'
+            ];
+
+            $tokens = $driverinfo->fcm_id;
+
+            if (!empty($tokens)){
+                $notifications= new NotificationsController();
+                $response['Response'] = $notifications->sendNotification($tokens, $message, $data);
+            }
+
+            return response()->json($response);
     }
 
 }
