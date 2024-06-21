@@ -367,7 +367,7 @@ class RideDetailsController extends Controller
                 $row->depart_name = $row->depart_name;
                 $row->destination_name = $row->destination_name;
                 $row->statut = Str::lower($row->statut);
-                $row->montant = $row->montant;// $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit);
+                $row->montant = $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit); //$row->montant;
                 $row->BookigDate = $row->ride_required_on_date;
                 $row->BookingTime = $row->ride_required_on_time;
                 $row->distance = $row->distance;
@@ -668,7 +668,7 @@ class RideDetailsController extends Controller
             $response['error'] = 'Missing id_user_app';
             return response()->json($response);
         }
-
+        $currency = Currency::where('statut', 'yes')->first();
         $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
 
         $sql = DB::table('tj_requete')
@@ -709,7 +709,7 @@ class RideDetailsController extends Controller
                 $row->depart_name = $row->depart_name;
                 $row->destination_name = $row->destination_name;
                 $row->statut = Str::lower($row->statut);
-                $row->montant = $row->montant;
+                $row->montant = $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit); ;
                 $row->car_Price = $row->car_Price;
                 $row->sub_total = $row->sub_total;
                 $row->BookigDate = $row->ride_required_on_date;
