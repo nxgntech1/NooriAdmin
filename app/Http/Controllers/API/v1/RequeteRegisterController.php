@@ -524,7 +524,7 @@ class RequeteRegisterController extends Controller
             'tj_requete.longitude_depart', 'tj_requete.latitude_arrivee', 'tj_requete.longitude_arrivee',
             'tj_requete.statut', 'tj_requete.id_conducteur',
             'tj_requete.creer', 'tj_requete.tax_amount','tj_requete.discount',
-            'tj_user_app.nom', 'tj_user_app.prenom', 'tj_requete.otp','tj_user_app.email as customeremail',
+            'tj_user_app.nom', 'tj_user_app.prenom', 'tj_requete.otp','tj_user_app.email as customeremail','tj_user_app.phone as customerphone',
             'tj_requete.distance', 'tj_user_app.phone','tj_requete.date_retour', 'tj_requete.heure_retour',
             'tj_requete.montant', 'tj_requete.duree', 'tj_requete.statut_paiement',
             'tj_requete.car_Price','tj_requete.sub_total',
@@ -546,7 +546,7 @@ class RequeteRegisterController extends Controller
 
                 // if (!empty($emailtemplate)) {
                     $emailsubject = "Your Booking is Confirmed!";
-                    $emailmessage = file_get_contents(resource_path('views/emailtemplates/confirmbooking.html'));
+                    $emailmessage = file_get_contents(resource_path('views/emailtemplates/customer_confirmbooking.html'));
                     //$send_to_admin = $emailtemplate->send_to_admin;
                 //}
 
@@ -556,6 +556,7 @@ class RequeteRegisterController extends Controller
 
              
                 $customer_name = $row->nom;
+                $customerphone = $row->customerphone;
                 $carmodelandbrand = $row->brandname .' / '. $row->carmodel;
                 $pickup_Location = $row->depart_name;
                 $drop_Location = $row->destination_name;
@@ -615,9 +616,34 @@ class RequeteRegisterController extends Controller
                 //$response['EmailResponseSql'] = $emailmessage;
                $notifications= new NotificationsController();
                $response['EmailResponse'] = $notifications->sendEmail($to, $emailsubject,$emailmessage);
+            // admin email
+            $urlstring = env('ADMIN_BASEURL','https://nadmin.nxgnapp.com/')."/ride/show/".$ride_id;
+            $emailsubject = '';
+            $emailmessage = '';
+           
+            $emailsubject = "You got new ride request";
+            $emailmessage = file_get_contents(resource_path('views/emailtemplates/admi_confirmbooking.html'));
 
-               
-           // }
+            $emailmessage = str_replace("{PickupLocation}", $pickup_Location, $emailmessage);
+            $emailmessage = str_replace("{DropoffLocation}", $drop_Location, $emailmessage);
+            $emailmessage = str_replace("{BookingType}", $bookingtype, $emailmessage);
+            $emailmessage = str_replace("{CustomerName}", $customer_name, $emailmessage);
+            $emailmessage = str_replace("{CustomerNumber}", $customerphone, $emailmessage);
+            $emailmessage = str_replace("{BrandName}", $brandname, $emailmessage);
+            $emailmessage = str_replace("{carmodel}", $carmodelandbrand, $emailmessage);
+            $emailmessage = str_replace("{PickupDate}", $pickupdate, $emailmessage);
+            $emailmessage = str_replace("{PickupTime}", $pickuptime, $emailmessage);
+            $emailmessage = str_replace("{TripCharge}", $car_Price, $emailmessage);
+            $emailmessage = str_replace("{coupondiscount}", $coupon_discount, $emailmessage);
+            $emailmessage = str_replace("{TripTax}", $tax_amount, $emailmessage);
+            $emailmessage = str_replace("{TotalAmount}", $final_amount, $emailmessage);
+            $emailmessage = str_replace("{PaymentMethod}", $payment_method, $emailmessage);
+            $emailmessage = str_replace("{AdminUrl}", $urlstring, $emailmessage);
+            
+            $admintoemail=env('ADMIN_EMAILID','govind.p.raj@gmail.com');
+            
+            $response['AdminEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
+           
         }
 
                 return response()->json($response);
