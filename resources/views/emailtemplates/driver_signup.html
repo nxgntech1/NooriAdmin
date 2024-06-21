@@ -85,12 +85,50 @@
       color: #51545E;
     }
     
+    /* Buttons ------------------------------ */
+
+    .button {
+      background-color: #937307;
+      border-top: 10px solid #937307;
+      border-right: 18px solid #937307;
+      border-bottom: 10px solid #937307;
+      border-left: 18px solid #937307;
+      display: inline-block;
+      color: #FFF;
+      text-decoration: none;
+      border-radius: 3px;
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.16);
+      -webkit-text-size-adjust: none;
+      box-sizing: border-box;
+    }
+
+    .button--green {
+      background-color: #22BC66;
+      border-top: 10px solid #22BC66;
+      border-right: 18px solid #22BC66;
+      border-bottom: 10px solid #22BC66;
+      border-left: 18px solid #22BC66;
+    }
+
+    .button--red {
+      background-color: #FF6136;
+      border-top: 10px solid #FF6136;
+      border-right: 18px solid #FF6136;
+      border-bottom: 10px solid #FF6136;
+      border-left: 18px solid #FF6136;
+    }
+
     /*Media Queries ------------------------------ */
-    
-  
-    
+    @media only screen and (max-width: 500px) {
+      .button {
+        width: 100% !important;
+        text-align: center !important;
+      }
+    }
+
+
     @media (prefers-color-scheme: dark) {
-      body{
+      body {
         background-color: #333333 !important;
         color: #FFF !important;
       }
@@ -144,6 +182,24 @@
                         <h1>Hello Admin,</h1>
                         <p style=" margin-bottom: 25px;">A new driver {DriverName} has signed up. 
                           Please review their details and approve their application.</p>
+
+                          <!-- Action -->
+                          <table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0"
+                          role="presentation">
+                          <tr>
+                            <td align="center">
+                              <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation">
+                                <tr>
+                                  <td align="center">
+                                    <a href="{AdminUrl}" class="f-fallback button" target="_blank"><b>View Details Details</b></a>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                          </table><br /> <!-- Action -->
+
+
                         <!-- Action -->
                         <p style="padding-top: 15px;background: #e0d7ba;width: auto;display: inline;margin-left: 10px;padding: 6px 15px;border-radius: 4px;text-transform: uppercase;font-size: 14px;color: #000000;"><strong>Driver Details</strong></p>
                         <table  width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 35px; margin-top: -10px;">
@@ -164,10 +220,10 @@
                                         <td style="padding: 10px 0 5px 0;color: #51545E; font-size: 15px; line-height: 18px; font-weight: 600">Driver Address</td>
                                         <td style="padding: 10px 0 5px 0;color: #51545E; font-size: 15px; line-height: 18px;text-align: right;"> {DriverAddress} </td>
                                       </tr>
-                                      <tr>
+                                      <!-- <tr>
                                         <td style="padding: 10px 0 5px 0;color: #51545E; font-size: 15px; line-height: 18px; font-weight: 600">Documents Received</td>
                                         <td style="padding: 10px 0 5px 0;color: #51545E; font-size: 15px; line-height: 18px;text-align: right;"> {DocumentsReceived} </td>
-                                      </tr>
+                                      </tr> -->
                                 </table>
                               </td>
                             </tr>
