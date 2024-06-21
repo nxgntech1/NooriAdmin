@@ -13,6 +13,7 @@ use App\Models\UserApp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use App\Http\Controllers\API\v1\NotificationsController;
 
 class RidesController extends Controller
 {
@@ -988,6 +989,95 @@ class RidesController extends Controller
             GcmController::send_notification($tokens, $drivermessages,$temp);
 
             $msg = 'Notification successfully sent';
+
+
+            $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+            $sql = DB::table('tj_requete')
+            ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
+            ->Join('car_model', 'car_model.id', '=', 'tj_requete.model_id')
+            ->Join('brands', 'brands.id', '=', 'tj_requete.brand_id')
+            ->Join('tj_payment_method', 'tj_payment_method.id', '=', 'tj_requete.id_payment_method')
+            ->Join('bookingtypes', 'tj_requete.booking_type_id','=','bookingtypes.id')
+            ->join('tj_vehicule','tj_requete.vehicle_Id','=','tj_vehicule.id')
+            ->select('tj_requete.id','tj_requete.id_user_app', 'tj_requete.depart_name',
+                'tj_requete.distance_unit', 'tj_requete.destination_name', 'tj_requete.latitude_depart',
+                'tj_requete.longitude_depart', 'tj_requete.latitude_arrivee', 'tj_requete.longitude_arrivee',
+                'tj_requete.statut', 'tj_requete.id_conducteur',
+                'tj_requete.creer', 'tj_requete.tax_amount','tj_requete.discount',
+                'tj_user_app.nom', 'tj_user_app.prenom', 'tj_requete.otp','tj_user_app.email as customeremail','tj_user_app.phone as customerphone',
+                'tj_requete.distance', 'tj_user_app.phone','tj_requete.date_retour', 'tj_requete.heure_retour',
+                'tj_requete.montant', 'tj_requete.duree', 'tj_requete.statut_paiement',
+                'tj_requete.car_Price','tj_requete.sub_total',
+                'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time','tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
+                'tj_requete.vehicle_Id','tj_requete.id_conducteur','car_model.name as carmodel','brands.name as brandname',
+                'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image','tj_requete.id_payment_method as paymentmethodid', 'bookingtypes.bookingtype as bookingtype',
+                'tj_vehicule.numberplate')
+                ->where('tj_requete.id', '=', $id)
+                ->get();
+            foreach ($sql as $row) {
+                $customer_name = $row->prenom.' '.$row->nom;
+                $customerphone = $row->customerphone;
+                $carmodelandbrand = $row->brandname .' / '. $row->carmodel;
+                $pickup_Location = $row->depart_name;
+                $drop_Location = $row->destination_name;
+                $booking_date = date("d", strtotime($row->creer)) . " " . $months[date("F", strtotime($row->creer))] . ", " . date("Y", strtotime($row->creer));
+                $booking_time = date("h:m A", strtotime($row->creer)); 
+                $payment_method = $row->payment;
+                $bookingtype = $row->bookingtype;
+                $pickupdate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
+                $pickuptime = date("h:m A", strtotime($row->ride_required_on_time));
+                $brandname = $row->brandname;
+                $numberplate = $row->numberplate;
+             }
+            // admin email
+            
+            $emailsubject = '';
+            $emailmessage = '';
+
+            $emailsubject = "Driver assigned!";
+            $emailmessage = file_get_contents(resource_path('views/emailtemplates/customer_driver_assigned.html'));
+
+            $drivername = $driverinfo->prenom.' '.$driverinfo->nom;
+            $driverphone = $driverinfo->phone;
+
+            $emailmessage = str_replace("{PickupLocation}", $pickup_Location, $emailmessage);
+            $emailmessage = str_replace("{DropoffLocation}", $drop_Location, $emailmessage);
+            $emailmessage = str_replace("{CustomerName}", $customer_name, $emailmessage);
+            $emailmessage = str_replace("{DriverName}", $drivername, $emailmessage);
+            $emailmessage = str_replace("{BrandName}", $brandname, $emailmessage);
+            $emailmessage = str_replace("{carmodel}", $carmodelandbrand, $emailmessage);
+            
+            $emailmessage = str_replace("{CarNumber}", $numberplate, $emailmessage);
+            $emailmessage = str_replace("{DriverNumber}", $driverphone, $emailmessage);
+
+            $admintoemail=env('ADMIN_EMAILID','govind.p.raj@gmail.com');
+            $notifications= new NotificationsController();
+            $response['CustomerEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
+             // driver email
+            $emailsubject = '';
+            $emailmessage = '';
+
+            $emailsubject = "New ride assigned!";
+            $emailmessage = file_get_contents(resource_path('views/emailtemplates/to_driver_assign-driver.html'));
+
+            $drivername = $driverinfo->prenom.' '.$driverinfo->nom;
+            
+
+            $emailmessage = str_replace("{DriverName}", $drivername, $emailmessage);
+            $emailmessage = str_replace("{carmodel}", $carmodelandbrand, $emailmessage);
+            $emailmessage = str_replace("{CarNumber}", $numberplate, $emailmessage);
+            $emailmessage = str_replace("{PickupLocation}", $pickup_Location, $emailmessage);
+            $emailmessage = str_replace("{DropoffLocation}", $drop_Location, $emailmessage);
+            $emailmessage = str_replace("{PickupDate}", $pickupdate, $emailmessage);
+            $emailmessage = str_replace("{PickupTime}", $pickuptime, $emailmessage);
+            $emailmessage = str_replace("{BookingType}", $bookingtype, $emailmessage);
+            $emailmessage = str_replace("{CustomerName}", $customer_name, $emailmessage);
+            $emailmessage = str_replace("{BrandName}", $brandname, $emailmessage);
+            
+            $admintoemail=env('ADMIN_EMAILID','govind.p.raj@gmail.com');
+            $notifications= new NotificationsController();
+            $response['DriverEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
+
         }
         return redirect()->back()->with('message',$msg);
 
