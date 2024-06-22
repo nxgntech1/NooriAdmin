@@ -9,9 +9,11 @@ use App\Models\Settings;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\v1\GcmController;
 use App\Http\Controllers\API\v1\NotificationListController;
+use App\Models\UserApp;
 use DB;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use Carbon\Carbon;
 //require 'C:\Personal\NxGn\Projects\NoorieTravels\NooriAdminPortal\vendor\autoload.php';
 require 'C:\Websites\NooriTravels\cabme-admin-panel\vendor\autoload.php';
 
@@ -50,6 +52,9 @@ class CompleteRequeteController extends Controller
             }
             
             if (!empty($updatedata)) {
+
+                $this->SendStarttripAppNotification($id_requete);
+
                 $response['success'] = 'success';
                 $response['error'] = null;
                 $response['message'] = 'status successfully updated';
@@ -62,6 +67,65 @@ class CompleteRequeteController extends Controller
         }
 
         return response()->json($response);
+    }
+
+    public function SendStarttripAppNotification($ride_id)
+    {
+
+        $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+
+        $sql = DB::table('tj_requete')
+        ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
+        ->Join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
+        ->select('tj_requete.id','tj_requete.id_user_app', 'tj_requete.depart_name',
+            'tj_requete.destination_name', 
+            'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time',
+            'tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
+            'tj_requete.vehicle_Id','tj_requete.id_conducteur',
+            'tj_conducteur.prenom as driverfirstname','tj_conducteur.nom as driverlastnae','tj_user_app.fcm_id')
+            ->where('tj_requete.id', '=', $ride_id)
+            ->get();
+
+            foreach ($sql as $row) {
+   
+                $drivername = $row->driverfirstname .' '. $row->driverlastnae;
+                $pickup_Location = $row->depart_name;
+                $drop_Location = $row->destination_name;
+                $pickupdate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
+                $pickuptime = date("h:m A", strtotime($row->ride_required_on_time));
+                $tokens = $row->fcm_id;
+            }
+
+            $tmsg = '';
+            $terrormsg = '';
+
+            $title = "Trip Started";
+            
+            $msg = str_replace("{DriverName}", $drivername, "Your trip has started driver {DriverName} will reach you soon. Please provide the OTP to start the ride.");
+            $msg = str_replace("'", "\'", $msg);
+        
+            $tab[] = array();
+            $tab = explode("\\", $msg);
+            $msg_ = "";
+            for ($i = 0; $i < count($tab); $i++) {
+                $msg_ = $msg_ . "" . $tab[$i];
+            }
+
+            $data = [
+                'ride_id' => $ride_id
+            ];
+
+            $message1 = [
+                'title' => $title,
+                'body' => $msg_,
+                'sound'=> 'mySound',
+                'tag' => 'driverstarted'
+            ];
+
+            $notifications= new NotificationsController();
+            $response['Response'] = $notifications->sendNotification($tokens, $message1,$data);
+
+            return response()->json($response);
     }
 
 
@@ -83,6 +147,9 @@ class CompleteRequeteController extends Controller
             }
             
             if (!empty($updatedata)) {
+
+                $this->SendDriverArrivedAppNotification($id_requete);
+
                 $response['success'] = 'success';
                 $response['error'] = null;
                 $response['message'] = 'status successfully updated';
@@ -97,6 +164,77 @@ class CompleteRequeteController extends Controller
         return response()->json($response);
     }
 
+    public function SendDriverArrivedAppNotification($ride_id)
+    {
+
+        $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+
+        $sql = DB::table('tj_requete')
+        ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
+        ->Join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
+        ->join('tj_vehicule','tj_requete.vehicle_Id','=','tj_vehicule.id')
+        ->Join('car_model', 'car_model.id', '=', 'tj_requete.model_id')
+        ->Join('brands', 'brands.id', '=', 'tj_requete.brand_id')
+        ->select('tj_requete.id','tj_requete.id_user_app', 'tj_requete.depart_name',
+            'tj_requete.destination_name', 
+            'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time',
+            'tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
+            'tj_requete.vehicle_Id','tj_requete.id_conducteur',
+            'tj_conducteur.prenom as driverfirstname','tj_conducteur.nom as driverlastnae',
+            'car_model.name as carmodel','brands.name as brandname','tj_vehicule.numberplate','tj_conducteur.phone as driverphone','tj_user_app.fcm_id')
+            ->where('tj_requete.id', '=', $ride_id)
+            ->get();
+
+            foreach ($sql as $row) {
+   
+                $drivername = $row->driverfirstname .' '. $row->driverlastnae;
+                $carmodelandbrand = $row->brandname .' - '. $row->carmodel;
+                $numberplate = $row->numberplate;
+                $driverphone = $row->driverphone;
+                $pickup_Location = $row->depart_name;
+                $drop_Location = $row->destination_name;
+                $pickupdate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
+                $pickuptime = date("h:m A", strtotime($row->ride_required_on_time));
+                $tokens = $row->fcm_id;
+            }
+
+            $tmsg = '';
+            $terrormsg = '';
+
+
+
+            $title = "Driver Arrived";
+            
+            $msg = str_replace("{DriverName}", $drivername, "Your driver {DriverName} has arrived at the pickup location with {carmodel} Reg. no {carnumber}. He can be reachable on {DriverPhone}.");
+            $msg = str_replace("{carmodel}", $carmodelandbrand, $msg);
+            $msg = str_replace("{carnumber}", $numberplate, $msg);
+            $msg = str_replace("{DriverPhone}", $driverphone, $msg);
+            $msg = str_replace("'", "\'", $msg);
+        
+            $tab[] = array();
+            $tab = explode("\\", $msg);
+            $msg_ = "";
+            for ($i = 0; $i < count($tab); $i++) {
+                $msg_ = $msg_ . "" . $tab[$i];
+            }
+
+            $data = [
+                'ride_id' => $ride_id
+            ];
+
+            $message1 = [
+                'title' => $title,
+                'body' => $msg_,
+                'sound'=> 'mySound',
+                'tag' => 'driverarrived'
+            ];
+
+            $notifications= new NotificationsController();
+            $response['Response'] = $notifications->sendNotification($tokens, $message1,$data);
+
+            return response()->json($response);
+    }
+
     public function onRideRequest(Request $request)
     {
         $id_requete = $request->get('id_ride');
@@ -108,7 +246,7 @@ class CompleteRequeteController extends Controller
 
         if(!empty($id_requete) && !empty($id_user)){
 
-            $updatedata =  DB::update('update tj_requete set statut = ? where id = ?',['On Ride', $id_requete]);
+            $updatedata =  DB::update('update tj_requete set statut = ? where id = ? and otp= ?',['On Ride', $id_requete,$otp]);
         
             if (!empty($updatedata)) {
                 $query = DB::insert("insert into ride_status_change_log(ride_id,status,driver_id, latitude,longitude,created_on)
@@ -116,6 +254,9 @@ class CompleteRequeteController extends Controller
             }
             
             if (!empty($updatedata)) {
+
+                $this->SendRideStartedAppNotification($id_requete);
+
                 $response['success'] = 'success';
                 $response['error'] = null;
                 $response['message'] = 'status successfully updated';
@@ -128,6 +269,62 @@ class CompleteRequeteController extends Controller
         }
 
         return response()->json($response);
+    }
+    public function SendRideStartedAppNotification($ride_id)
+    {
+
+        $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+
+        $sql = DB::table('tj_requete')
+        ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
+        ->Join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
+        ->join('tj_vehicule','tj_requete.vehicle_Id','=','tj_vehicule.id')
+        ->Join('car_model', 'car_model.id', '=', 'tj_requete.model_id')
+        ->Join('brands', 'brands.id', '=', 'tj_requete.brand_id')
+        ->select('tj_requete.id','tj_requete.id_user_app', 'tj_requete.depart_name',
+            'tj_requete.destination_name', 
+            'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time',
+            'tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
+            'tj_requete.vehicle_Id','tj_requete.id_conducteur',
+            'tj_conducteur.prenom as driverfirstname','tj_conducteur.nom as driverlastnae',
+            'car_model.name as carmodel','brands.name as brandname','tj_vehicule.numberplate','tj_conducteur.phone as driverphone','tj_user_app.fcm_id')
+            ->where('tj_requete.id', '=', $ride_id)
+            ->get();
+
+            foreach ($sql as $row) {
+   
+                $tokens = $row->fcm_id;
+            }
+
+            $currentDateTimeInIndia = Carbon::now('Asia/Kolkata');
+            $title = "Ride Started";
+            
+            $msg = str_replace("{Ridetime}", $currentDateTimeInIndia->format('d-m-Y h:m A'), "Your ride has started at {Ridetime}. Please provide the OTP to start the ride.");
+            
+            $msg = str_replace("'", "\'", $msg);
+        
+            $tab[] = array();
+            $tab = explode("\\", $msg);
+            $msg_ = "";
+            for ($i = 0; $i < count($tab); $i++) {
+                $msg_ = $msg_ . "" . $tab[$i];
+            }
+
+            $data = [
+                'ride_id' => $ride_id
+            ];
+
+            $message1 = [
+                'title' => $title,
+                'body' => $msg_,
+                'sound'=> 'mySound',
+                'tag' => 'ridestarted'
+            ];
+
+            $notifications= new NotificationsController();
+            $response['Response'] = $notifications->sendNotification($tokens, $message1,$data);
+
+            return response()->json($response);
     }
 
 
@@ -163,6 +360,7 @@ class CompleteRequeteController extends Controller
 
                 $this->SendEmail("customer",$id_requete);
                 $this->SendEmail("admin",$id_requete);
+                $this->SendRideCompletedAppNotification($id_requete);
 
                 $response['success'] = 'success';
                 $response['error'] = null;
@@ -187,6 +385,61 @@ class CompleteRequeteController extends Controller
         }
 
         return response()->json($response);
+    }
+    public function SendRideCompletedAppNotification($ride_id)
+    {
+
+        $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+
+        $sql = DB::table('tj_requete')
+        ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
+        ->Join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
+        ->join('tj_vehicule','tj_requete.vehicle_Id','=','tj_vehicule.id')
+        ->Join('car_model', 'car_model.id', '=', 'tj_requete.model_id')
+        ->Join('brands', 'brands.id', '=', 'tj_requete.brand_id')
+        ->select('tj_requete.id','tj_requete.id_user_app', 'tj_requete.depart_name',
+            'tj_requete.destination_name', 
+            'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time',
+            'tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
+            'tj_requete.vehicle_Id','tj_requete.id_conducteur',
+            'tj_conducteur.prenom as driverfirstname','tj_conducteur.nom as driverlastnae',
+            'car_model.name as carmodel','brands.name as brandname','tj_vehicule.numberplate','tj_conducteur.phone as driverphone','tj_user_app.fcm_id')
+            ->where('tj_requete.id', '=', $ride_id)
+            ->get();
+
+            foreach ($sql as $row) {
+   
+                $tokens = $row->fcm_id;
+            }
+
+            $title = "Ride Completed";
+            
+            $msg = "Your ride is completed. Thank you for riding with us!";
+            
+            $msg = str_replace("'", "\'", $msg);
+        
+            $tab[] = array();
+            $tab = explode("\\", $msg);
+            $msg_ = "";
+            for ($i = 0; $i < count($tab); $i++) {
+                $msg_ = $msg_ . "" . $tab[$i];
+            }
+
+            $data = [
+                'ride_id' => $ride_id
+            ];
+
+            $message1 = [
+                'title' => $title,
+                'body' => $msg_,
+                'sound'=> 'mySound',
+                'tag' => 'ridecompleted'
+            ];
+
+            $notifications= new NotificationsController();
+            $response['Response'] = $notifications->sendNotification($tokens, $message1,$data);
+
+            return response()->json($response);
     }
 
 

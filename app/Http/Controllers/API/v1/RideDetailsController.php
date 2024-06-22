@@ -407,13 +407,16 @@ class RideDetailsController extends Controller
                 }
 
                 if (!empty($row->vehicle_imageid)) {
-                    if (file_exists(public_path('assets/images/vehicule' . '/' . $row->vehicle_imageid))) {
-                        $vehicle_imageid = asset('assets/images/vehicule') . '/' . $row->vehicle_imageid;
+                    if (file_exists(public_path('assets/images/vehicle' . '/' . $row->vehicle_imageid))) {
+                        $vehicle_imageid = asset('assets/images/vehicle') . '/' . $row->vehicle_imageid;
                     } else {
-                        $vehicle_imageid = asset('assets/images/placeholder_image.jpg');
+                        $vehicle_imageid = asset('assets/images/placeholder_image_car.png');
                     }
-                    $row->vehicle_imageid = $vehicle_imageid;
                 }
+                else {
+                    $vehicle_imageid = asset('assets/images/placeholder_image_car.png');
+                }
+                $row->vehicle_imageid = $vehicle_imageid;
 
                 if ($row->payment_image != '') {
                     if (file_exists(public_path('assets/images/payment_method' . '/' . $row->payment_image))) {
@@ -769,13 +772,17 @@ class RideDetailsController extends Controller
                 }
 
                 if (!empty( $row->vehicle_imageid)) {
-                    if (file_exists(public_path('assets/images/vehicule' . '/' . $row->vehicle_imageid))) {
-                        $vehicle_imageid = asset('assets/images/vehicule') . '/' . $row->vehicle_imageid;
+                    if (file_exists(public_path('assets/images/vehicle' . '/' . $row->vehicle_imageid))) {
+                        $vehicle_imageid = asset('assets/images/vehicle') . '/' . $row->vehicle_imageid;
                     } else {
-                        $vehicle_imageid = asset('assets/images/placeholder_image.jpg');
+                        $vehicle_imageid = asset('assets/images/placeholder_image_car.png');
                     }
-                    $row->vehicle_imageid = $vehicle_imageid;
+                    
                 }
+                else {
+                    $vehicle_imageid = asset('assets/images/placeholder_image_car.png');
+                }
+                $row->vehicle_imageid = $vehicle_imageid;
 
                 if ($row->payment_image != '') {
                     if (file_exists(public_path('assets/images/payment_method' . '/' . $row->payment_image))) {
@@ -813,7 +820,7 @@ class RideDetailsController extends Controller
                     {
                         $row->driverPhone = $row_cond->driverPhone;
                         $row->driverphoto = $row_cond->driverphoto;
-                        $row->drivername = $row_cond->nomConducteur;
+                        $row->drivername = $row_cond->prenomConducteur.' '.$row_cond->nomConducteur;
 
                     }
     
@@ -943,7 +950,7 @@ class RideDetailsController extends Controller
                 $row->stops = json_decode($row->stops, true);
                 $row->tax = json_decode($row->tax, true);
                 $row->user_info = json_decode($row->user_info, true);
-                $row->consumer_name = $row->nom . ' ' . $row->prenom;
+                $row->consumer_name =$row->prenom. ' ' .$row->nom;
 
                 $row->bookfor_others_mobileno = $row->bookfor_others_mobileno;
                 $row->bookfor_others_name = $row->bookfor_others_name;
@@ -978,6 +985,7 @@ class RideDetailsController extends Controller
                     foreach ($sql_cond as $row_cond) {
                         $row->nomConducteur = $row_cond->nomConducteur;
                         $row->prenomConducteur = $row_cond->prenomConducteur;
+                        $row->drivername = $row_cond->prenomConducteur.' '.$row_cond->nomConducteur;
                     }
 
                     // Nb avis conducteur
@@ -1263,7 +1271,7 @@ class RideDetailsController extends Controller
                 $row->creer = date("d", strtotime($row->creer)) . " " . $months[date("F", strtotime($row->creer))] . ", " . date("Y", strtotime($row->creer));
                 $row->date_retour = date("d", strtotime($row->date_retour)) . " " . $months[date("F", strtotime($row->date_retour))] . ", " . date("Y", strtotime($row->date_retour));
 
-                $row->ride_required_on_date = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date))." ". $row->ride_required_on_time;
+                $row->ride_required_on_date = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date))." ". date("h:m A", strtotime($row->ride_required_on_time)) ;
                 
 
                 if ($row->photo_path != '') {

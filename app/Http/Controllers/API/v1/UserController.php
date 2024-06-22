@@ -426,6 +426,8 @@ class UserController extends Controller
                     $row['id']=(string)$id;
                     $response['data'] = $row;
 
+                    $this->sendemail($account_type,$id);
+
                 } else {
                     $response['success'] = 'Failed';
                     $response['error'] = 'Id Not Found';
@@ -508,36 +510,32 @@ class UserController extends Controller
                     }
                     $row['id']=(string)$id;
                     $response['data'] = $row;
+
+                    $this->sendemail($account_type,$id);
+
                 } else {
                     $response['success'] = 'Failed';
                     $response['error'] = 'Id Not Found';
 
                 }
 
-                $emailsubject = '';
-                $emailmessage = '';
-                $emailtemplate = DB::table('email_template')->select('*')->where('type', 'new_registration')->first();
-                if (!empty($emailtemplate)) {
-                    $emailsubject = $emailtemplate->subject;
-                    $emailmessage = $emailtemplate->message;
-                    $send_to_admin = $emailtemplate->send_to_admin;
-                }
+                // $emailsubject = '';
+                // $emailmessage = '';
+                // $emailtemplate = DB::table('email_template')->select('*')->where('type', 'new_registration')->first();
+                // if (!empty($emailtemplate)) {
+                //     $emailsubject = $emailtemplate->subject;
+                //     $emailmessage = $emailtemplate->message;
+                //     $send_to_admin = $emailtemplate->send_to_admin;
+                // }
 
-                $email = DB::table('tj_settings')->select('contact_us_email')->value('contact_us_email');
-                $email = $email ? $email : 'none@none.com';
-                $to = '';
-                if ($send_to_admin == "true") {
-                    $to = $email;
-                }
+                // $email = DB::table('tj_settings')->select('contact_us_email')->value('contact_us_email');
+                // $email = $email ? $email : 'none@none.com';
+                // $to = '';
+                // if ($send_to_admin == "true") {
+                //     $to = $email;
+                // }
 
-                $app_name = env('APP_NAME', 'NooriTravels');
-                $date = date('d F Y');
-                $emailmessage = str_replace("{AppName}", $app_name, $emailmessage);
-                $emailmessage = str_replace("{UserName}", $row['nom'] . " " . $row['prenom'], $emailmessage);
-                $emailmessage = str_replace("{UserEmail}", $row['email'], $emailmessage);
-                $emailmessage = str_replace("{UserPhone}", $row['phone'], $emailmessage);
-                $emailmessage = str_replace('{UserId}', $row['id'], $emailmessage);
-                $emailmessage = str_replace('{Date}', $date, $emailmessage);
+               
                 
                 // Always set content-type when sending HTML email
                 // // $headers = "MIME-Version: 1.0" . "\r\n";
@@ -545,8 +543,7 @@ class UserController extends Controller
                 // // $headers .= 'From: ' . $app_name . '<' . $email . '>' . "\r\n";
                 // // mail($to, $emailsubject, $emailmessage, $headers);
 
-                 $notifications= new NotificationsController();
-                 $notifcationres = $notifications->sendEmail($to, $emailsubject, $emailmessage);
+                 
                 
             }
         } else {
@@ -556,6 +553,68 @@ class UserController extends Controller
 
 
         return response()->json($response);
+    }
+
+    public function sendemail($usertype,$id)
+    {
+        $emailsubject = '';
+        $emailmessage = '';
+        if($usertype=="driver")
+        {
+            $driver = Driver::find($id);
+            if($driver)
+            {
+            $emailsubject = "New driver got registered";
+            $emailmessage = file_get_contents(resource_path('views/emailtemplates/driver_signup.html'));
+            $drivername = $driver->prenom.' '.$driver->nom;
+            $drivernumber = $driver->phone;
+            $driveremail = $driver->email;
+            $AdminUrl = env('ADMIN_BASEURL','https://nadmin.nxgnapp.com/').'driver/show/'.$id;
+
+            $emailmessage = str_replace("{DriverName}", $drivername, $emailmessage);
+            $emailmessage = str_replace("{AdminUrl}", $AdminUrl, $emailmessage);
+            $emailmessage = str_replace("{DriverEmail}", $driveremail, $emailmessage);
+            $emailmessage = str_replace("{DriverNumber}", $drivernumber, $emailmessage);
+            
+            $admintoemail=env('ADMIN_EMAILID','govind.p.raj@gmail.com');
+            $notifications= new NotificationsController();
+            $response['driverregEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
+            }
+        }
+        else if($usertype=="customer")
+        {
+            $user = UserApp::find($id);
+            if($user)
+            {
+                $username = $user->prenom.' '.$user->nom;
+                $usernumber = $user->phone;
+                $useremail = $user->email;
+                $AdminUrl = env('ADMIN_BASEURL','https://nadmin.nxgnapp.com/').'users/show/'.$id;
+
+                $emailsubject = "Welcome to Noori Travels";
+                $emailmessage = file_get_contents(resource_path('views/emailtemplates/customer_signup.html'));
+                $emailmessage = str_replace("{CustomerName}", $username, $emailmessage);
+
+                $admintoemail=env('ADMIN_EMAILID','govind.p.raj@gmail.com');
+                $notifications= new NotificationsController();
+                $response['customerregEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
+                
+                $emailsubject='';
+                $emailmessage='';
+                $emailsubject = "New customer registered";
+                $emailmessage = file_get_contents(resource_path('views/emailtemplates/to_admin_customer_signup.html'));
+
+                $emailmessage = str_replace("{CustomerName}", $username, $emailmessage);
+                $emailmessage = str_replace("{AdminUrl}", $AdminUrl, $emailmessage);
+                $emailmessage = str_replace("{CustomerNumber}", $usernumber, $emailmessage);
+                $emailmessage = str_replace("{CustomerEmailID}", $useremail, $emailmessage);
+
+                $response['customerregEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
+                
+                
+                
+            }
+        }
     }
     public static function url()
     {

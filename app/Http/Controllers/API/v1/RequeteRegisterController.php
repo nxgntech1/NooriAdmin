@@ -274,7 +274,7 @@ class RequeteRegisterController extends Controller
 
         if (!empty($id_payment)) {
            
-                if ($id_payment = '5')
+                //if ($id_payment == "5")
                     $ridestatus = 'new';
 
                 $date_heure = date('Y-m-d H:i:s');

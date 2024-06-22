@@ -909,7 +909,7 @@ class RidesController extends Controller
         }
 
        // $drivers = DB::table('tj_conducteur')->where('statut','yes')->where('online','yes')->select('id','nom', 'prenom')->get();
-        //$vehicles = DB::table('tj_vehicule')->where('statut','yes')->where('deleted_at',null)->get();
+        $vehicles = DB::table('tj_vehicule')->where('statut','yes')->where('deleted_at',null)->get();
         // Define the subquery for booked rides
         $subQuery = DB::table('tj_requete as A')
             ->join('tj_requete as B', 'A.id', '=', 'B.id')
@@ -928,19 +928,18 @@ class RidesController extends Controller
             ->get();
 
 
-
-        $vehicles =DB::table('tj_vehicule as A')
-        ->join('tj_requete as B', 'A.MODEL', '=', 'B.MODEL_ID')
-        ->where('B.id', $id)
-        ->whereNotIn('A.id', function($query) {
-            $query->select(DB::raw('IFNULL(vehicle_id, 0)'))
-                ->from('tj_requete')
-                ->whereNotIn('statut', ['completed', 'new'])
-                ->whereRaw('date(ride_required_on_date) != date(B.ride_required_on_date)')
-                ->whereColumn('MODEL_ID', 'A.MODEL');
-        })
-        ->select('A.*') // Select columns from both tables as per your requirement
-        ->get();
+        // $vehicles =DB::table('tj_vehicule as A')
+        // ->join('tj_requete as B', 'A.MODEL', '=', 'B.MODEL_ID')
+        // ->where('B.id', $id)
+        // ->whereNotIn('A.id', function($query) {
+        //     $query->select(DB::raw('IFNULL(vehicle_id, 0)'))
+        //         ->from('tj_requete')
+        //         ->whereNotIn('statut', ['completed', 'new'])
+        //         ->whereRaw('date(ride_required_on_date) != date(B.ride_required_on_date)')
+        //         ->whereColumn('MODEL_ID', 'A.MODEL');
+        // })
+        // ->select('A.*') // Select columns from both tables as per your requirement
+        // ->get();
         $localTime = Carbon::parse($ride->creer)->timezone('Asia/Kolkata');
         $msg="This is testing";
         //echo json_encode($vehicles,JSON_PRETTY_PRINT);
@@ -964,10 +963,10 @@ class RidesController extends Controller
 
         if ($rides) {
 
-            // $rides->statut = "vehicle assigned";
-            // $rides->id_conducteur= $driver;
-            // $rides->vehicle_Id=$vehicleid;
-            // $rides->save();
+            $rides->statut = "vehicle assigned";
+            $rides->id_conducteur= $driver;
+            $rides->vehicle_Id=$vehicleid;
+            $rides->save();
 
              $driverinfo = Driver::where('id',$driver)->where('fcm_id', '!=', '')->first();
 
