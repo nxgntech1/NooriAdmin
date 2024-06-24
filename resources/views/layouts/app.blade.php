@@ -339,6 +339,11 @@
 
 
     // });
+    $(document).ready(function () {
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    });
 
     var url1 = "{{ route('changeLang') }}";
 

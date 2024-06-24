@@ -67,7 +67,8 @@
                                                 @endif
                                                 <button type="submit" class="btn-flat position-absolute"><i
                                                             class="fa fa-search"></i></button>
-                                                <!-- <input type="search" id="search" class="search form-control" placeholder="Search" aria-controls="users-table"></label>&nbsp;<button onclick="searchtext();" class="btn btn-warning btn-flat">Search</button>&nbsp; -->
+                                                <!-- <input type="search" id="search" class="search form-control" placeholder="Search" aria-controls="users-table"></label>&nbsp;-->
+                                                 <button onclick="searchtext();" class="btn btn-warning">{{trans('lang.search')}}</button>&nbsp; 
                                                 <!-- <button onclick="searchclear();" class="btn btn-warning btn-flat">Clear</button> -->
                                                 <a class="btn btn-warning btn-flat" href="{{url('users')}}">Clear</a>
                                             </div>
@@ -82,11 +83,11 @@
                                        cellspacing="0" width="100%">
                                     <thead>
                                     <tr>
-                                        <th class="delete-all"><input type="checkbox" id="is_active"><label
+                                        <!-- <th class="delete-all"><input type="checkbox" id="is_active"><label
                                                     class="col-3 control-label" for="is_active"><a id="deleteAll"
                                                                                                    class="do_not_delete"
                                                                                                    href="javascript:void(0)"><i
-                                                            class="fa fa-trash"></i> All</a></label></th>
+                                                            class="fa fa-trash"></i> All</a></label></th> -->
                                         <th>{{trans('lang.extra_image')}}</th>
                                         <th>{{trans('lang.user_name')}}</th>
                                         <th>{{trans('lang.email')}}</th>
@@ -100,12 +101,12 @@
                                      @if(count($users) > 0)
                                     @foreach($users as $customer)
                                         <tr>
-                                            <td class="delete-all"><input type="checkbox"
+                                            <!-- <td class="delete-all"><input type="checkbox"
                                                                           id="is_open_{{$customer->id}}"
                                                                           class="is_open"
                                                                           dataid="{{$customer->id}}"><label
                                                         class="col-3 control-label"
-                                                        for="is_open_{{$customer->id}}"></label></td>
+                                                        for="is_open_{{$customer->id}}"></label></td> -->
 
                                             
                                             {{--@if (file_exists('assets/images/users'.'/'.$customer->photo_path) && !empty($customer->photo_path))--}}
@@ -138,11 +139,12 @@
                                                           class="fa fa-eye"></i></a>
                                               <a
                                                         href="{{route('users.edit', ['id' => $customer->id])}}"><i
-                                                            class="fa fa-edit"></i></a><a id="'+val.id+'"
+                                                            class="fa fa-edit"></i></a>
+                                                            <!-- <a id="'+val.id+'"
                                                                                           class="do_not_delete"
                                                                                           name="user-delete"
                                                                                           href="{{route('user.delete', ['id' => $customer->id])}}"><i
-                                                            class="fa fa-trash"></i></a>
+                                                            class="fa fa-trash"></i></a> -->
                                                 </td>
                                         </tr>
                                     @endforeach

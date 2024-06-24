@@ -253,7 +253,7 @@
 																			</td>
 																		</tr>
 																		@endif
-																		<tr>
+																		<!-- <tr>
 																			<td class="seprater" colspan="2">
 																				<hr>
 																				<span>{{trans("lang.sub_total")}}</span>
@@ -269,7 +269,7 @@
 																				{{$currency->symbole."".number_format(floatval($ride->SUB_TOTAL),$currency->decimal_digit)}}
 																				@endif
 																			</td>
-																		</tr>
+																		</tr> -->
 																		@if($ride->discount > 0)
 																		<tr>
 																			<td class="seprater" colspan="2">
@@ -774,11 +774,11 @@
 			
 
 
-						<div class="form-group col-12 text-center btm-btn non-printable">
+						<!-- <div class="form-group col-12 text-center btm-btn non-printable">
 							<button type="submit" class="btn btn-primary save_order_btn"><i class="fa fa-save"></i> {{trans('lang.save')}}</button>
 							<a href="javascript:history.go(-1)" class="btn btn-default"><i class="fa fa-undo"></i>{{trans('lang.cancel')}}</a>
 
-						</div>
+						</div> -->
 
 						</form>
 					</div>

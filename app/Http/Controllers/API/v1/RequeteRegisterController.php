@@ -274,8 +274,13 @@ class RequeteRegisterController extends Controller
 
         if (!empty($id_payment)) {
            
-                //if ($id_payment == "5")
+                if ($id_payment == "5")
+                {
                     $ridestatus = 'new';
+                }
+                else{
+                    $ridestatus = '';
+                }
 
                 $date_heure = date('Y-m-d H:i:s');
 
@@ -407,11 +412,12 @@ class RequeteRegisterController extends Controller
                 // }
 
 
-                // if ($id_payment = '5')
-                // {
+                if ($id_payment == "5")
+                {
                     
                  $EmailResponse = $this->SendBookRideEmailNotifiaction($id);
                  $AppNotificaton = $this->SendNewRideAppNotification($id);
+                }
 
                  // App Notification 
 
@@ -488,16 +494,39 @@ class RequeteRegisterController extends Controller
         $id_user = $request->get('user_id');
         $ride_id = $request->get('ride_id');
         $transaction_id = $request->get('transaction_id');
+        $paymentstatus = $request->get('payment_status');
         $date_heure = date('Y-m-d H:i:s');
 
-        if(!empty($id_user) && !empty($ride_id) && !empty($transaction_id)){
-
+        if(!empty($id_user) && !empty($ride_id) && !empty($paymentstatus)){
+            if($paymentstatus=="success")
+            {
             $updatedata = DB::table('TJ_REQUETE')
             ->where('id', $ride_id)
             ->where('id_user_app', $id_user)
             ->update(['transaction_id' => $transaction_id,'modifier' => $date_heure ,'statut' => 'new']);
-            
+            }
+            else{
+                $updatedata = DB::table('TJ_REQUETE')
+                ->where('id', $ride_id)
+                ->where('id_user_app', $id_user)
+                ->update(['modifier' => $date_heure ,'statut' => 'paymentfailed']);
+            }
             if (!empty($updatedata)) {
+                if($paymentstatus=="success")
+                {
+                $ride =DB::table('TJ_REQUETE')
+                ->where('id', $ride_id)
+                ->first();
+                 if($ride)
+                 {   
+                if ($ride->id_payment_method !== "5")
+                {
+                 $EmailResponse = $this->SendBookRideEmailNotifiaction($ride_id);
+                 $AppNotificaton = $this->SendNewRideAppNotification($ride_id);
+                }
+            }
+
+            }
                 $response['success'] = 'success';
                 $response['error'] = null;
                 $response['message'] = 'status successfully updated';
@@ -506,6 +535,7 @@ class RequeteRegisterController extends Controller
             $response['success'] = 'Failed';
             $response['error'] = 'failed to update';
             }
+        
         } else{
             $response['success'] = 'Failed';
             $response['error'] = 'some field are missing';

@@ -350,6 +350,7 @@ class RideDetailsController extends Controller
                 'tj_requete.vehicle_Id','tj_requete.id_conducteur','car_model.name as carmodel','brands.name as brandname',
                 'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image')
             ->where('tj_requete.id_user_app', '=', $id_user_app)
+            ->where('tj_requete.statut','!=','paymentfailed')
             ->orderBy('tj_requete.id', 'desc')
             ->get();
         //}
@@ -498,6 +499,7 @@ class RideDetailsController extends Controller
         $sqllatestrideid = DB::table('tj_requete')
                         ->select('tj_requete.id')
                         ->where('tj_requete.id_user_app', '=', $id_user_app)
+                        ->where('tj_requete.statut','!=','paymentfailed')
                         ->orderBy('tj_requete.id', 'desc')
                         ->first();
         if($sqllatestrideid)
@@ -712,7 +714,7 @@ class RideDetailsController extends Controller
                 $row->depart_name = $row->depart_name;
                 $row->destination_name = $row->destination_name;
                 $row->statut = Str::lower($row->statut);
-                $row->montant = $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit); ;
+                $row->montant = $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit); 
                 $row->car_Price = $row->car_Price;
                 $row->sub_total = $row->sub_total;
                 $row->BookigDate = $row->ride_required_on_date;
@@ -801,7 +803,7 @@ class RideDetailsController extends Controller
                     $sql_rowtax->tax_type = $sql_rowtax->tax_type;
                     $sql_rowtax->taxlabel = $sql_rowtax->taxlabel;
                     $sql_rowtax->tax = $sql_rowtax->tax;
-                    $sql_rowtax->ride_tax_amount = $sql_rowtax->ride_tax_amount;
+                    $sql_rowtax->ride_tax_amount = $currency->symbole . "" . number_format($sql_rowtax->ride_tax_amount,$currency->decimal_digit); 
 
                     //$row->tax = $sql_rowtax;
                     $tax[] = $sql_rowtax;
@@ -842,8 +844,11 @@ class RideDetailsController extends Controller
                     $row->driver_phone = "";
                     //$row->moyenne_driver = "0.0";
                 }
-
-                
+                $subtotal = ($row->car_Price -$row->discount);
+                $row->car_Price = $currency->symbole . "" . number_format($row->car_Price,$currency->decimal_digit);
+                $row->discount = $currency->symbole . "" . number_format($row->discount,$currency->decimal_digit);
+                $row->sub_total = $currency->symbole . "" . number_format($subtotal,$currency->decimal_digit); 
+                $row->tax_amount =$currency->symbole . "" . number_format($row->tax_amount,$currency->decimal_digit);
                 $output[] = $row;
 
             }

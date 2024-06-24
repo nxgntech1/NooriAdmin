@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Image;
 use Validator;
+use Illuminate\Support\Carbon;
 
 class UserController extends Controller
 {
@@ -198,9 +199,12 @@ class UserController extends Controller
                 $userRating = number_format(($user_rating->ratingSum / $user_rating->ratingCount));
             }
         }
+        $localCreatedTime = Carbon::parse($user->creer)->timezone('Asia/Kolkata');
+        $localUpdatedTime = Carbon::parse($user->modifier)->timezone('Asia/Kolkata');
 
-
-        return view("settings.users.show")->with("user", $user)->with("rides", $rides)->with("transactions", $transactions)->with("currency", $currency)->with('userRating', $userRating)->with('parcelOrders', $parcelOrders);
+        return view("settings.users.show")->with("user", $user)->with("rides", $rides)->with("transactions", $transactions)
+        ->with("currency", $currency)->with('userRating', $userRating)->with('parcelOrders', $parcelOrders)
+        ->with('localCreatedTime',$localCreatedTime)->with('localUpdatedTime',$localUpdatedTime);
     }
 
     public function userUpdate(Request $request, $id)
@@ -221,7 +225,7 @@ class UserController extends Controller
             'prenom' => 'required',
             'phone' => 'required|unique:tj_user_app,phone,' . $id,
             'email' => 'required|unique:tj_user_app,email,' . $id,
-            'photo' => 'required|mimes:jpg,jpeg,png|max:2048',
+            // 'photo' => 'required|mimes:jpg,jpeg,png|max:2048',
 
         ], $messages = [
             'nom.required' => 'The First Name field is required!',

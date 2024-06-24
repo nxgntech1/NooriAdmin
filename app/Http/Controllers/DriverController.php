@@ -144,9 +144,11 @@ class DriverController extends Controller
         	if($type == 1){
                 $document->document_status = 'Approved';
 				$document->comment = '';
+                $msg ="Document got Approved.";
             }else{
             	$document->document_status = 'Disapprove';
 				$document->comment = $comment;
+                $msg ="Document got Disapproved.";
 				$this->notifyDriver($comment,$document->driver_id);
             }
 			$document->save();
@@ -172,12 +174,12 @@ class DriverController extends Controller
 			$driver->is_verified = 0;
 		}
 		$driver->save();
-
+        
 		if(!blank($comment)){
 			echo json_encode(array('success'=>'yes')); die;
 		}
 
-        return redirect()->back();
+        return redirect()->back()->with('message',$msg);
     }
 
 	public function notifyDriver($comment,$id){

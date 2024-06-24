@@ -3,7 +3,13 @@
 @section('content')
 
     <div class="page-wrapper ridedetail-page">
-
+		<div id="alert-message">
+	@if(session()->has('message'))
+		<div class="alert alert-success center">
+			{{ session()->get('message') }}
+		</div>
+	@endif
+	</div>
         <div class="row page-titles">
 
             <div class="col-md-5 align-self-center">
@@ -105,14 +111,16 @@
 				                                                        
 				                                                                <div class="modal-body">
 				                                                                    <div class="form-group">
-			                                                                            <embed
+			                                                                            <!-- <embed
 			                                                                                src="{{asset('assets/images/driver/documents').'/'.$document->driver_document->document_path}}"
 			                                                                                frameBorder="0"
 			                                                                                scrolling="auto"
 			                                                                                height="100%"
 			                                                                                width="100%"
 			                                                                                style="height: 540px;"
-			                                                                            ></embed>
+			                                                                            ></embed> -->
+																						<img src="{{ asset('assets/images/driver/documents/' . $document->driver_document->document_path) }}" alt="Driver Document"
+																						 style="width: auto; height: auto; max-height: 540px;">
 				                                                                    </div>
 				                                                                    
 				                                                                    <div class="modal-footer">
@@ -219,7 +227,11 @@
                 },
                 dataType: 'json',
                 success: function (data) {
-                	window.location.reload();
+					$('#commentModal').modal('hide');
+					$('#alert-message').html('<div class="alert alert-danger center">Document got Disapproved.</div>');
+					setTimeout(function() {
+						window.location.reload();
+                }, 5000);
                 }
             });
   		});

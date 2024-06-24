@@ -59,10 +59,10 @@
 	                                <div class="user-title col-md-7">
 		                                 <h4 class="card-title"> Details of {{$user->prenom}} {{$user->nom}}</h4>
         	                        </div>
-									<div class="col-md-3">
+									<!-- <div class="col-md-3">
 								<a href="javascript:void(0)" data-toggle="modal" data-target="#addWalletModal"
                                class="text-white add-wallate btn btn-success"><i class="fa fa-plus"></i> Add Wallet Amount</a>
-									</div>
+									</div> -->
                                </div>
                            </div>
 
@@ -80,14 +80,14 @@
 						        	<a href="#rides" aria-controls="rides" role="tab" data-toggle="tab" class="{{ (Request::get('tab') == 'rides') ? 'active show' : '' }}">Rides</a>
 						        </li>
 
-								<li role="presentation" class="">
+								<!-- <li role="presentation" class="">
 									<a href="#parcels" aria-controls="parcels" role="tab" data-toggle="tab"
 										class="{{ (Request::get('tab') == 'parcels') ? 'active show' : '' }}">{{trans('lang.parcel')}}</a>
 								</li>
 
 						        <li role="presentation" class="">
 						        	<a href="#transactions" aria-controls="transactions" role="tab" data-toggle="tab" class="{{ (Request::get('tab') == 'transactions') ? 'active show' : '' }}">Wallet Transactions</a>
-						        </li>
+						        </li> -->
 
 
 						    </ul>
@@ -127,8 +127,9 @@
 		                                <div class="col-md-6">
 		                                   	<div class="col-group">
 		                                    	<label for="" class="font-weight-bold">{{trans('lang.created_at')}} :</label>
-		                                    	<span class="date">{{ date('d F Y',strtotime($user->creer))}}</span>
-                                                      <span class="time">{{ date('h:i A',strtotime($user->creer))}}</span>
+		                                    	<span class="date">{{ $localCreatedTime->format('d F Y')}}</span>
+												
+                                                      <span class="time">{{ $localCreatedTime->format('h:i A')}}</span>
 		                                	</div>
 		                                </div>
 
@@ -136,13 +137,13 @@
 		                                  	<div class="col-group">
 		                                  	  <label for="" class="font-weight-bold">{{trans('lang.edited')}} :</label>
 		                                    	@if($user->modifier!='0000-00-00 00:00:00')
-                                                      <span class="date">{{ date('d F Y',strtotime($user->modifier))}}</span>
-                                                      <span class="time">{{ date('h:i A',strtotime($user->modifier))}}</span>
+                                                      <span class="date">{{ $localUpdatedTime->format('d F Y')}}</span>
+                                                      <span class="time">{{ $localUpdatedTime->format('h:i A')}}</span>
                                                       @endif
 		                                	</div>
 										</div>
 
-										<div class="col-md-6">
+										<!-- <div class="col-md-6">
 		                                  	<div class="col-group">
 		                                  	  <label for="" class="font-weight-bold">{{trans('lang.wallet_balance')}} :</label>
 		                                    	<span>
@@ -154,7 +155,7 @@
 													@endif
 												</span>
 		                                	</div>
-										</div>
+										</div> -->
 
 										<div class="col-md-6">
 		                                    <div class="col-group">
