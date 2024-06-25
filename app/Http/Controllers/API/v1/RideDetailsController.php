@@ -846,8 +846,11 @@ class RideDetailsController extends Controller
                 }
                 $subtotal = ($row->car_Price -$row->discount);
                 $row->car_Price = $currency->symbole . "" . number_format($row->car_Price,$currency->decimal_digit);
-                $row->discount = $currency->symbole . "" . number_format($row->discount,$currency->decimal_digit);
-                $row->sub_total = $currency->symbole . "" . number_format($subtotal,$currency->decimal_digit); 
+            
+                if (!empty($row->discount) && $row->discount != '0')
+                    $row->discount = $currency->symbole . "" . number_format($row->discount,$currency->decimal_digit);
+            
+                    $row->sub_total = $currency->symbole . "" . number_format($subtotal,$currency->decimal_digit); 
                 $row->tax_amount =$currency->symbole . "" . number_format($row->tax_amount,$currency->decimal_digit);
                 $output[] = $row;
 

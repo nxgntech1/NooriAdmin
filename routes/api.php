@@ -181,6 +181,7 @@ Route::group(['middleware' => ['apiKeyAuth']], function () {
     Route::get('v1/vehicle-get/', [VehicleController::class, 'getVehicleData']);
     Route::get('v1/get-bookingtypes/', [VehicleController::class, 'getBookingTypes']);
     Route::post('v1/get-car-models/', [VehicleController::class, 'getCarModels']);
+    Route::post('v1/get-addon-pricing/', [VehicleController::class, 'getaddOnsPricing']);
     Route::get('v1/get-coupons/', [VehicleController::class, 'getCoupons']);
     Route::post('v1/send-sms', [NotificationsController::class, 'sendSms']);
     Route::post('v1/send-textlocalsms', [NotificationsController::class, 'sendTextLocalSMS']);

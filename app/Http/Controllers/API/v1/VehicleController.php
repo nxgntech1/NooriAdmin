@@ -590,5 +590,60 @@ public function getCarModels(Request $request)
     
   }
 
+  public function getaddOnsPricing(Request $request)
+  {
+
+    $ride_id = $request->get('ride_id');
+    
+    if (!empty($ride_id))
+    {
+      $sql = DB::table('tj_requete')
+            ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
+            ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
+            'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.add_on_label')
+            ->where('pricing_by_car_models.is_add_on','=','yes')
+            ->where('pricing_by_car_models.status','=','yes')
+            ->where('tj_requete.id','=',$ride_id)
+            ->get();
+    }
+
+    $rowOutput='';
+    $CarModelID = '';
+    $output = array();	
+    
+    foreach($sql as $row){
+      $CarModelID = $row->model_id;
+      $output[] = $row;
+    }
+
+    $allowcod = 'no';
+
+    if (!empty($CarModelID)){
+      $sqlCod = DB::table('car_model')
+      ->select('car_model.allow_cod')
+      ->where('car_model.status','=','yes')
+      ->where('car_model.id','=',$CarModelID)
+      ->get();
+
+      
+      foreach($sqlCod as $rowCod){
+        $allowcod = $rowCod->allow_cod;
+      }
+    }
+
+
+    if(!empty($output)){
+      $response['success']= 'Success';
+      $response['error']= null;
+      $response['message']= 'Successfully fetch data';
+      $response['data'] = $output;
+      $response['allow_cod'] = $allowcod;
+    }else{
+      $response['success']= 'Failed';
+      $response['error']= 'Failed To Fetch Data';
+    }
+    return response()->json($response);
+    
+  }
 
 }
