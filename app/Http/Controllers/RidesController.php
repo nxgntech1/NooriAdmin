@@ -975,34 +975,14 @@ class RidesController extends Controller
             $rides->vehicle_Id=$vehicleid;
             $rides->save();
 
+            $date_heure=date('Y-m-d H:i:s');
+            $query = DB::insert("insert into ride_status_change_log(ride_id,status,driver_id, latitude,longitude,created_on)
+            values('".$rides->id."','vehicle assigned','".$driver."','".''."','".''."','".$date_heure."')");
+            
+
              $driverinfo = Driver::where('id',$driver)->where('fcm_id', '!=', '')->first();
 
-             
-
-            // $usermsg = "Congratulations your booking got confirmed with the Driver :".$driverinfo->nom ." ".$driverinfo->prenom.", mobile: ".$driverinfo->phone."";
-            // $usertitle = "Booking Confirmed";
-            // $messages = array("body" => $usermsg, "title" => $usertitle, "sound" => "default", "tag" => "notification");
-
-            // $users = UserApp::where('id',$rides->id_user_app)-> where('fcm_id', '!=', '')->first();
-
-            // $tokens = $insert_data = array();
-            // $temp = array();
-            // array_push($tokens,$users->fcm_id);
-            // //Cosumer notification
-            // GcmController::send_notification($tokens, $messages,$temp);
-
-            // $drivermsg = "You have got a booking with the Customer :".$users->nom ." ".$driverinfo->prenom.", mobile: ".$driverinfo->phone."";
-            // $drivertitle = "Booking Assigned";
-            
-            // $drivermessages = array("body" => $drivermsg, "title" => $drivertitle, "sound" => "default", "tag" => "notification");
-
-            // $tokens = $insert_data = array();
-            // array_push($tokens,$driverinfo->fcm_id);
-
-            // GcmController::send_notification($tokens, $drivermessages,$temp);
-
              $msg = 'Notification successfully sent';
-
 
             $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
             $sql = DB::table('tj_requete')
