@@ -93,14 +93,16 @@ class AddOnController extends Controller
             'vehicle_id' => 'required',
             'brand' => 'required',
             'carmodel_id' => 'required',
-            'addonlabel' => 'required',
+            'hours' => 'required',
+            'kms' => 'required',
             'price' => 'required'
 
         ], $messages = [
             'vehicle_id.required' => 'The Vehicle Type field is required!',
             'brand.required' => 'The Vehicle Brand field is required!',
             'carmodel_id.required' => 'The Car Model field is required!',
-            'addonlabel.required' => 'The AddOn Label field is required!',
+            'hours.required' => 'The Hours field is required!',
+            'kms.required' => 'The Kilometers field is required!',
             'price.required' => 'The Price field is required!',
         ]);
 
@@ -115,7 +117,8 @@ class AddOnController extends Controller
         $carmodelprice->Price = $request->input('price');
         $carmodelprice->Status = $request->input('status') ? 'yes' : 'no';
         $carmodelprice->is_Add_on = 'yes';
-        $carmodelprice->Add_on_Label= $request->input('addonlabel');
+        $carmodelprice->hours= $request->input('hours');
+        $carmodelprice->kms= $request->input('kms');
 
         $carmodelprice->save();
 
@@ -139,14 +142,16 @@ class AddOnController extends Controller
             'vehicle_id' => 'required',
             'brand' => 'required',
             'carmodel_id' => 'required',
-            'addonlabel' => 'required',
+            'hours' => 'required',
+            'kms' => 'required',
             'price' => 'required'
 
         ], $messages = [
             'vehicle_id.required' => 'The Vehicle Type field is required!',
             'brand.required' => 'The Vehicle Brand field is required!',
             'carmodel_id.required' => 'The Car Model field is required!',
-            'addonlabel.required' => 'The AddOn Label field is required!',
+            'hours.required' => 'The Hours field is required!',
+            'kms.required' => 'The Kilometers field is required!',
             'price.required' => 'The Price field is required!',
         ]);
 
@@ -160,7 +165,8 @@ class AddOnController extends Controller
         $CarModelID = $request->input('carmodel_id');
         $Price = $request->input('price');
         $Status = $request->input('status') ? 'yes' : 'no';
-        $addonlabel = $request->input('addonlabel');
+        $hours = $request->input('hours');
+        $kms = $request->input('kms');
 
         $carmodelprice->save();
         if ($carmodelprice) {
@@ -169,7 +175,8 @@ class AddOnController extends Controller
             ->where('PricingID', $id)
             ->update([
                 'CarModelID' => $CarModelID,
-                'Add_on_Label' => $addonlabel,
+                'hours' => $hours,
+                'kms' => $kms,
                 'Price' => $Price,
                 'Status' => $Status,
             ]);

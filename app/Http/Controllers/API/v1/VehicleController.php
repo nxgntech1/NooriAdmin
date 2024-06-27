@@ -600,7 +600,8 @@ public function getCarModels(Request $request)
       $sql = DB::table('tj_requete')
             ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
             ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
-            'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.add_on_label')
+            'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing',
+            DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
             ->where('pricing_by_car_models.is_add_on','=','yes')
             ->where('pricing_by_car_models.status','=','yes')
             ->where('tj_requete.id','=',$ride_id)
@@ -638,6 +639,91 @@ public function getCarModels(Request $request)
       $response['message']= 'Successfully fetch data';
       $response['data'] = $output;
       $response['allow_cod'] = $allowcod;
+    }else{
+      $response['success']= 'Failed';
+      $response['error']= 'Failed To Fetch Data';
+    }
+    return response()->json($response);
+    
+  }
+
+  public function getaddOnsTaxPricing(Request $request)
+  {
+
+    $addon_id = $request->get('addon_id');
+    
+    if (!empty($addon_id))
+    {
+      // $pdo = DB::getPdo();
+      // $stmt = $pdo->prepare('CALL GetRideAddonData(:addon_id,@intout)');
+      // $stmt->bindParam(':addon_id', $addon_id, PDO::PARAM_INT);
+      // $stmt->execute();
+
+      // $stmt = $pdo->query('SELECT @intout as INTRETURN');
+      // $result = $stmt->fetch(PDO::FETCH_ASSOC);
+      // $intout = $result['INTRETURN'];
+
+      
+
+      // // Close the cursor to free resources
+      // $stmt->closeCursor();
+      $procedureResult = DB::select('CALL `GetRideAddonData`(?, @intreturn)', [$addon_id]);
+      if($procedureResult)
+      {
+        foreach($procedureResult as $row)
+        {
+          $rowOutput = $row;
+        }
+      }
+
+    }
+    
+
+    //$rowOutput=$procedureResult;
+   
+    if(!empty($rowOutput)){
+      $response['success']= 'Success';
+      $response['error']= null;
+      $response['message']= 'Successfully fetch data';
+      $response['data'] = $rowOutput;
+      
+    }else{
+      $response['success']= 'Failed';
+      $response['error']= 'Failed To Fetch Data';
+    }
+    return response()->json($response);
+    
+  }
+
+  public function updateAddonPaymentStatus(Request $request)
+  {
+
+    $addon_id = $request->get('addon_id');
+    $bookingid = $request->get('booking_id');
+    $paymentstatus = $request->get('payment_status');
+    $transactionid = $request->get('transaction_id');
+    
+    if (!empty($addon_id) && !empty($bookingid) && !empty($paymentstatus))
+    {
+      $pdo = DB::getPdo();
+      $stmt = $pdo->prepare('CALL UpdateAddonPaymentStatus(:bookingid, :addonid,:paymentstatus,:transactionid,@intout)');
+      $stmt->bindParam(':bookingid', $bookingid, PDO::PARAM_INT);
+      $stmt->bindParam(':addonid', $addon_id, PDO::PARAM_INT);
+      $stmt->bindParam(':paymentstatus', $paymentstatus, PDO::PARAM_STR);
+      $stmt->bindParam(':transactionid', $transactionid, PDO::PARAM_STR);
+      $stmt->execute();
+
+      $stmt = $pdo->query('SELECT @intout as INTRETURN');
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+      $intout = $result['INTRETURN'];
+
+    }
+   
+    if(!empty($intout)){
+      $response['success']= 'Success';
+      $response['error']= null;
+      $response['message']= 'Successfully fetch data';
+      
     }else{
       $response['success']= 'Failed';
       $response['error']= 'Failed To Fetch Data';

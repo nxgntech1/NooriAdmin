@@ -86,18 +86,27 @@
 						<div class="form-group row width-50">
 							<label class="col-3 control-label">{{trans('lang.price')}}</label>
 							<div class="col-7">
-								<input type="text" class="form-control car_model_name" value="{{$carmodelprice->Price}}" name="price">
+								<input type="text" id="price" pattern="^\d+(\.\d+)?$" title="Only numbers are allowed" class="form-control car_model_name" value="{{$carmodelprice->Price}}" name="price">
 								<div class="form-text text-muted">
 									{{ trans("lang.food_price_help") }}
 								</div>
 							</div>
 						</div>
 						<div class="form-group row width-50">
-							<label class="col-3 control-label">{{trans('lang.addon_label')}}</label>
+							<label class="col-3 control-label">{{trans('lang.hours')}}</label>
 							<div class="col-7">
-								<input type="text" class="form-control car_model_name" value="{{$carmodelprice->Add_on_Label}}" name="addonlabel">
+								<input type="text" id="hours" pattern="\d*" title="Only numbers are allowed" class="form-control car_model_name" value="{{$carmodelprice->hours}}" name="hours">
 								<div class="form-text text-muted">
-									{{ trans("lang.addon_label_help") }}
+									{{ trans("lang.hours_help") }}
+								</div>
+							</div>
+						</div>
+						<div class="form-group row width-50">
+							<label class="col-3 control-label">{{trans('lang.kms')}}</label>
+							<div class="col-7">
+								<input type="text" id="kms" pattern="\d*" title="Only numbers are allowed" class="form-control car_model_name" value="{{$carmodelprice->kms}}" name="kms">
+								<div class="form-text text-muted">
+									{{ trans("lang.kms_help") }}
 								</div>
 							</div>
 						</div>
@@ -136,6 +145,20 @@
 @endsection
 
 @section('scripts')
+<script type="text/javascript">
+	document.getElementById('price').addEventListener('input', function (e) {
+		this.value = this.value.replace(/[^0-9.]/g, '');
+    if ((this.value.match(/\./g) || []).length > 1) {
+        this.value = this.value.replace(/\.$/, '');
+    }
+	});
+	document.getElementById('hours').addEventListener('input', function (e) {
+		this.value = this.value.replace(/[^0-9]/g, '');
+	});
+	document.getElementById('kms').addEventListener('input', function (e) {
+		this.value = this.value.replace(/[^0-9]/g, '');
+	});
+</script>	
  
 @endsection
 

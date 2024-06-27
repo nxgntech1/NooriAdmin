@@ -354,9 +354,7 @@ Route::get('/getlang', [App\Http\Controllers\languageController::class, 'getLang
 
         
 
-        Route::get('email_template', [App\Http\Controllers\EmailTemplateController::class, 'index'])->name('email_template.index');
-        Route::get('email_template/edit/{id}', [App\Http\Controllers\EmailTemplateController::class, 'edit'])->name('email_template.edit');
-        Route::put('email_template/update/{id}', [App\Http\Controllers\EmailTemplateController::class, 'update'])->name('email_template.update');
+        
 
         
 
@@ -390,6 +388,10 @@ Route::get('/getlang', [App\Http\Controllers\languageController::class, 'getLang
         Route::put('/terms_condition/update/{id}', [App\Http\Controllers\TermsAndConditionsController::class, 'update'])->name('terms_condition.update');
         Route::get('/privacy_policy', [App\Http\Controllers\TermsAndConditionsController::class, 'indexPrivacy'])->name('privacy_policy');
         Route::put('/privacy_policy/update/{id}', [App\Http\Controllers\TermsAndConditionsController::class, 'updatePrivacy'])->name('privacy_policy.update');
+
+        Route::get('email_template', [App\Http\Controllers\EmailTemplateController::class, 'index'])->name('email_template.index');
+        Route::get('email_template/edit/{id}', [App\Http\Controllers\EmailTemplateController::class, 'edit'])->name('email_template.edit');
+        Route::put('email_template/update/{id}', [App\Http\Controllers\EmailTemplateController::class, 'update'])->name('email_template.update');
 
     });
     Route::prefix('settings')->group(function(){

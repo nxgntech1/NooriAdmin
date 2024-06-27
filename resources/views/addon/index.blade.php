@@ -83,7 +83,8 @@
                                         <th>{{trans('lang.vehicle_type')}}</th>
                                         <th>{{trans('lang.brand')}}</th>
                                         <th>{{trans('lang.vehicle_model')}}</th>
-                                        <th>{{trans('lang.addon_label')}}</th>
+                                        <th>{{trans('lang.hours')}}</th>
+                                        <th>{{trans('lang.kms')}}</th>
                                         <th>{{trans('lang.price')}}</th>
                                         <th>{{trans('lang.status')}}</th>
                                         <th>{{trans('lang.actions')}}</th>
@@ -102,7 +103,8 @@
                                             <td>{{ $value->vehicletype}} </td>
                                             <td>{{ $value->BrandName}} </td>
                                             <td>{{ $value->modelname}} </td>
-                                            <td>{{ $value->Add_on_Label}} </td>
+                                            <td>{{ $value->hours}} </td>
+                                            <td>{{ $value->kms}} </td>
                                             <td>{{ $currency->symbole."".number_format(floatval($value->Price),$currency->decimal_digit) }} </td>
                                               <td>  @if ($value->Status=="yes")
                                                     <label class="switch"><input type="checkbox" id="{{$value->PricingID}}" name="publish" checked><span class="slider round"></span></label>

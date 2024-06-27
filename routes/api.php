@@ -126,7 +126,7 @@ use App\Http\Controllers\API\v1\ParcelCanceledController;
 use App\Http\Controllers\API\v1\SearchDriverParcelOrdersController;
 use App\Http\Controllers\API\v1\ZoneController;
 use App\Http\Controllers\API\v1\NotificationsController;
-
+use App\Http\Controllers\api\v1\VehicleController as V1VehicleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -182,6 +182,8 @@ Route::group(['middleware' => ['apiKeyAuth']], function () {
     Route::get('v1/get-bookingtypes/', [VehicleController::class, 'getBookingTypes']);
     Route::post('v1/get-car-models/', [VehicleController::class, 'getCarModels']);
     Route::post('v1/get-addon-pricing/', [VehicleController::class, 'getaddOnsPricing']);
+    Route::post('v1/get-addon-tax-pricing/',[VehicleController::class, 'getaddOnsTaxPricing']);
+    Route::post('v1/update-addon-payment-status/',[VehicleController::class, 'updateAddonPaymentStatus']);
     Route::get('v1/get-coupons/', [VehicleController::class, 'getCoupons']);
     Route::post('v1/send-sms', [NotificationsController::class, 'sendSms']);
     Route::post('v1/send-textlocalsms', [NotificationsController::class, 'sendTextLocalSMS']);

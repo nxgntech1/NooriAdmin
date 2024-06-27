@@ -299,7 +299,7 @@ class CompleteRequeteController extends Controller
             $currentDateTimeInIndia = Carbon::now('Asia/Kolkata');
             $title = "Ride Started";
             
-            $msg = str_replace("{Ridetime}", $currentDateTimeInIndia->format('d-m-Y h:m A'), "Your ride has started at {Ridetime}. Please provide the OTP to start the ride.");
+            $msg = str_replace("{Ridetime}", $currentDateTimeInIndia->format('d-m-Y h:m A'), "Your ride has started at {Ridetime}.");
             
             $msg = str_replace("'", "\'", $msg);
         

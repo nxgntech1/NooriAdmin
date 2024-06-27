@@ -431,7 +431,7 @@
 									<img class="vehicle_img rounded" src="{{ asset('assets/images/placeholder_image.jpg')}}" alt="image">
 										
 									@endif
-                                <p class="driver_txt">{{ $value->nom }} {{$value->prenom}}</p>
+                                <p class="driver_txt">{{ $value->prenom }} {{$value->nom}}</p>
                             </div>
 							@endforeach
                         </div>

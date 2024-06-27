@@ -675,12 +675,13 @@ class RideDetailsController extends Controller
         }
         $currency = Currency::where('statut', 'yes')->first();
         $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
-
+        
         $sql = DB::table('tj_requete')
         ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
         ->Join('car_model', 'car_model.id', '=', 'tj_requete.model_id')
         ->Join('brands', 'brands.id', '=', 'tj_requete.brand_id')
         ->Join('tj_payment_method', 'tj_payment_method.id', '=', 'tj_requete.id_payment_method')
+        ->Join('bookingtypes','tj_requete.booking_type_id','=','bookingtypes.id')
         ->select('tj_requete.id', 'tj_requete.ride_type', 'tj_requete.id_user_app', 'tj_requete.depart_name',
             'tj_requete.distance_unit', 'tj_requete.destination_name', 'tj_requete.latitude_depart',
             'tj_requete.longitude_depart', 'tj_requete.latitude_arrivee', 'tj_requete.longitude_arrivee',
@@ -691,10 +692,10 @@ class RideDetailsController extends Controller
             'tj_requete.distance', 'tj_user_app.phone', 'tj_user_app.photo_path as userphoto',
             'tj_requete.date_retour', 'tj_requete.heure_retour', 'tj_requete.statut_round',
             'tj_requete.montant', 'tj_requete.duree', 'tj_requete.statut_paiement',
-            'tj_requete.car_Price','tj_requete.sub_total',
+            'tj_requete.car_Price','tj_requete.sub_total','bookingtypes.bookingtype','tj_requete.booking_type_id',
             'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time','tj_requete.tax_amount','tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
             'tj_requete.vehicle_Id','tj_requete.id_conducteur','car_model.name as carmodel','brands.name as brandname',
-            'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image','tj_requete.id_payment_method as paymentmethodid')
+            'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image','tj_requete.id_payment_method as paymentmethodid','tj_requete.addon')
             ->where('tj_requete.id_user_app', '=', $id_user_app)
             ->where('tj_requete.id', '=', $ride_id)
             //->orderBy('tj_requete.id', 'desc')
@@ -710,7 +711,8 @@ class RideDetailsController extends Controller
                 $id_conducteur = $row->id_conducteur;
                 $id_vehicle = $row->vehicle_Id;
 
-
+                $row->bookingtype = $row->bookingtype;
+                $row->booking_type_id = $row->booking_type_id;
                 $row->depart_name = $row->depart_name;
                 $row->destination_name = $row->destination_name;
                 $row->statut = Str::lower($row->statut);
@@ -740,6 +742,10 @@ class RideDetailsController extends Controller
                 if ($row->otp == null) {
                     $row->otp = '';
                 }else{
+                    if($row->statut=="completed")
+                    {
+                        $row->otp = '';
+                    }
                     $row->otp = $row->otp;
                 }
 
@@ -797,6 +803,7 @@ class RideDetailsController extends Controller
 
                 $sql_tax = DB::table('ride_tax_details')
                 ->select('tax_type', 'tax_label as taxlabel', 'tax', 'ride_tax_amount')
+                ->whereNull('addonid')
                 ->where('bookingid', '=', $row->id)->get();
                 
                 foreach ($sql_tax as $sql_rowtax) {
@@ -852,8 +859,54 @@ class RideDetailsController extends Controller
             
                     $row->sub_total = $currency->symbole . "" . number_format($subtotal,$currency->decimal_digit); 
                 $row->tax_amount =$currency->symbole . "" . number_format($row->tax_amount,$currency->decimal_digit);
-                $output[] = $row;
+                //addon checking
+                $addon = DB::Table('addon_payments')
+                ->where('bookingid','=',$row->id)
+                ->where('payment_status','=','success')
+                ->whereNotNull('transaction_id')
+                ->get();
+               // $row->addon = json_encode($addon,JSON_PRETTY_PRINT);
 
+                if(!empty($addon))
+                {
+                    $addontax = [];
+                    $addons = [];
+                    foreach ($addon as $row_addon) {
+                        $row_addon->addon_total_amount = $currency->symbole . "" . number_format($row_addon->addon_total_amount,$currency->decimal_digit); 
+                        $row_addon->addonid = $row_addon->addonid;
+                        $addonPricing = DB::Table('pricing_by_car_models')
+                            ->where('PricingID','=',$row_addon->addonid)
+                            ->where('is_Add_on','=','yes')
+                            ->first();
+                        if($addonPricing)
+                        {
+                            $row_addon->add_on_label =$addonPricing->hours.' hours |'.$addonPricing->kms.' KMs';
+                            $row_addon->package_price = $currency->symbole . "" . number_format($addonPricing->Price,$currency->decimal_digit);  
+                        }
+                        $addon_tax = DB::table('ride_tax_details')
+                            ->select('tax_type', 'tax_label as taxlabel', 'tax', 'ride_tax_amount')
+                            ->where('addonid','=',$row_addon->addonid)
+                            ->where('bookingid', '=', $row->id)
+                            ->get();
+                            if($addon_tax)
+                            {
+                                
+                            foreach ($addon_tax as $addon_rowtax) {
+                                $addon_rowtax->tax_type = $sql_rowtax->tax_type;
+                                $addon_rowtax->taxlabel = $sql_rowtax->taxlabel;
+                                $addon_rowtax->tax = $sql_rowtax->tax;
+                                $addon_rowtax->ride_tax_amount = $currency->symbole . "" . number_format($addon_rowtax->ride_tax_amount,$currency->decimal_digit); 
+
+                                //$row->tax = $sql_rowtax;
+                                $addontax[] = $addon_rowtax;
+                            }
+                            $row_addon->taxes = $addontax;
+                            $addons[] = $row_addon;
+                        }
+                    }
+                    $row->addon = $addons;
+                }
+                $output[] = $row;
             }
         }
         if (!empty($output)) {

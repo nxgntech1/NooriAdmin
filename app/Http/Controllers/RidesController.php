@@ -13,6 +13,7 @@ use App\Models\UserApp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\API\v1\NotificationsController;
 
 class RidesController extends Controller
@@ -809,7 +810,7 @@ class RidesController extends Controller
              ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
              ->leftjoin('car_model', 'tj_requete.model_id', '=', 'car_model.id')
              ->leftjoin('brands', 'car_model.brand_id', '=', 'brands.id')
-             ->select('tj_requete.*')
+             ->select('tj_requete.*',DB::raw('TIMESTAMP(ride_required_on_date, ride_required_on_time) as requireddatetime'))
              ->addSelect('tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_user_app.phone as user_phone', 'tj_user_app.email as user_email','tj_user_app.photo_path')
              ->addSelect('tj_payment_method.libelle', 'tj_payment_method.image')
              ->addSelect('brands.name as brand', 'car_model.name as model','bookingtypes.bookingtype as booking_type')
@@ -824,7 +825,7 @@ class RidesController extends Controller
              ->join('tj_vehicule', 'tj_requete.vehicle_id', '=', 'tj_vehicule.id')
              ->leftjoin('brands', 'tj_vehicule.brand', '=', 'brands.id')
              ->leftjoin('car_model', 'tj_vehicule.model', '=', 'car_model.id')
-             ->select('tj_requete.*')
+             ->select('tj_requete.*',DB::raw('TIMESTAMP(ride_required_on_date, ride_required_on_time) as requireddatetime'))
              ->addSelect('tj_conducteur.prenom as driverPrenom', 'tj_conducteur.nom as driverNom', 'tj_conducteur.phone as driver_phone', 'tj_conducteur.email as driver_email', 'tj_conducteur.photo_path as driver_photo')
              ->addSelect('tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_user_app.phone as user_phone', 'tj_user_app.email as user_email','tj_user_app.photo_path')
              ->addSelect('tj_payment_method.libelle', 'tj_payment_method.image')
@@ -911,41 +912,74 @@ class RidesController extends Controller
             }
             $ride->zone_name = rtrim($zone_name,', ');
         }
-
+        //echo json_encode($ride->requireddatetime,JSON_PRETTY_PRINT);
        // $drivers = DB::table('tj_conducteur')->where('statut','yes')->where('online','yes')->select('id','nom', 'prenom')->get();
        // $vehicles = DB::table('tj_vehicule')->where('statut','yes')->where('deleted_at',null)->get();
         // Define the subquery for booked rides
-        $subQuery = DB::table('tj_requete as A')
-            ->join('tj_requete as B', 'A.id', '=', 'B.id')
-            ->select(DB::raw('IFNULL(A.id_conducteur, 0) as conductor_id'))
-            ->whereNotIn('A.statut', ['completed', 'new'])
-            ->whereRaw('date(A.ride_required_on_date) != date(B.ride_required_on_date)')
-            ->where('A.id', $id);
+        // $subQuery = DB::table('tj_requete as A')
+        //     ->join('tj_requete as B', 'A.id', '=', 'B.id')
+        //     ->select(DB::raw('IFNULL(A.id_conducteur, 0) as conductor_id'))
+        //     ->whereNotIn('A.statut', ['completed', 'new'])
+        //     ->whereRaw('date(A.ride_required_on_date) != date(B.ride_required_on_date)')
+        //     ->where('A.id', $id);
 
-        // Main query to get available conductors
-        $drivers = DB::table('tj_conducteur as A')
-            ->leftJoinSub($subQuery, 'booked_rides', function ($join) {
-                $join->on('A.id', '=', 'booked_rides.conductor_id');
-            })
-            ->whereNull('booked_rides.conductor_id')
-            ->select('A.id','A.nom','A.prenom')
+        // // Main query to get available conductors
+        // $drivers = DB::table('tj_conducteur as A')
+        //     ->leftJoinSub($subQuery, 'booked_rides', function ($join) {
+        //         $join->on('A.id', '=', 'booked_rides.conductor_id');
+        //     })
+        //     ->whereNull('booked_rides.conductor_id')
+        //     ->select('A.id','A.nom','A.prenom')
+        //     ->get();
+
+        $subquery = DB::table('TJ_REQUETE')
+        ->select('ID_CONDUCTEUR')
+        ->whereNotNull('ID_CONDUCTEUR')
+        ->whereNotIn('STATUT', ['Completed'])
+        ->whereRaw("TIMESTAMPDIFF(HOUR, TIMESTAMP(ride_required_on_date, ride_required_on_time), TIMESTAMP('.$ride->requireddatetime.')) < 8");
+
+        // Define the main query
+        $drivers = DB::table('TJ_CONDUCTEUR')
+            ->whereNotIn('ID', $subquery)
+            ->where('is_verified','=',1)
+            ->where('statut','=','yes')
+            ->select('id','prenom','nom')
             ->get();
 
 
-        $vehicles =DB::table('tj_vehicule as A')
-        ->join('tj_requete as B', 'A.MODEL', '=', 'B.MODEL_ID')
-        ->where('B.id', $id)
-        ->whereNotIn('A.id', function($query) {
-            $query->select(DB::raw('IFNULL(vehicle_id, 0)'))
-                ->from('tj_requete')
-                ->whereNotIn('statut', ['completed', 'new'])
-                ->whereRaw('date(ride_required_on_date) != date(B.ride_required_on_date)')
-                ->whereColumn('MODEL_ID', 'A.MODEL');
-        })
-        ->select('A.*') // Select columns from both tables as per your requirement
-        ->get();
+        // $vehicles =DB::table('tj_vehicule as A')
+        // ->join('tj_requete as B', 'A.MODEL', '=', 'B.MODEL_ID')
+        // ->where('B.id', $id)
+        // ->whereNotIn('A.id', function($query) {
+        //     $query->select(DB::raw('IFNULL(vehicle_id, 0)'))
+        //         ->from('tj_requete')
+        //         ->whereNotIn('statut', ['completed', 'new'])
+        //         ->whereRaw('date(ride_required_on_date) != date(B.ride_required_on_date)')
+        //         ->whereColumn('MODEL_ID', 'A.MODEL');
+        // })
+        // ->select('A.*') // Select columns from both tables as per your requirement
+        // ->get();
 
-        
+        $subqueryVehicle = DB::table('TJ_REQUETE')
+            ->select('vehicle_Id')
+            ->whereNotNull('vehicle_Id')
+            ->whereNotIn('STATUT', ['Completed'])
+            ->whereRaw("TIMESTAMPDIFF(HOUR, TIMESTAMP(ride_required_on_date, ride_required_on_time), TIMESTAMP('.$ride->requireddatetime.')) < 8");
+
+        // Define the main query
+        $vehicles = DB::table('tj_vehicule as v')
+            ->join('car_model as cm', 'v.model', '=', 'cm.id')
+            ->join('brands as b', 'v.brand', '=', 'b.id')
+            ->join('tj_requete as r', function($join) use ($id) {
+                $join->on('r.brand_id', '=', 'b.id')
+                     ->on('r.model_id', '=', 'cm.id')
+                     ->where('r.id', $id);
+            })
+            ->whereNotIn('v.id', $subqueryVehicle)
+            ->distinct()
+            ->select('v.*')
+            ->get();
+
 
         $localTime = Carbon::parse($ride->creer)->timezone('Asia/Kolkata');
         $msg="This is testing";
@@ -976,8 +1010,8 @@ class RidesController extends Controller
             $rides->save();
 
             $date_heure=date('Y-m-d H:i:s');
-            $query = DB::insert("insert into ride_status_change_log(ride_id,status,driver_id, latitude,longitude,created_on)
-            values('".$rides->id."','vehicle assigned','".$driver."','".''."','".''."','".$date_heure."')");
+            $query = DB::insert("insert into ride_status_change_log(ride_id,status,driver_id,user_id, latitude,longitude,created_on)
+            values('".$rides->id."','vehicle assigned','".$driver."','".Auth::id()."','".''."','".''."','".$date_heure."')");
             
 
              $driverinfo = Driver::where('id',$driver)->where('fcm_id', '!=', '')->first();
@@ -1104,7 +1138,7 @@ class RidesController extends Controller
             
             $msg = str_replace("{carmodel}", $carmodelandbrand, "{carmodel} Reg. no. {carnumber} has been assigned with driver {DriverName} for your ride. The driver can be reachable on {DriverNumber}");
             $msg = str_replace("{carnumber}", $carnumber, $msg);
-            $msg = str_replace("{DriverName}", $driverinfo->nom, $msg);
+            $msg = str_replace("{DriverName}", $driverinfo->prenom.' '.$driverinfo->nom, $msg);
             $msg = str_replace("{DriverNumber}", $driverinfo->phone, $msg);
             $msg = str_replace("'", "\'", $msg);
         
