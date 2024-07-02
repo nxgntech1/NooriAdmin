@@ -15,7 +15,8 @@ class FcmService
         $this->projectId = env('FIREBASE_PROJECT_ID');
         $rootPath = base_path();
         //$keyFilePath = $rootPath . '/nooritravels-e48f7-192f4d538ca7.json';
-        $this->keyFilePath = $rootPath . '/nooritravels-e48f7-192f4d538ca7.json';
+        //$this->keyFilePath = $rootPath .'/nooritravels-e48f7-192f4d538ca7.json';
+        $this->keyFilePath = $rootPath . '/ntpremium-adminsdk-nvr6k-67ae7a61d1.json';
         $this->client = new Google_Client();
 
         if (!file_exists($this->keyFilePath)) {

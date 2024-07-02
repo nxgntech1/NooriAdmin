@@ -165,6 +165,7 @@ return [
     'bookingtype_name' => "Booking Type",
     'bookingtype_name_help' => "Insert Booking Type",
     'bookingtype_select_help' => "Select Booking Type",
+    'bookingdate_time' => "Booking Date Time",
 
     //---------------------------------------CCCC---------------------------------------
     'calories' => "Calories",
@@ -436,6 +437,7 @@ return [
     'order_shipped' => "Order Shipped",
     'order_user_id' => 'Client',
     'on_going_trips' => "On-going trips",
+    'otp' => "OTP",
     //---------------------------------------PPPP---------------------------------------
     'paid_amount' => "Paid Amount",
     'password' => 'Password',

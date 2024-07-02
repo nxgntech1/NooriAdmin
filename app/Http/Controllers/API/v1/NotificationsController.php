@@ -50,6 +50,7 @@ class NotificationsController extends Controller
     {
         $this->textLocalService = new TextLocalService();
         $this->fcmService = new FcmService();
+        $this->twilio = new TwilioService();
     }
 
     public function sendSMS($number,$message)
@@ -105,6 +106,12 @@ class NotificationsController extends Controller
             $response['emailResonse']= "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
         }
 
+        return response()->json($response);
+    }
+
+    public function sendWhatsappMessage($to,$message)
+    {
+        $response['data'] = $this->twilio->sendWhatsappMessage($to,$message);
         return response()->json($response);
     }
     

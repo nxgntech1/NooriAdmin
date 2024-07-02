@@ -124,7 +124,7 @@
 				                                                                    </div>
 				                                                                    
 				                                                                    <div class="modal-footer">
-				                                                                        <a class="btn btn-primary" href="{{asset('assets/images/driver/documents').'/'.$document->driver_document->document_path}}">Download</a>
+				                                                                        <a class="btn btn-primary" target="_blank" href="{{asset('assets/images/driver/documents').'/'.$document->driver_document->document_path}}">Download</a>
 				                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{trans('lang.close')}}</button>
 				                                                                    </div>
 				                                                                </div>

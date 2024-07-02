@@ -185,16 +185,16 @@
                                     <fieldset>
                                         <legend>{{trans('lang.ride_settings')}}</legend>
 
-                                        <!-- <div class="form-group row width-100">
-                                        <label class="col-3 control-label">{{trans('lang.user_schedule_time')}}</label>
-                                        <div class="col-7">
-                                            <input type="text" class="form-control user_schedule_time"
-                                                   name="user_schedule_time" id="user_schedule_time"
-                                                   value="{{$setting->user_ride_schedule_time_minute}}">
-                                        </div>
-                                    </div> -->
-
                                         <div class="form-group row width-100">
+                                            <label class="col-3 control-label">{{trans('lang.user_schedule_time')}}</label>
+                                            <div class="col-7">
+                                                <input type="text" class="form-control user_schedule_time"
+                                                    name="user_schedule_time" id="user_schedule_time"
+                                                    value="{{$setting->user_ride_schedule_time_minute}}">
+                                            </div>
+                                        </div>
+
+                                        <!-- <div class="form-group row width-100">
                                             <label
                                                 class="col-3 control-label">{{trans('lang.trip_accept_reject_by_driver')}}</label>
                                             <div class="col-7">
@@ -203,7 +203,7 @@
                                                     id="trip_accept_reject_by_driver"
                                                     value="{{$setting->trip_accept_reject_driver_time_sec}}">
                                             </div>
-                                        </div>
+                                        </div> -->
 
 
                                         <!-- <div class="form-group row width-100">

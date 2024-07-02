@@ -44,7 +44,7 @@ class SendResetPasswordOtpController extends Controller
                     }
                     if ($row->id > 0) {
                         $user_id = $row->id;
-                        $user_name = $row->nom . " " . $row->prenom;
+                        $user_name = $row->prenom . " " . $row->nom;
 
                         $updatedata = DB::update('update tj_user_app set reset_password_otp = ? , reset_password_otp_modifier = ? where email = ?', [$otp, $date_heure, $email]);
                     }

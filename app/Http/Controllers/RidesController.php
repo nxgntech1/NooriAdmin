@@ -35,10 +35,13 @@ class RidesController extends Controller
               $rides = Requests::query()
                   ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                   ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                  ->select('tj_requete.id', 'tj_requete.statut','tj_requete.ride_type','tj_requete.dispatcher_id','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant','tj_requete.user_info' ,'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image')
+                  ->join('bookingtypes','tj_requete.booking_type_id','=','bookingtypes.id')
+                  ->select('tj_requete.id', 'tj_requete.statut','tj_requete.ride_type','tj_requete.dispatcher_id','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant','tj_requete.user_info' ,'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'),'bookingtypes.bookingtype')
                   ->whereDate('tj_requete.creer', '>=', $fromDate)
                   ->whereDate('tj_requete.creer', '<=', $toDate)
-                  ->where('tj_requete.deleted_at', '=', NULL);
+                  ->where('tj_requete.deleted_at', '=', NULL)
+                  ->where('tj_requete.statut','!=','paymentfailed')
+                  ->whereNotNull('tj_requete.statut');
 
                  $rides=$rides->orderBy('tj_requete.id','desc')->paginate(20);
 
@@ -48,9 +51,12 @@ class RidesController extends Controller
                 $rides = DB::table('tj_requete')
                     ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                     ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                    ->select('tj_requete.id', 'tj_requete.ride_type','tj_requete.dispatcher_id','tj_requete.user_info','tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image')
+                    ->join('bookingtypes','tj_requete.booking_type_id','=','bookingtypes.id')
+                    ->select('tj_requete.id', 'tj_requete.ride_type','tj_requete.dispatcher_id','tj_requete.user_info','tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'),'bookingtypes.bookingtype')
                     ->whereDate('tj_requete.creer', '>=', $fromDate)
-                    ->where('tj_requete.deleted_at', '=', NULL);
+                    ->where('tj_requete.deleted_at', '=', NULL)
+                    ->where('tj_requete.statut','!=','paymentfailed')
+                  ->whereNotNull('tj_requete.statut');
 
                $rides = $rides->orderBy('tj_requete.id', 'desc')->paginate(20);
         } else if ($request->has('datepicker_to') && $request->datepicker_to != '') {
@@ -59,9 +65,12 @@ class RidesController extends Controller
               $rides = DB::table('tj_requete')
                   ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                   ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                  ->select('tj_requete.id','tj_requete.ride_type','tj_requete.dispatcher_id' ,'tj_requete.user_info','tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image')
+                  ->join('bookingtypes','tj_requete.booking_type_id','=','bookingtypes.id')
+                  ->select('tj_requete.id','tj_requete.ride_type','tj_requete.dispatcher_id' ,'tj_requete.user_info','tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'),'bookingtypes.bookingtype')
                   ->whereDate('tj_requete.creer', '<=', $toDate)
-                  ->where('tj_requete.deleted_at', '=', NULL);
+                  ->where('tj_requete.deleted_at', '=', NULL)
+                  ->where('tj_requete.statut','!=','paymentfailed')
+                  ->whereNotNull('tj_requete.statut');
 
             $rides = $rides->orderBy('tj_requete.id', 'desc')->paginate(20);
         } else if ($request->selected_search == 'userName' && $request->has('search') && $request->search != '') {
@@ -70,7 +79,8 @@ class RidesController extends Controller
             $rides = DB::table('tj_requete')
                 ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                 ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                ->select('tj_requete.id', 'tj_requete.statut', 'tj_requete.ride_type', 'tj_requete.dispatcher_id', 'tj_requete.user_info', 'tj_requete.tip_amount', 'tj_requete.admin_commission', 'tj_requete.tax', 'tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image');
+                ->join('bookingtypes','tj_requete.booking_type_id','=','bookingtypes.id')
+                ->select('tj_requete.id', 'tj_requete.statut', 'tj_requete.ride_type', 'tj_requete.dispatcher_id', 'tj_requete.user_info', 'tj_requete.tip_amount', 'tj_requete.admin_commission', 'tj_requete.tax', 'tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'),'bookingtypes.bookingtype');
                   if($id!='' || $id!=null){
                     $rides->where('tj_user_app.prenom', 'LIKE', '%' . $search . '%')->where('tj_requete.id_conducteur','=',$id);
                     $rides->orwhere('tj_user_app.nom', 'LIKE', '%' . $search . '%')->where('tj_requete.id_conducteur','=',$id);
@@ -82,7 +92,9 @@ class RidesController extends Controller
                     $rides->orWhere(DB::raw('CONCAT(tj_user_app.prenom, " ",tj_user_app.nom)'), 'LIKE', '%' . $search . '%');
 
                   }
-                  $rides->where('tj_requete.deleted_at', '=', NULL);
+                  $rides->where('tj_requete.deleted_at', '=', NULL)
+                  ->where('tj_requete.statut','!=','paymentfailed')
+                  ->whereNotNull('tj_requete.statut');
 
             $rides = $rides->orderBy('tj_requete.id', 'desc')->paginate(20);
         }
@@ -92,9 +104,12 @@ class RidesController extends Controller
               $rides = DB::table('tj_requete')
                   ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                   ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                  ->select('tj_requete.id', 'tj_requete.statut','tj_requete.ride_type','tj_requete.dispatcher_id','tj_requete.user_info','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image')
+                  ->join('bookingtypes','tj_requete.booking_type_id','=','bookingtypes.id')
+                  ->select('tj_requete.id', 'tj_requete.statut','tj_requete.ride_type','tj_requete.dispatcher_id','tj_requete.user_info','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'),'bookingtypes.bookingtype')
                   ->where('tj_requete.statut', 'LIKE', '%' . $search . '%')
-                  ->where('tj_requete.deleted_at', '=', NULL);
+                  ->where('tj_requete.deleted_at', '=', NULL)
+                  ->where('tj_requete.statut','!=','paymentfailed')
+                  ->whereNotNull('tj_requete.statut');
 
             $rides = $rides->orderBy('tj_requete.id', 'desc')->paginate(20);
         }
@@ -124,16 +139,18 @@ class RidesController extends Controller
             $rides = DB::table('tj_requete')
                 ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                 ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.ride_type','tj_requete.dispatcher_id','tj_requete.user_info','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image')
+                ->join('bookingtypes','tj_requete.booking_type_id','=','bookingtypes.id')
+                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.ride_type','tj_requete.dispatcher_id','tj_requete.user_info','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'),'bookingtypes.bookingtype')
                 ->where('tj_requete.deleted_at', '=', NULL)
-                ->where('tj_requete.statut', '!=', NULL);
+                ->where('tj_requete.statut','!=','paymentfailed')
+                ->whereNotNull('tj_requete.statut');
                 
             $rides = $rides->orderBy('tj_requete.id', 'desc')->paginate(20);
 
         }
         foreach ($rides as $row)
         {
-            $row->creer = Carbon::parse($row->creer)->timezone('Asia/Kolkata');
+            $row->bookeddatetime = Carbon::parse($row->bookeddatetime)->timezone('Asia/Kolkata');
         }
 
         return view("rides.all")->with("rides", $rides)->with('currency', $currency)->with('id',$id);
@@ -148,7 +165,7 @@ class RidesController extends Controller
             $rides = DB::table('tj_requete')
                 ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                 ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image')
+                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'))
                 ->orderBy('tj_requete.creer', 'DESC')
                 ->where('tj_requete.statut', 'new')
                 ->whereDate('tj_requete.creer', '>=', $fromDate)
@@ -160,7 +177,7 @@ class RidesController extends Controller
             $rides = DB::table('tj_requete')
                 ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                 ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image')
+                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'))
                 ->orderBy('tj_requete.creer', 'DESC')
                 ->where('tj_requete.statut', 'new')
                 ->whereDate('tj_requete.creer', '>=', $fromDate)
@@ -171,7 +188,7 @@ class RidesController extends Controller
             $rides = DB::table('tj_requete')
                 ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                 ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image')
+                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'))
                 ->orderBy('tj_requete.creer', 'DESC')
                 ->where('tj_requete.statut', 'new')
                 ->whereDate('tj_requete.creer', '<=', $toDate)
@@ -183,7 +200,7 @@ class RidesController extends Controller
             $rides = DB::table('tj_requete')
                 ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                 ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image','tj_user_app.id as id_user_app','tj_requete.id_conducteur')
+                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image','tj_user_app.id as id_user_app','tj_requete.id_conducteur',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'))
                 ->orderBy('tj_requete.creer', 'DESC')
                 ->where('tj_requete.statut', 'new')
                 ->where(function ($query) use ($search) {
@@ -221,7 +238,7 @@ class RidesController extends Controller
                 $rides = DB::table('tj_requete')
                 ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                 ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image','tj_user_app.id as id_user_app','tj_requete.id_conducteur')
+                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image','tj_user_app.id as id_user_app','tj_requete.id_conducteur',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'))
                 ->orderBy('tj_requete.creer', 'DESC')
                 ->where('tj_requete.statut', 'new')
                 ->where(function ($query) use ($search) {
@@ -236,13 +253,16 @@ class RidesController extends Controller
             $rides = DB::table('tj_requete')
                 ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
                 ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount','tj_requete.id_user_app','tj_requete.id_conducteur','tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image')
+                ->select('tj_requete.id', 'tj_requete.statut','tj_requete.tip_amount','tj_requete.admin_commission','tj_requete.tax','tj_requete.discount','tj_requete.id_user_app','tj_requete.id_conducteur','tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image',DB::raw( 'TIMESTAMP(tj_requete.ride_required_on_date, tj_requete.ride_required_on_time) as bookeddatetime'))
                 ->orderBy('tj_requete.creer', 'DESC')
                 ->where('tj_requete.statut', 'new')
                 ->where('tj_requete.deleted_at', '=', NULL)
                 ->paginate(20);
         }
-
+        foreach ($rides as $row)
+        {
+            $row->bookeddatetime = Carbon::parse($row->bookeddatetime)->timezone('Asia/Kolkata');
+        }
         return view("rides.new")->with("rides", $rides)->with('currency', $currency);
     }
 
@@ -943,7 +963,7 @@ class RidesController extends Controller
             ->whereNotIn('ID', $subquery)
             ->where('is_verified','=',1)
             ->where('statut','=','yes')
-            ->select('id','prenom','nom')
+            ->select('id','prenom','nom','photo_path')
             ->get();
 
 
@@ -1112,6 +1132,9 @@ class RidesController extends Controller
             // App Notification to Driver 
             $this->DriverFCMNotification($id, $driverinfo, $sql);
 
+            
+
+
         }
 
         return redirect()->back()->with('message',$msg);
@@ -1160,9 +1183,13 @@ class RidesController extends Controller
                 'tag' => 'ridenewrider'
             ];
 
+            
+
             if (!empty($tokens)){
                 $notifications= new NotificationsController();
                 $response['Response'] = $notifications->sendNotification($tokens, $message, $data);
+
+                //$response['whatsappResponse'] = $notifications->sendWhatsappMessage('+919866634732',$msg_);
             }
 
             return response()->json($response);

@@ -20,7 +20,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use App\Http\Controllers\GcmController;
+use App\Http\Controllers\API\v1\NotificationsController;
 use Image;
+
 class DriverController extends Controller
 {
 
@@ -29,38 +31,37 @@ class DriverController extends Controller
         $this->middleware('auth');
     }
 
-	public function index(Request $request)
+    public function index(Request $request)
     {
 
         $query = DB::table('tj_conducteur')
             ->leftJoin('tj_vehicule', 'tj_vehicule.id_conducteur', '=', 'tj_conducteur.id')
             ->leftJoin('tj_type_vehicule', 'tj_type_vehicule.id', '=', 'tj_vehicule.id_type_vehicule')
             ->select('tj_conducteur.*', 'tj_type_vehicule.libelle');
-        
-    	if($request->search != '' && $request->selected_search != '') {
-    		$keyword = $request->input('search');
-			$field = $request->input('selected_search');
-			if($field == "prenom"){
-				$query->where('tj_conducteur.prenom', 'LIKE', '%' . $keyword . '%');
-				$query->orWhere(DB::raw('CONCAT(tj_conducteur.nom, " ",tj_conducteur.prenom)'), 'LIKE', '%' . $keyword . '%');
-			}else{
-				$query->where('tj_conducteur.'.$field, 'LIKE', '%' . $keyword . '%');
 
-			}
-			$query->where('tj_conducteur.deleted_at', '=', NULL);
+        if ($request->search != '' && $request->selected_search != '') {
+            $keyword = $request->input('search');
+            $field = $request->input('selected_search');
+            if ($field == "prenom") {
+                $query->where('tj_conducteur.prenom', 'LIKE', '%' . $keyword . '%');
+                $query->orWhere(DB::raw('CONCAT(tj_conducteur.nom, " ",tj_conducteur.prenom)'), 'LIKE', '%' . $keyword . '%');
+            } else {
+                $query->where('tj_conducteur.' . $field, 'LIKE', '%' . $keyword . '%');
+            }
+            $query->where('tj_conducteur.deleted_at', '=', NULL);
             $query->paginate(20);
-		}
+        }
 
-		$drivers = $query->orderBy('tj_conducteur.id','desc')->paginate(20);
+        $drivers = $query->orderBy('tj_conducteur.id', 'desc')->paginate(20);
 
         $totalRide = DB::table('tj_requete')
-        ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
-        ->join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
-        ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-        ->where('tj_requete.deleted_at', '=', NULL)
-        ->select('tj_requete.id_conducteur')
-        ->orderBy('tj_conducteur.id','desc')
-        ->get();
+            ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
+            ->join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
+            ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
+            ->where('tj_requete.deleted_at', '=', NULL)
+            ->select('tj_requete.id_conducteur')
+            ->orderBy('tj_conducteur.id', 'desc')
+            ->get();
 
         return view("drivers.index")->with("drivers", $drivers)->with('totalRide', $totalRide);
     }
@@ -72,64 +73,64 @@ class DriverController extends Controller
             ->leftJoin('tj_vehicule', 'tj_vehicule.id_conducteur', '=', 'tj_conducteur.id')
             ->leftJoin('tj_type_vehicule', 'tj_type_vehicule.id', '=', 'tj_vehicule.id_type_vehicule')
             ->select('tj_conducteur.*', 'tj_type_vehicule.libelle');
-            $query->where('tj_conducteur.is_verified','=',1);
+        $query->where('tj_conducteur.is_verified', '=', 1);
 
-    	if($request->search != '' && $request->selected_search != '') {
-    		$keyword = $request->input('search');
-			$field = $request->input('selected_search');
-			if($field == "prenom"){
-				$query->where('tj_conducteur.prenom', 'LIKE', '%' . $keyword . '%');
-				$query->orWhere(DB::raw('CONCAT(tj_conducteur.nom, " ",tj_conducteur.prenom)'), 'LIKE', '%' . $keyword . '%');
-			}else{
-				$query->where('tj_conducteur.'.$field, 'LIKE', '%' . $keyword . '%');
-			}
-			$query->where('tj_conducteur.deleted_at', '=', NULL)->where('tj_conducteur.is_verified','=',1);
-		}
+        if ($request->search != '' && $request->selected_search != '') {
+            $keyword = $request->input('search');
+            $field = $request->input('selected_search');
+            if ($field == "prenom") {
+                $query->where('tj_conducteur.prenom', 'LIKE', '%' . $keyword . '%');
+                $query->orWhere(DB::raw('CONCAT(tj_conducteur.nom, " ",tj_conducteur.prenom)'), 'LIKE', '%' . $keyword . '%');
+            } else {
+                $query->where('tj_conducteur.' . $field, 'LIKE', '%' . $keyword . '%');
+            }
+            $query->where('tj_conducteur.deleted_at', '=', NULL)->where('tj_conducteur.is_verified', '=', 1);
+        }
 
 
-		$drivers = $query->orderBy('tj_conducteur.id','desc')->paginate(20);
+        $drivers = $query->orderBy('tj_conducteur.id', 'desc')->paginate(20);
 
-    $totalRide = DB::table('tj_requete')
-    ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
-    ->join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
-    ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-    ->where('tj_requete.deleted_at', '=', NULL)
-    ->select('tj_requete.id_conducteur')
-    ->orderBy('tj_conducteur.id', 'desc')
-    ->get();
+        $totalRide = DB::table('tj_requete')
+            ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
+            ->join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
+            ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
+            ->where('tj_requete.deleted_at', '=', NULL)
+            ->select('tj_requete.id_conducteur')
+            ->orderBy('tj_conducteur.id', 'desc')
+            ->get();
 
         return view("drivers.approved")->with("drivers", $drivers)->with('totalRide', $totalRide);
     }
 
-	public function pendingDrivers(Request $request)
+    public function pendingDrivers(Request $request)
     {
         $query = DB::table('tj_conducteur')
             ->leftJoin('tj_vehicule', 'tj_vehicule.id_conducteur', '=', 'tj_conducteur.id')
             ->leftJoin('tj_type_vehicule', 'tj_type_vehicule.id', '=', 'tj_vehicule.id_type_vehicule')
             ->select('tj_conducteur.*', 'tj_type_vehicule.libelle');
-            $query->where('tj_conducteur.is_verified','=',0);
+        $query->where('tj_conducteur.is_verified', '=', 0);
 
-    	if($request->search != '' && $request->selected_search != '') {
-    		$keyword = $request->input('search');
-			$field = $request->input('selected_search');
-    		if($field == "prenom"){
-				$query->where('tj_conducteur.prenom', 'LIKE', '%' . $keyword . '%');
-				$query->orWhere(DB::raw('CONCAT(tj_conducteur.nom, " ",tj_conducteur.prenom)'), 'LIKE', '%' . $keyword . '%');
-			}else{
-				$query->where('tj_conducteur.'.$field, 'LIKE', '%' . $keyword . '%');
-			}
-			$query->where('tj_conducteur.deleted_at', '=', NULL)->where('tj_conducteur.is_verified','=',0);
-		}
+        if ($request->search != '' && $request->selected_search != '') {
+            $keyword = $request->input('search');
+            $field = $request->input('selected_search');
+            if ($field == "prenom") {
+                $query->where('tj_conducteur.prenom', 'LIKE', '%' . $keyword . '%');
+                $query->orWhere(DB::raw('CONCAT(tj_conducteur.nom, " ",tj_conducteur.prenom)'), 'LIKE', '%' . $keyword . '%');
+            } else {
+                $query->where('tj_conducteur.' . $field, 'LIKE', '%' . $keyword . '%');
+            }
+            $query->where('tj_conducteur.deleted_at', '=', NULL)->where('tj_conducteur.is_verified', '=', 0);
+        }
 
 
-		$drivers = $query->orderBy('tj_conducteur.id','desc')->paginate(20);
+        $drivers = $query->orderBy('tj_conducteur.id', 'desc')->paginate(20);
 
-    $totalRide = DB::table('tj_requete')
-    ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
-    ->join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
-    ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-    ->where('tj_requete.deleted_at', '=', NULL)
-    ->select('tj_requete.id_conducteur')->get();
+        $totalRide = DB::table('tj_requete')
+            ->leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
+            ->join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
+            ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
+            ->where('tj_requete.deleted_at', '=', NULL)
+            ->select('tj_requete.id_conducteur')->get();
 
         return view("drivers.pending")->with("drivers", $drivers)->with('totalRide', $totalRide);
     }
@@ -137,54 +138,103 @@ class DriverController extends Controller
     public function statusAproval(Request $request, $id, $type)
     {
 
-		$document = DriversDocuments::find($id);
-		$comment = $request->get('comment');
+        $document = DriversDocuments::find($id);
+        $comment = $request->get('comment');
 
-        if($document){
-        	if($type == 1){
+        if ($document) {
+            if ($type == 1) {
                 $document->document_status = 'Approved';
-				$document->comment = '';
-                $msg ="Document got Approved.";
-            }else{
-            	$document->document_status = 'Disapprove';
-				$document->comment = $comment;
-                $msg ="Document got Disapproved.";
-				$this->notifyDriver($comment,$document->driver_id);
+                $document->comment = '';
+                $msg = "Document got Approved.";
+            } else {
+                $document->document_status = 'Disapprove';
+                $document->comment = $comment;
+                $msg = "Document got Disapproved.";
+                $this->notifyDriver($comment, $document->driver_id);
             }
-			$document->save();
+            $document->save();
         }
-  
-		$admin_documents = DB::table('admin_documents')->where('admin_documents.is_enabled','Yes')->get();
+
+        $admin_documents = DB::table('admin_documents')->where('admin_documents.is_enabled', 'Yes')->get();
         $driverDocumentCount = 0;
-        foreach($admin_documents as $value){
-            $approved_documents=DriversDocuments::where('driver_id', $document->driver_id)->where('document_status', 'Approved')->where('document_id',$value->id)->get();
-            if(count($approved_documents)>0){
+        foreach ($admin_documents as $value) {
+            $approved_documents = DriversDocuments::where('driver_id', $document->driver_id)->where('document_status', 'Approved')->where('document_id', $value->id)->get();
+            if (count($approved_documents) > 0) {
                 $driverDocumentCount++;
             }
         }
         $admin_documents = DB::table('admin_documents')->where('admin_documents.is_enabled', 'Yes')->count();
 
-       // $approved_documents = DriversDocuments::where('driver_id',$document->driver_id)->where('document_status','Approved')->count();
+        // $approved_documents = DriversDocuments::where('driver_id',$document->driver_id)->where('document_status','Approved')->count();
 
-		$driver = Driver::find($document->driver_id);
+        $driver = Driver::find($document->driver_id);
 
-		if($admin_documents == $driverDocumentCount){
-         $driver->is_verified = 1;
-		}else{
-			$driver->is_verified = 0;
-		}
-		$driver->save();
-        
-		if(!blank($comment)){
-			echo json_encode(array('success'=>'yes')); die;
-		}
+        if ($admin_documents == $driverDocumentCount) {
+            $driver->is_verified = 1;
+        } else {
+            $driver->is_verified = 0;
+        }
+        $driver->save();
+        if ($admin_documents == $driverDocumentCount) {
+            $this->DriverApprovedNotification($document->driver_id);
+        }
 
-        return redirect()->back()->with('message',$msg);
+        if (!blank($comment)) {
+            echo json_encode(array('success' => 'yes'));
+            die;
+        }
+
+        return redirect()->back()->with('message', $msg);
     }
 
-	public function notifyDriver($comment,$id){
+    public function DriverApprovedNotification($driver_id)
+    {
+        $response['Response'] = "";
 
-		$tmsg = '';
+        $title = "Your documents got approved";
+
+        $driver = DB::table('tj_conducteur')
+            ->select('fcm_id')
+            ->where('fcm_id', '<>', '')
+            ->where('id', $driver_id)
+            ->first();
+
+        $tokens = array();
+        if (isset($driver->fcm_id)) {
+            $tokens[] = $driver->fcm_id;
+        }
+        $data = [
+            'driver_id' => $driver_id
+        ];
+
+        $msg = str_replace("'", "\'", "Your documents got approved. Now you can get rides my making online.");
+
+        $tab[] = array();
+        $tab = explode("\\", $msg);
+        $msg_ = "";
+        for ($i = 0; $i < count($tab); $i++) {
+            $msg_ = $msg_ . "" . $tab[$i];
+        }
+
+        $message = [
+            'title' => $title,
+            'body' => $msg_,
+            'sound' => 'mySound',
+            'tag' => 'documentsapproved'
+        ];
+
+        if (!empty($tokens)) {
+            $notifications = new NotificationsController();
+            $response['Response'] = $notifications->sendNotification($tokens, $message, $data);
+        }
+
+        return response()->json($response);
+    }
+
+    public function notifyDriver($comment, $id)
+    {
+
+        $tmsg = '';
         $terrormsg = '';
 
         $title = str_replace("'", "\'", "Disapproved of your Document");
@@ -199,27 +249,41 @@ class DriverController extends Controller
             $msg_ = $msg_ . "" . $tab[$i];
         }
 
-        $message = array("body" => $msg_, "reasons" => $reasons, "title" => $title, "sound" => "mySound", "tag" => "documentdisaaproved");
+
+        $message = [
+            'title' => $title,
+            'body' => $msg_,
+            'sound' => 'mySound',
+            'tag' => 'documentdisaaproved'
+        ];
+
+        //$message = array("body" => $msg_, "reasons" => $reasons, "title" => $title, "sound" => "mySound", "tag" => "documentdisaaproved");
 
         $driver = DB::table('tj_conducteur')
             ->select('fcm_id')
             ->where('fcm_id', '<>', '')
-            ->where('id',$id)
+            ->where('id', $id)
             ->first();
 
         $tokens = array();
-        if(isset($driver->fcm_id)) {
+        if (isset($driver->fcm_id)) {
             $tokens[] = $driver->fcm_id;
         }
-
+        $data = [
+            'driver_id' => $id
+        ];
         $temp = array();
-        if(count($tokens) > 0) {
+        if (count($tokens) > 0) {
             $date_heure = date('Y-m-d H:i:s');
             $from_id = $id;
             $to_id = $id;
-            GcmController::send_notification($tokens, $message, $temp);
+            if (!empty($tokens)) {
+                $notifications = new NotificationsController();
+                $response['Response'] = $notifications->sendNotification($tokens, $message, $data);
+            }
+            // GcmController::send_notification($tokens, $message, $temp);
         }
-	}
+    }
 
     public function statusDisaproval(Request $request, $id, $type)
     {
@@ -281,14 +345,20 @@ class DriverController extends Controller
                 }
             }
         }
-
+        $data = [
+            'driver_id' => $id
+        ];
         $temp = array();
 
         if (count($tokens) > 0) {
             $date_heure = date('Y-m-d H:i:s');
             $from_id = $id;
             $to_id = $id;
-            GcmController::send_notification($tokens, $message, $temp);
+
+            $notifications = new NotificationsController();
+            $response['Response'] = $notifications->sendNotification($tokens, $message, $data);
+
+            // GcmController::send_notification($tokens, $message, $temp);
         }
         return redirect()->back();
     }
@@ -296,32 +366,30 @@ class DriverController extends Controller
 
     public function edit($id)
     {
-        $zones = Zone::where('status','yes')->get();
+        $zones = Zone::where('status', 'yes')->get();
         $driver = Driver::where('id', "=", $id)->first();
         $vehicle = Vehicle::where('id_conducteur', "=", $id)->first();
 
         $vehicleType = VehicleType::all();
 
-        $brand =Brand::all();
+        $brand = Brand::all();
         $model = [];
-        if(!empty($vehicle)){
+        if (!empty($vehicle)) {
             $model = Carmodel::where('brand_id', "=", $vehicle->brand)->where('vehicle_type_id', "=", $vehicle->id_type_vehicule)->get();
-
         }
         $currency = Currency::where('statut', 'yes')->first();
 
         $vehicleImage = vehicleImages::where('id_driver', '=', $id)->first();
         $earnings = DB::select("SELECT sum(montant) as montant, count(id) as rides FROM tj_requete WHERE statut='completed' AND id_conducteur=$id");
 
-		$avg_rating = Note::where('id_conducteur', "=", $id)->avg('niveau');
-		$avg_rating = $avg_rating?$avg_rating:0;
+        $avg_rating = Note::where('id_conducteur', "=", $id)->avg('niveau');
+        $avg_rating = $avg_rating ? $avg_rating : 0;
 
         return view('drivers.edit')->with('driver', $driver)->with('model', $model)->with('brand', $brand)
             ->with("vehicle", $vehicle)->with("earnings", $earnings)->with('vehicleType', $vehicleType)->with('currency', $currency)
             ->with('vehicleImage', $vehicleImage)
-			->with('avg_rating', $avg_rating)
+            ->with('avg_rating', $avg_rating)
             ->with('zones', $zones);
-            
     }
 
     public function create()
@@ -329,14 +397,14 @@ class DriverController extends Controller
         $brand = Brand::all();
         $vehicleType = VehicleType::all();
         $model = Carmodel::all();
-        $zones = Zone::where('status','yes')->get();
+        $zones = Zone::where('status', 'yes')->get();
         return view('drivers.create')->with('brand', $brand)->with('model', $model)->with('vehicleType', $vehicleType)->with('zones', $zones);
     }
 
     public function getModel(Request $request, $brand_id)
     {
         $id_type_vehicule = $request->get('id_type_vehicule');
-        $data['model'] = Carmodel::where("brand_id", $brand_id)->where('vehicle_type_id',$id_type_vehicule)->get(["name", "id"]);
+        $data['model'] = Carmodel::where("brand_id", $brand_id)->where('vehicle_type_id', $id_type_vehicule)->get(["name", "id"]);
 
         return response()->json($data);
     }
@@ -367,7 +435,7 @@ class DriverController extends Controller
             // 'color'=>'required',
             // 'passenger'=>'required',
             'photo' => 'required|mimes:jpg,jpeg,png|max:2048',
-            'zone'=>'required',
+            'zone' => 'required',
         ], $messages = [
             'nom.required' => 'The First Name field is required!',
             'prenom.required' => 'The Last Name field is required!',
@@ -418,9 +486,9 @@ class DriverController extends Controller
         // $user->ifsc_code = $request->input('ifsc_code');
         $user->amount = "0";
         //$user->parcel_delivery=$request->has('parcel_delivery') ? "yes" : "no";
-        $user->parcel_delivery="no";
+        $user->parcel_delivery = "no";
         $zone = $request->input('zone');
-        
+
         if ($request->hasfile('photo')) {
             $file = $request->file('photo');
             $extenstion = $file->getClientOriginalExtension();
@@ -434,7 +502,7 @@ class DriverController extends Controller
             $image = str_replace(' ', '+', $image);
             $user->photo_path = $filename;
         }
-        $user->zone_id = $zone ? implode(',',$zone) : NULL;
+        $user->zone_id = $zone ? implode(',', $zone) : NULL;
         $user->save();
         $driver_id = $user->id;
 
@@ -474,7 +542,7 @@ class DriverController extends Controller
         // $vehicle_image->creer = date('Y-m-d H:i:s');
         // $vehicle_image->modifier = date('Y-m-d H:i:s');
         // $vehicle_image->save();
-        
+
         return redirect('drivers');
     }
 
@@ -519,17 +587,17 @@ class DriverController extends Controller
                     }
 
                     $user = Driver::find($id[$i]);
-                    if(!empty($user->photo_path)){
+                    if (!empty($user->photo_path)) {
                         $destination = public_path('assets/images/driver/' . $user->photo_path);
                         if (File::exists($destination)) {
                             File::delete($destination);
                         }
                     }
-                    
+
                     $driver_docs = DriversDocuments::where('driver_id', "=", $id[$i])->get();
-                    if($driver_docs){
-                        foreach($driver_docs as $driver_doc){
-                            if(!empty($driver_doc->document_path)){
+                    if ($driver_docs) {
+                        foreach ($driver_docs as $driver_doc) {
+                            if (!empty($driver_doc->document_path)) {
                                 $destination = public_path('assets/images/driver/documents/' . $driver_doc->document_path);
                                 if (File::exists($destination)) {
                                     File::delete($destination);
@@ -540,7 +608,6 @@ class DriverController extends Controller
 
                     $user->delete();
                 }
-
             } else {
                 $requests = Requests::where('id_conducteur', $id);
                 if ($requests) {
@@ -571,7 +638,7 @@ class DriverController extends Controller
                 }
 
                 $user = Driver::find($id);
-                if(!empty($user->photo_path)){
+                if (!empty($user->photo_path)) {
                     $destination = public_path('assets/images/driver/' . $user->photo_path);
                     if (File::exists($destination)) {
                         File::delete($destination);
@@ -579,9 +646,9 @@ class DriverController extends Controller
                 }
 
                 $driver_docs = DriversDocuments::where('driver_id', "=", $id)->get();
-                if($driver_docs){
-                    foreach($driver_docs as $driver_doc){
-                        if(!empty($driver_doc->document_path)){
+                if ($driver_docs) {
+                    foreach ($driver_docs as $driver_doc) {
+                        if (!empty($driver_doc->document_path)) {
                             $destination = public_path('assets/images/driver/documents/' . $driver_doc->document_path);
                             if (File::exists($destination)) {
                                 File::delete($destination);
@@ -592,7 +659,6 @@ class DriverController extends Controller
 
                 $user->delete();
             }
-
         }
 
         return redirect()->back();
@@ -607,7 +673,6 @@ class DriverController extends Controller
         } else {
             $image_validation = "required|mimes:jpeg,jpg,png";
             $doc_validation = "required|mimes:doc,pdf,docx,zip,txt";
-
         }
 
         $validator = Validator::make($request->all(), $rules = [
@@ -615,15 +680,15 @@ class DriverController extends Controller
             'prenom' => 'required',
             'phone' => 'required',
             'email' => 'required|email',
-            'id_type_vehicule'=>'required',
-            'brand'=>'required',
-            'model'=>'required',
-            'km'=>'required',
-            'milage'=>'required',
-            'numberplate'=>'required',
-            'color'=>'required',
-            'passenger'=>'required',
-            'zone'=>'required',
+            'id_type_vehicule' => 'required',
+            'brand' => 'required',
+            'model' => 'required',
+            'km' => 'required',
+            'milage' => 'required',
+            'numberplate' => 'required',
+            'color' => 'required',
+            'passenger' => 'required',
+            'zone' => 'required',
         ], $messages = [
             'nom.required' => 'The First Name field is required!',
             'prenom.required' => 'The Last Name field is required!',
@@ -669,7 +734,7 @@ class DriverController extends Controller
         $ifsc_code = $request->input('ifsc_code');
         $parcel_delivery = $request->has('parcel_delivery') ? "yes" : "no";
         $zone = $request->input('zone');
-        
+
         if ($status == "on") {
             $status = "yes";
         } else {
@@ -710,10 +775,10 @@ class DriverController extends Controller
                 //$file->move(public_path('assets/images/driver'), $filename);
                 $user->photo_path = $filename;
             }
-            $user->zone_id = $zone ? implode(',',$zone) : NULL;
+            $user->zone_id = $zone ? implode(',', $zone) : NULL;
             $user->save();
         }
-       $vehicle_image = vehicleImages::where('id_driver', "=", $id)->first();
+        $vehicle_image = vehicleImages::where('id_driver', "=", $id)->first();
         if ($vehicle_image) {
             if ($request->hasfile('image_path')) {
                 $destination = public_path('assets/images/vehicle/' . $vehicle_image->image_path);
@@ -728,7 +793,7 @@ class DriverController extends Controller
                 $vehicle_image->image_path = $filename;
                 $vehicle_image->save();
             }
-        }else{
+        } else {
             $vehicle_image = new vehicleImages;
             if ($request->hasfile('image_path')) {
                 $file = $request->file('image_path');
@@ -745,9 +810,7 @@ class DriverController extends Controller
                 $vehicle_image->creer = date('Y-m-d H:i:s');
                 $vehicle_image->modifier = date('Y-m-d H:i:s');
                 $vehicle_image->save();
-
             }
-
         }
         if ($vehicle) {
             $vehicle->id_type_vehicule = $id_type_vehicule;
@@ -758,9 +821,9 @@ class DriverController extends Controller
             $vehicle->milage = $milage;
             $vehicle->numberplate = $numberplate;
             $vehicle->passenger = $passenger;
-            $vehicle->id_type_vehicule=$request->input('id_type_vehicule');
+            $vehicle->id_type_vehicule = $request->input('id_type_vehicule');
             $vehicle->save();
-        }else{
+        } else {
             $vehicle = new Vehicle;
             $vehicle->id_type_vehicule = $id_type_vehicule;
             $vehicle->brand = $brand;
@@ -778,7 +841,6 @@ class DriverController extends Controller
             $vehicle->updated_at = date('Y-m-d H:i:s');
 
             $vehicle->save();
-
         }
 
 
@@ -789,31 +851,29 @@ class DriverController extends Controller
     {
         $driver = Driver::where('id', "=", $id)->first();
 
-        $vehicle=DB::table('tj_vehicule')->leftjoin('brands','brands.id','=','tj_vehicule.brand')
-                                        ->leftjoin('car_model','car_model.id','=','tj_vehicule.model')
-                                        ->select('tj_vehicule.*','brands.name as brand','car_model.name as model')
-                                        ->where('id_conducteur', "=", $id)->first();
+        $vehicle = DB::table('tj_vehicule')->leftjoin('brands', 'brands.id', '=', 'tj_vehicule.brand')
+            ->leftjoin('car_model', 'car_model.id', '=', 'tj_vehicule.model')
+            ->select('tj_vehicule.*', 'brands.name as brand', 'car_model.name as model')
+            ->where('id_conducteur', "=", $id)->first();
 
         $currency = Currency::where('statut', 'yes')->first();
         $transactions = DB::table('tj_conducteur_transaction')
             ->join('tj_payment_method', 'tj_conducteur_transaction.payment_method', '=', 'tj_payment_method.libelle')
             ->select('tj_conducteur_transaction.*', 'tj_payment_method.image')
-            ->where('id_conducteur', "=", $id)->orderBy('tj_conducteur_transaction.id','desc')->paginate(10);
+            ->where('id_conducteur', "=", $id)->orderBy('tj_conducteur_transaction.id', 'desc')->paginate(10);
 
-        $rides = Requests::
-        leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
+        $rides = Requests::leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
             ->join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
             ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-            ->select('tj_requete.id', 'tj_requete.statut', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_conducteur.id as driver_id', 'tj_conducteur.prenom as driverPrenom', 'tj_conducteur.nom as driverNom', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image','tj_requete.ride_type')
+            ->select('tj_requete.id', 'tj_requete.statut', 'tj_requete.statut_paiement', 'tj_requete.depart_name', 'tj_requete.destination_name', 'tj_requete.distance', 'tj_requete.montant', 'tj_requete.creer', 'tj_conducteur.id as driver_id', 'tj_conducteur.prenom as driverPrenom', 'tj_conducteur.nom as driverNom', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom', 'tj_payment_method.libelle', 'tj_payment_method.image', 'tj_requete.ride_type')
             ->where('tj_requete.id_conducteur', $id)
             ->orderBy('tj_requete.id', 'DESC')
             ->paginate(10);
 
-        $parcelOrders = ParcelOrder::
-              join('tj_user_app', 'parcel_orders.id_user_app', '=', 'tj_user_app.id')
+        $parcelOrders = ParcelOrder::join('tj_user_app', 'parcel_orders.id_user_app', '=', 'tj_user_app.id')
             ->join('tj_conducteur', 'parcel_orders.id_conducteur', '=', 'tj_conducteur.id')
             ->join('tj_payment_method', 'parcel_orders.id_payment_method', '=', 'tj_payment_method.id')
-            ->select('parcel_orders.id', 'parcel_orders.status','parcel_orders.created_at','tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom')
+            ->select('parcel_orders.id', 'parcel_orders.status', 'parcel_orders.created_at', 'tj_user_app.id as user_id', 'tj_user_app.prenom as userPrenom', 'tj_user_app.nom as userNom')
             ->where('parcel_orders.id_conducteur', $id)
             ->orderBy('parcel_orders.id', 'DESC')
             ->paginate(10);
@@ -832,16 +892,16 @@ class DriverController extends Controller
         }
 
         $zone_name = '';
-        if($driver->zone_id){
-            $zone_id = explode(',',$driver->zone_id);
-            $zones = Zone::whereIn('id',$zone_id)->get();
-            foreach($zones as $zone){
-                $zone_name .= $zone->name.', ';
+        if ($driver->zone_id) {
+            $zone_id = explode(',', $driver->zone_id);
+            $zones = Zone::whereIn('id', $zone_id)->get();
+            foreach ($zones as $zone) {
+                $zone_name .= $zone->name . ', ';
             }
-            $zone_name = rtrim($zone_name,', ');
+            $zone_name = rtrim($zone_name, ', ');
         }
-        
-        return view('drivers.show')->with('driver', $driver)->with("vehicle", $vehicle)->with("rides", $rides)->with("currency", $currency)->with('transactions',$transactions)->with('driverRating',$driverRating)->with('parcelOrders',$parcelOrders)->with('zone_name',$zone_name);
+
+        return view('drivers.show')->with('driver', $driver)->with("vehicle", $vehicle)->with("rides", $rides)->with("currency", $currency)->with('transactions', $transactions)->with('driverRating', $driverRating)->with('parcelOrders', $parcelOrders)->with('zone_name', $zone_name);
     }
 
     public function changeStatus($id)
@@ -855,32 +915,31 @@ class DriverController extends Controller
 
         $driver->save();
         return redirect()->back();
-
     }
 
     public function documentView($id)
     {
-		$driver = Driver::where('id', "=", $id)->first();
+        $driver = Driver::where('id', "=", $id)->first();
 
-		$admin_documents = DB::table('admin_documents')->where('admin_documents.is_enabled','Yes')->get();
+        $admin_documents = DB::table('admin_documents')->where('admin_documents.is_enabled', 'Yes')->get();
 
 
-		$admin_documents->map(function ($admin_document, $key) use ($id){
-			$driver_document = DB::table('driver_document')->where('driver_id',$id)->where('document_id',$admin_document->id)->first();
-			$admin_document->driver_document = $driver_document;
-			return $admin_document;
-		});
+        $admin_documents->map(function ($admin_document, $key) use ($id) {
+            $driver_document = DB::table('driver_document')->where('driver_id', $id)->where('document_id', $admin_document->id)->first();
+            $admin_document->driver_document = $driver_document;
+            return $admin_document;
+        });
 
-        return view('drivers.viewDocument')->with('admin_documents',$admin_documents)->with('driver',$driver);
+        return view('drivers.viewDocument')->with('admin_documents', $admin_documents)->with('driver', $driver);
     }
 
 
 
-      public function uploaddocument($id,$doc_id)
-      {
-          $document=DB::table('admin_documents')->where('is_enabled','=','Yes')->get();
-          return view('drivers.uploaddocument')->with('id', $id)->with('document_id',$doc_id)->with('document',$document);
-      }
+    public function uploaddocument($id, $doc_id)
+    {
+        $document = DB::table('admin_documents')->where('is_enabled', '=', 'Yes')->get();
+        return view('drivers.uploaddocument')->with('id', $id)->with('document_id', $doc_id)->with('document', $document);
+    }
 
 
     public function updatedocument(Request $request, $id)
@@ -901,9 +960,9 @@ class DriverController extends Controller
 
         $document_id = $request->input('document_id');
 
-		$document_name = DB::table('admin_documents')->where('id', $document_id)->first();
-        
-        $driver = DriversDocuments::where('driver_id', "=", $id)->where('document_id','=',$document_id)->first();
+        $document_name = DB::table('admin_documents')->where('id', $document_id)->first();
+
+        $driver = DriversDocuments::where('driver_id', "=", $id)->where('document_id', '=', $document_id)->first();
 
         if ($driver) {
 
@@ -919,7 +978,7 @@ class DriverController extends Controller
 
                 $extenstion = $file->getClientOriginalExtension();
 
-                $filename = str_replace(' ','_',$document_name->title) . '_' . time() . '.' . $extenstion;
+                $filename = str_replace(' ', '_', $document_name->title) . '_' . time() . '.' . $extenstion;
 
                 $file->move(public_path('assets/images/driver/documents'), $filename);
 
@@ -929,35 +988,33 @@ class DriverController extends Controller
             }
 
             $driver->save();
+        } else {
 
-        }else{
+            $driver = new DriversDocuments;
 
-          $driver = new DriversDocuments;
+            if ($request->hasfile('document_path')) {
 
-          if ($request->hasfile('document_path')) {
+                $file = $request->file('document_path');
 
-              $file = $request->file('document_path');
+                $extenstion = $file->getClientOriginalExtension();
 
-              $extenstion = $file->getClientOriginalExtension();
+                $filename = str_replace(' ', '_', $document_name->title) . '_' . time() . '.' . $extenstion;
 
-              $filename = str_replace(' ','_',$document_name->title) . '_' . time() . '.' . $extenstion;
+                $file->move(public_path('assets/images/driver/documents'), $filename);
 
-              $file->move(public_path('assets/images/driver/documents'), $filename);
+                $driver->document_path = $filename;
 
-              $driver->document_path = $filename;
+                $driver->document_status = 'Pending';
+            }
 
-              $driver->document_status = 'Pending';
-          }
+            $driver->driver_id = $id;
 
-          $driver->driver_id = $id;
+            $driver->document_id = $request->input('document_id');
 
-          $driver->document_id = $request->input('document_id');
-
-          $driver->save();
+            $driver->save();
         }
 
-		return redirect()->route('driver.documentView',$id);
-        
+        return redirect()->route('driver.documentView', $id);
     }
 
     public function toggalSwitch(Request $request)
@@ -972,7 +1029,6 @@ class DriverController extends Controller
             $driver->statut = 'no';
         }
         $driver->save();
-
     }
     public function addWallet(Request $request, $id)
     {
@@ -996,8 +1052,8 @@ class DriverController extends Controller
         ]);
 
         $driver = Driver::find($id);
-        $txnId = uniqid(0,999);
-        $email=$driver->email;
+        $txnId = uniqid(0, 999);
+        $email = $driver->email;
         $date = date('d F Y');
 
         if (!empty($email)) {
@@ -1017,19 +1073,17 @@ class DriverController extends Controller
             } else {
                 $amount = $currencyData->symbole . number_format($amount, $currencyData->decimal_digit);
                 $newBalance = $currencyData->symbole . number_format($driver['amount'], $currencyData->decimal_digit);
-
             }
             $contact_us_email = DB::table('tj_settings')->select('contact_us_email')->value('contact_us_email');
             $contact_us_email = $contact_us_email ? $contact_us_email : 'none@none.com';
 
 
             $app_name = env('APP_NAME', 'Cabme');
-            
-            if($send_to_admin=="true"){
-                $to = $email . "," . $contact_us_email;
-            }else{
-                $to = $email;
 
+            if ($send_to_admin == "true") {
+                $to = $email . "," . $contact_us_email;
+            } else {
+                $to = $email;
             }
 
             $emailmessage = str_replace("{AppName}", $app_name, $emailmessage);
@@ -1049,6 +1103,4 @@ class DriverController extends Controller
 
         return redirect('driver/show/' . $id);
     }
-
-
 }

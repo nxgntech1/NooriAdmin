@@ -62,11 +62,11 @@
 								<div class="user-title col-md-7">
 									<h4 class="card-title"> Details of {{$driver->prenom}} {{$driver->nom}}</h4>
 								</div>
-								<div class="col-md-3">
+								<!-- <div class="col-md-3">
 									<a href="javascript:void(0)" data-toggle="modal" data-target="#addWalletModal"
 										class="text-white add-wallate btn btn-success"><i class="fa fa-plus"></i> Add
 										Wallet Amount</a>
-								</div>
+								</div> -->
 
 							</div>
 						</div>
@@ -86,7 +86,7 @@
 									<a href="#rides" aria-controls="rides" role="tab" data-toggle="tab"
 										class="{{ (Request::get('tab') == 'rides') ? 'active show' : '' }}">Rides</a>
 								</li>
-								<li role="presentation" class="">
+								<!-- <li role="presentation" class="">
 									<a href="#parcels" aria-controls="parcels" role="tab" data-toggle="tab"
 										class="{{ (Request::get('tab') == 'parcels') ? 'active show' : '' }}">{{trans('lang.parcel')}}</a>
 								</li>
@@ -100,7 +100,7 @@
 									<a href="#transaction" aria-controls="transaction" role="tab" data-toggle="tab"
 										class="{{ (Request::get('tab') == 'transaction') ? 'active show' : '' }}">Wallet
 										Transaction</a>
-								</li>
+								</li> -->
 
 							</ul>
 

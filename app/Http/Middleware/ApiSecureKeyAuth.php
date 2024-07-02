@@ -21,6 +21,14 @@ class ApiSecureKeyAuth
 
     public function handle($request, Closure $next, $guard = null)
     {
+        $bypassRoutes = [
+            'v1/reset-password-otp/',
+            'v1/resert-password/',
+            'v1/sendWhatsappMessage',
+        ];
+        if (in_array($request->path(), $bypassRoutes)) {
+            return $next($request);
+        }
 
         if(empty($request->header('apikey')) || empty($request->header('accesstoken'))){
             return BaseApiController::errorResponse([],'Unauthorized',[],Response::HTTP_UNAUTHORIZED);

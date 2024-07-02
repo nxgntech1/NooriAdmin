@@ -152,20 +152,20 @@
                         cellspacing="0" width="100%">
                         <thead>
                           <tr>
-                            <th class="delete-all"><input type="checkbox" id="is_active"><label
+                            <!-- <th class="delete-all"><input type="checkbox" id="is_active"><label
                               class="col-3 control-label" for="is_active"><a id="deleteAll"
                               class="do_not_delete"
                               href="javascript:void(0)"><i
-                              class="fa fa-trash"></i> All</a></label></th>
+                              class="fa fa-trash"></i> All</a></label></th> -->
                               <th>{{trans('lang.ride_id')}}</th>
                               <th>{{trans('lang.user_name')}}</th>
                               {{--<th>{{trans('lang.source_amount')}}</th>
                               <th>{{trans('lang.destination_address')}}</th>--}}
                               <th>{{trans('lang.cost_amount')}}</th>
-                              <th>{{trans('lang.ride_type')}}</th>
+                              <th>{{trans('lang.bookingtype_name')}}</th>
                               <th>{{trans('lang.status')}}</th>
 
-                              <th>{{trans('lang.created')}}</th>
+                              <th>{{trans('lang.bookingdate_time')}}</th>
                               <th>{{trans('lang.actions')}}</th>
 
                             </tr>
@@ -174,12 +174,12 @@
                             @if(count($rides) > 0)
                             @foreach($rides as $ride)
                             <tr>
-                              <td class="delete-all"><input type="checkbox"
+                              <!-- <td class="delete-all"><input type="checkbox"
                                 id="is_open_{{$ride->id}}"
                                 class="is_open"
                                 dataid="{{$ride->id}}"><label
                                 class="col-3 control-label"
-                                for="is_open_{{$ride->id}}"></label></td>
+                                for="is_open_{{$ride->id}}"></label></td> -->
 
                                 <td><a href="{{route('ride.show', ['id' => $ride->id])}}">{{ $ride->id}}</a>
                                 </td>
@@ -233,13 +233,9 @@
                                 @endif
                               </span>
                             </td>
-                            <td>@if($ride->ride_type=="dispatcher")
-                              {{ trans('lang.dispatcher')}}
-                              @elseif($ride->ride_type=="driver")
-                              {{trans('lang.created_driver')}}
-                              @else
-                              {{ trans('lang.normal')}}
-                              @endif
+                            <td>
+                              {{ $ride->bookingtype }}
+                             
                             </td>
                             <td>
                               @if($ride->statut=="completed")
@@ -256,8 +252,8 @@
                                         <span class="badge badge-warning">{{ $ride->statut }}<span>
                                           @endif
                                         </td>
-                                        <td class="dt-time"><span class="date">{{ date('d F Y',strtotime($ride->creer))}}</span>
-                                          <span class="time">{{ date('h:i A',strtotime($ride->creer))}}</span>
+                                        <td class="dt-time"><span class="date">{{ date('d F Y',strtotime($ride->bookeddatetime))}}</span>
+                                          <span class="time">{{ date('h:i A',strtotime($ride->bookeddatetime))}}</span>
 
                                         </td>
                                         <td class="action-btn">
@@ -273,11 +269,11 @@
 
 
 
-                                            <a id="'+val.id+'"
+                                            <!-- <a id="'+val.id+'"
                                             class="do_not_delete"
                                             name="user-delete"
                                             href="{{route('ride.delete', ['rideid' => $ride->id])}}"><i
-                                            class="fa fa-trash"></i></a>
+                                            class="fa fa-trash"></i></a> -->
                                           </td>
                                         </tr>
                                         @endforeach

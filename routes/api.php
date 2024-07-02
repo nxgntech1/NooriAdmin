@@ -186,6 +186,7 @@ Route::group(['middleware' => ['apiKeyAuth']], function () {
     Route::post('v1/update-addon-payment-status/',[VehicleController::class, 'updateAddonPaymentStatus']);
     Route::get('v1/get-coupons/', [VehicleController::class, 'getCoupons']);
     Route::post('v1/send-sms', [NotificationsController::class, 'sendSms']);
+    
     Route::post('v1/send-textlocalsms', [NotificationsController::class, 'sendTextLocalSMS']);
     Route::post('v1/send-fcmnotification', [NotificationsController::class, 'sendFcmNotification']);
 
@@ -296,8 +297,7 @@ Route::group(['middleware' => ['apiKeyAuth']], function () {
     Route::post('v1/user-pre-name/', [UserPreNameController::class, 'UpdateUserPreName']);
     Route::post('v1/user-phone/', [UserPhoneController::class, 'UpdateUserPhone']);
     Route::post('v1/not-feel-safe/', [ReqNotFeelSafeController::class, 'UpdateReq']);
-    Route::post('v1/resert-password/', [ResertPasswordController::class, 'resertPassword']);
-    Route::post('v1/reset-password-otp/', [SendResetPasswordOtpController::class, 'resetPasswordOtp']);
+    
     Route::post('v1/change-status-payment/', [ChangeStatusForpaymentController::class, 'ChangeStatus']);
     Route::get('v1/requete-book-cancel/', [RequeteBookCancelController::class, 'getData']);
     Route::post('v1/storesos/', [SosController::class, 'storeSos']);
@@ -337,7 +337,9 @@ Route::group(['middleware' => ['apiKeyAuth']], function () {
 });
 
 Route::get('v1/wallet-history/', [DriverWalletHistoryController::class, 'getData']);
-
+Route::post('v1/resert-password/', [ResertPasswordController::class, 'resertPassword']);
+Route::post('v1/reset-password-otp/', [SendResetPasswordOtpController::class, 'resetPasswordOtp']);
+Route::post('v1/sendWhatsappMessage', [NotificationsController::class, 'sendWhatsappMessage']);
 //not found
 Route::get('v1/requete-book-confirm-user/', [RequeteBookConfirmUserController::class, 'getData']);
 Route::get('v1/changestatuspayment/', [UserController::class, 'test']);

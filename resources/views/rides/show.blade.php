@@ -166,6 +166,8 @@
 										<div class="form-group row widt-100 gendetail-col">
 											<label class="col-12 control-label"><strong>{{trans('lang.ride_id')}}
 													: </strong><span id="ride_id">{{ $ride->id}}</span></label>
+											<label class="col-12 control-label"><strong>{{trans('lang.otp')}}
+													: </strong><span id="ride_id">{{ $ride->otp}}</span></label>
 										</div>
 										<div class="form-group row widt-100 gendetail-col">
 											<label class="col-12 control-label"><strong>{{trans('lang.bookingtype_name')}}
@@ -522,8 +524,8 @@
 								<div class="card-body">
 									<a href="#" class="row redirecttopage" id="resturant-view">
 										<div class="col-4">
-											@if (file_exists(public_path('assets/images/drivers'.'/'.$ride->driver_photo)) && !empty($ride->driver_photo))
-											<span id="billing_name" class="d-flex"><span class="user-img"><img class="rounded" style="width:50px" src="{{asset('assets/images/drivers/'.$ride->driver_photo)}}" alt="Image"></span>
+											@if (file_exists(public_path('assets/images/driver'.'/'.$ride->driver_photo)) && !empty($ride->driver_photo))
+											<span id="billing_name" class="d-flex"><span class="user-img"><img class="rounded" style="width:50px" src="{{asset('assets/images/driver/'.$ride->driver_photo)}}" alt="Image"></span>
 												@else
 												<span id="billing_name" class="d-flex"><span class="user-img"><img class="rounded" style="width:50px" src="{{asset('assets/images/placeholder_image.jpg')}}" alt="Image"></span>
 													@endif

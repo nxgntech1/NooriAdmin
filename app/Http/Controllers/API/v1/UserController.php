@@ -11,6 +11,7 @@ use App\Models\Referral;
 use Illuminate\Http\Request;
 use DB;
 
+
 class UserController extends Controller
 {
 
@@ -66,6 +67,9 @@ class UserController extends Controller
 
             $notifications= new NotificationsController();
             $SMS_Notifiaction = $notifications->sendSMS($phone,'OTP is for ' . $otp . ' TeamPlay app. Do not share the OTP with anyone for security reasons');
+
+            $response["whatsappRes"] = $notifications->sendWhatsappMessage('+919985702076', $otp .' is your verification code. For your security, do not share this code.');
+            $response["whatsappResfreeform"] = $notifications->sendWhatsappMessage('+919985702076', 'Welcome to Noori Travels!');
 
             $response['data'] = '1';
             $response['success'] = 'success';

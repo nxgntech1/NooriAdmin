@@ -52,6 +52,32 @@ class RideDetailsController extends Controller
                 $row->tax = json_decode($row->tax,true);
                 $row->user_info = json_decode($row->user_info, true);
                 $row->discount = number_format((float) $row->discount, 2, '.', '');
+
+
+                if($row->statut=="completed")
+                {
+                    $distance = (int)$row->odometer_end_reading-(int)$row->odometer_start_reading;
+                    $statusrideduration = DB::table('ride_status_change_log as r1')
+                        ->join('ride_status_change_log as r2', 'r1.ride_id', '=', 'r2.ride_id')
+                        ->select(
+                            'r1.id as start_id',
+                            'r2.id as end_id',
+                            DB::raw('TIMEDIFF(r2.created_on, r1.created_on) as time_diff')
+                        )
+                        ->where('r1.status', 'On Ride')
+                        ->where('r2.status', 'Completed')
+                        ->where('r1.ride_id', $ride_id)
+                        ->first();
+                        if($statusrideduration)
+                        {
+                            $row->duree = $statusrideduration->time_diff ? $statusrideduration->time_diff : $row->duree;
+                        }
+                }
+                else{
+                    $distance =$row->distance;
+                    $row->duree = $row->duree;
+                }
+                $row->distance = (string)$distance;
                 $response['success'] = 'success';
                 $response['error'] = null;
                 $response['message'] = 'successfully';
@@ -411,11 +437,11 @@ class RideDetailsController extends Controller
                     if (file_exists(public_path('assets/images/vehicle' . '/' . $row->vehicle_imageid))) {
                         $vehicle_imageid = asset('assets/images/vehicle') . '/' . $row->vehicle_imageid;
                     } else {
-                        $vehicle_imageid = asset('assets/images/placeholder_image_car.png');
+                        $vehicle_imageid = asset('assets/images/placeholder_img_car.png');
                     }
                 }
                 else {
-                    $vehicle_imageid = asset('assets/images/placeholder_image_car.png');
+                    $vehicle_imageid = asset('assets/images/placeholder_img_car.png');
                 }
                 $row->vehicle_imageid = $vehicle_imageid;
 
@@ -587,10 +613,10 @@ class RideDetailsController extends Controller
                 }
 
                 if (!empty($row->vehicle_imageid)) {
-                    if (file_exists(public_path('assets/images/vehicule' . '/' . $row->vehicle_imageid))) {
-                        $vehicle_imageid = asset('assets/images/vehicule') . '/' . $row->vehicle_imageid;
+                    if (file_exists(public_path('assets/images/vehicle' . '/' . $row->vehicle_imageid))) {
+                        $vehicle_imageid = asset('assets/images/vehicle') . '/' . $row->vehicle_imageid;
                     } else {
-                        $vehicle_imageid = asset('assets/images/placeholder_image.jpg');
+                        $vehicle_imageid = asset('assets/images/placeholder_img_car.jpg');
                     }
                     $row->vehicle_imageid = $vehicle_imageid;
                 }
@@ -695,7 +721,9 @@ class RideDetailsController extends Controller
             'tj_requete.car_Price','tj_requete.sub_total','bookingtypes.bookingtype','tj_requete.booking_type_id',
             'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time','tj_requete.tax_amount','tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
             'tj_requete.vehicle_Id','tj_requete.id_conducteur','car_model.name as carmodel','brands.name as brandname',
-            'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image','tj_requete.id_payment_method as paymentmethodid','tj_requete.addon')
+            'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image','tj_requete.id_payment_method as paymentmethodid','tj_requete.addon',
+            'tj_requete.odometer_start_reading', 'tj_requete.odometer_end_reading'
+)
             ->where('tj_requete.id_user_app', '=', $id_user_app)
             ->where('tj_requete.id', '=', $ride_id)
             //->orderBy('tj_requete.id', 'desc')
@@ -721,23 +749,45 @@ class RideDetailsController extends Controller
                 $row->sub_total = $row->sub_total;
                 $row->BookigDate = $row->ride_required_on_date;
                 $row->BookingTime = $row->ride_required_on_time;
-                $row->distance = $row->distance;
+
+                
+
+                if($row->statut=="completed")
+                {
+                    $distance = (int)$row->odometer_end_reading-(int)$row->odometer_start_reading;
+                    $statusrideduration = DB::table('ride_status_change_log as r1')
+                        ->join('ride_status_change_log as r2', 'r1.ride_id', '=', 'r2.ride_id')
+                        ->select(
+                            'r1.id as start_id',
+                            'r2.id as end_id',
+                            DB::raw('TIMEDIFF(r2.created_on, r1.created_on) as time_diff')
+                        )
+                        ->where('r1.status', 'On Ride')
+                        ->where('r2.status', 'Completed')
+                        ->where('r1.ride_id', $ride_id)
+                        ->first();
+                        if($statusrideduration)
+                        {
+                            $row->duree = $statusrideduration->time_diff ? $statusrideduration->time_diff : $row->duree;
+                        }
+                }
+                else{
+                    $distance =$row->distance;
+                    $row->duree = $row->duree;
+                }
+                $row->distance = (string)$distance;
                 $row->distance_unit = $row->distance_unit;
                 $row->latitude_depart = $row->latitude_depart;
                 $row->longitude_depart = $row->longitude_depart;
                 $row->latitude_arrivee = $row->latitude_arrivee;
                 $row->longitude_arrivee = $row->longitude_arrivee;
-                $row->duree = $row->duree;
-
-                
                 $row->paymentmethodid = $row->paymentmethodid;
                 $row->paymentmethod = $row->payment;
+                $row->payment = $row->paymentmethodid=="5" ? "Cash" : "Online";
                 $row->discount = $row->discount;
                 $row->tax_amount = $row->tax_amount;
                 $row->bookfor_others_mobileno = $row->bookfor_others_mobileno;
                 $row->bookfor_others_name = $row->bookfor_others_name;
-                
-
 
                 if ($row->otp == null) {
                     $row->otp = '';
@@ -783,12 +833,12 @@ class RideDetailsController extends Controller
                     if (file_exists(public_path('assets/images/vehicle' . '/' . $row->vehicle_imageid))) {
                         $vehicle_imageid = asset('assets/images/vehicle') . '/' . $row->vehicle_imageid;
                     } else {
-                        $vehicle_imageid = asset('assets/images/placeholder_image_car.png');
+                        $vehicle_imageid = asset('assets/images/placeholder_img_car.png');
                     }
                     
                 }
                 else {
-                    $vehicle_imageid = asset('assets/images/placeholder_image_car.png');
+                    $vehicle_imageid = asset('assets/images/placeholder_img_car.png');
                 }
                 $row->vehicle_imageid = $vehicle_imageid;
 
@@ -842,6 +892,9 @@ class RideDetailsController extends Controller
                         }
                         $row->driverphoto = $image_driver;
                     }
+                    else{
+                        $row->driverphoto='';
+                    }
     
                         
                 } else {
@@ -864,16 +917,17 @@ class RideDetailsController extends Controller
                 ->where('bookingid','=',$row->id)
                 ->where('payment_status','=','success')
                 ->whereNotNull('transaction_id')
+                
                 ->get();
                // $row->addon = json_encode($addon,JSON_PRETTY_PRINT);
 
                 if(!empty($addon))
                 {
-                    $addontax = [];
                     $addons = [];
                     foreach ($addon as $row_addon) {
                         $row_addon->addon_total_amount = $currency->symbole . "" . number_format($row_addon->addon_total_amount,$currency->decimal_digit); 
                         $row_addon->addonid = $row_addon->addonid;
+                        $row_addon->payment_status = $row_addon->transaction_id=="cod" ? 'Cash' : 'Online';
                         $addonPricing = DB::Table('pricing_by_car_models')
                             ->where('PricingID','=',$row_addon->addonid)
                             ->where('is_Add_on','=','yes')
@@ -887,14 +941,15 @@ class RideDetailsController extends Controller
                             ->select('tax_type', 'tax_label as taxlabel', 'tax', 'ride_tax_amount')
                             ->where('addonid','=',$row_addon->addonid)
                             ->where('bookingid', '=', $row->id)
+                            ->distinct()
                             ->get();
                             if($addon_tax)
                             {
-                                
+                                $addontax = [];
                             foreach ($addon_tax as $addon_rowtax) {
-                                $addon_rowtax->tax_type = $sql_rowtax->tax_type;
-                                $addon_rowtax->taxlabel = $sql_rowtax->taxlabel;
-                                $addon_rowtax->tax = $sql_rowtax->tax;
+                                $addon_rowtax->tax_type = $addon_rowtax->tax_type;
+                                $addon_rowtax->taxlabel = $addon_rowtax->taxlabel;
+                                $addon_rowtax->tax = $addon_rowtax->tax;
                                 $addon_rowtax->ride_tax_amount = $currency->symbole . "" . number_format($addon_rowtax->ride_tax_amount,$currency->decimal_digit); 
 
                                 //$row->tax = $sql_rowtax;
@@ -982,6 +1037,7 @@ class RideDetailsController extends Controller
                     'tj_requete.duree',
                     'tj_user_app.id as userId',
                     'tj_requete.statut_paiement',
+                    'tj_requete.id_payment_method',
                     'tj_payment_method.libelle as payment',
                     'tj_payment_method.image as payment_image',
                     'tj_requete.trip_objective',
@@ -999,7 +1055,9 @@ class RideDetailsController extends Controller
                     'tj_requete.bookfor_others_name',
                     'bookingtypes.bookingtype',
                     'tj_requete.ride_required_on_date',
-                    'tj_requete.ride_required_on_time'
+                    'tj_requete.ride_required_on_time',
+                    'tj_requete.odometer_start_reading',
+                    'tj_requete.odometer_end_reading'
                 )
                 ->where('tj_requete.id_conducteur', '=', $id_driver)
                 ->where('tj_requete.vehicle_Id', '!=', '')
@@ -1012,6 +1070,7 @@ class RideDetailsController extends Controller
                 $row->tax = json_decode($row->tax, true);
                 $row->user_info = json_decode($row->user_info, true);
                 $row->consumer_name =$row->prenom. ' ' .$row->nom;
+                $row->payment = $row->id_payment_method=="5" ? "Cash" : "Online";
 
                 $row->bookfor_others_mobileno = $row->bookfor_others_mobileno;
                 $row->bookfor_others_name = $row->bookfor_others_name;

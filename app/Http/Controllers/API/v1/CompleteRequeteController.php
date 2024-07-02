@@ -11,6 +11,7 @@ use App\Http\Controllers\API\v1\GcmController;
 use App\Http\Controllers\API\v1\NotificationListController;
 use App\Models\UserApp;
 use DB;
+use App\Models\Currency;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use Carbon\Carbon;
@@ -337,6 +338,8 @@ class CompleteRequeteController extends Controller
         $odometer_end_reading=$request->get('odometer_end_reading');
         $date_heure=date('Y-m-d H:i:s');
 
+        $currency = Currency::where('statut', 'yes')->first();
+
         if(!empty($id_requete) && !empty($id_user)){
 
             $updatedata =  DB::update('update tj_requete set statut = ?,odometer_end_reading = ? where id = ?',['Completed', $odometer_end_reading, $id_requete]);
@@ -347,13 +350,31 @@ class CompleteRequeteController extends Controller
             }
 
             $sqlride = DB::table('tj_requete')
-                    ->select('tj_requete.id_payment_method', 'tj_requete.montant')
+                    ->select('tj_requete.id_payment_method', DB::raw('cast(tj_requete.montant as decimal(18,2)) as montant'))
                     ->where('tj_requete.id', '=', $id_requete)
                     ->get();
 
             foreach ($sqlride as $row) {
                 $payment_MethodId = $row->id_payment_method;
-                $amount = $row->montant;
+
+                $addonamt = DB::table('tj_transaction')
+                    ->select('tj_transaction.ride_id', 'tj_transaction.is_addon','tj_transaction.payment_method','tj_transaction.payment_status',DB::raw('sum(cast(IFNULL(tj_transaction.amount, 0) as decimal(18,2))) as addonamount'))
+                    ->where('tj_transaction.ride_id', '=', $id_requete)
+                    ->where('tj_transaction.payment_method','=',5)
+                    ->where('tj_transaction.payment_status','=','yes')
+                    ->where('tj_transaction.is_addon','=','yes')
+                    ->groupBy('tj_transaction.ride_id', 'tj_transaction.is_addon','tj_transaction.payment_method','tj_transaction.payment_status')
+                    ->get();
+                    $addonTotal =0;
+                if(!empty($addonamt))
+                {
+                    foreach($addonamt as $addon)
+                    {
+                        $addonTotal = $addon->addonamount;
+                    }
+                }
+
+                $amount = $row->montant + $addonTotal;
             }
             
             if (!empty($updatedata)) {
@@ -366,9 +387,9 @@ class CompleteRequeteController extends Controller
                 $response['error'] = null;
                 $response['message'] = 'status successfully updated';
 
-                if ($payment_MethodId = '5'){
+                if ($addonTotal > 0 || $payment_MethodId=="5"){
                     $response['collect_Cash'] = '1';
-                    $response['finalAmount'] = $amount;
+                    $response['finalAmount'] = $currency->symbole . "" . number_format($amount,$currency->decimal_digit); 
 
 
                 }else{

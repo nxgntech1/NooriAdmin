@@ -7,6 +7,7 @@ use App\Models\Vehicle;
 use App\Models\Driver;
 use App\Models\Currency;
 use App\Models\VehicleType;
+use App\Models\Settings;
 use App\Models\RentalVehicleType;
 use Illuminate\Http\Request;
 use DB;
@@ -111,7 +112,8 @@ class VehicleController extends Controller
    {
     
       $output = array();
-
+      $settings = DB::table('tj_settings')
+                      ->first();
       $sql = DB::table('bookingtypes')
                 ->select('id','bookingtype','imageid','fixlatlongs','latitude','longitude','tagline')
                 ->get();
@@ -128,7 +130,7 @@ class VehicleController extends Controller
 
                 $output[] = $row; 
               }
-
+              $response['usercanbookridebeforexminutes'] = $settings->user_ride_schedule_time_minute;
               $sqlcurrency = DB::table('tj_currency')
               ->select('symbole')
               ->where('statut', '=', 'yes')
@@ -597,7 +599,35 @@ public function getCarModels(Request $request)
     
     if (!empty($ride_id))
     {
+      $hoursgap =DB::table('tj_requete as current_ride')
+      ->join('tj_requete as next_ride', 'next_ride.id_conducteur', '=', 'current_ride.id_conducteur')
+      ->select(DB::raw(
+          'TIMESTAMPDIFF(HOUR, 
+              TIMESTAMP(current_ride.ride_required_on_date, current_ride.ride_required_on_time), 
+              TIMESTAMP(next_ride.ride_required_on_date, next_ride.ride_required_on_time)
+          ) as hours_gap'
+      ))
+      ->where('current_ride.id', $ride_id)
+      ->whereRaw('TIMESTAMP(next_ride.ride_required_on_date, next_ride.ride_required_on_time) > TIMESTAMP(current_ride.ride_required_on_date, current_ride.ride_required_on_time)')
+      ->orderBy('next_ride.creer', 'ASC')
+      ->limit(1)
+      ->first();
+
+      if(!empty($hoursgap) && $hoursgap->hours_gap > 0)
+      {
       $sql = DB::table('tj_requete')
+            ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
+            ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
+            'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing',
+            DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
+            ->where('pricing_by_car_models.is_add_on','=','yes')
+            ->where('pricing_by_car_models.status','=','yes')
+            ->where('pricing_by_car_models.hours','<=',$hoursgap->hours_gap)
+            ->where('tj_requete.id','=',$ride_id)
+            ->get();
+      }
+      else{
+        $sql = DB::table('tj_requete')
             ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
             ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
             'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing',
@@ -606,6 +636,7 @@ public function getCarModels(Request $request)
             ->where('pricing_by_car_models.status','=','yes')
             ->where('tj_requete.id','=',$ride_id)
             ->get();
+      }
     }
 
     $rowOutput='';
@@ -702,13 +733,15 @@ public function getCarModels(Request $request)
     $bookingid = $request->get('booking_id');
     $paymentstatus = $request->get('payment_status');
     $transactionid = $request->get('transaction_id');
+    $paymentmethodid = $request->get('payment_method_id');
     
-    if (!empty($addon_id) && !empty($bookingid) && !empty($paymentstatus))
+    if (!empty($addon_id) && !empty($bookingid) && !empty($paymentstatus) && !empty($paymentmethodid))
     {
       $pdo = DB::getPdo();
-      $stmt = $pdo->prepare('CALL UpdateAddonPaymentStatus(:bookingid, :addonid,:paymentstatus,:transactionid,@intout)');
+      $stmt = $pdo->prepare('CALL UpdateAddonPaymentStatus(:bookingid, :addonid,:payment_method_id,:paymentstatus,:transactionid,@intout)');
       $stmt->bindParam(':bookingid', $bookingid, PDO::PARAM_INT);
       $stmt->bindParam(':addonid', $addon_id, PDO::PARAM_INT);
+      $stmt->bindParam(':payment_method_id', $paymentmethodid, PDO::PARAM_INT);
       $stmt->bindParam(':paymentstatus', $paymentstatus, PDO::PARAM_STR);
       $stmt->bindParam(':transactionid', $transactionid, PDO::PARAM_STR);
       $stmt->execute();
@@ -720,6 +753,9 @@ public function getCarModels(Request $request)
     }
    
     if(!empty($intout)){
+
+      $this->SendAddonAppNotification($bookingid,$addon_id);
+
       $response['success']= 'Success';
       $response['error']= null;
       $response['message']= 'Successfully fetch data';
@@ -731,5 +767,104 @@ public function getCarModels(Request $request)
     return response()->json($response);
     
   }
+
+  public function SendAddonAppNotification($ride_id,$addon_id)
+    {
+
+        $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+
+        $sql = DB::table('tj_requete')
+        ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
+        ->Join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
+        ->select('tj_requete.id','tj_requete.id_user_app', 'tj_requete.depart_name',
+            'tj_requete.destination_name', 
+            'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time',
+            'tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
+            'tj_requete.vehicle_Id','tj_requete.id_conducteur',
+            'tj_conducteur.prenom as driverfirstname','tj_conducteur.nom as driverlastnae','tj_user_app.fcm_id','tj_conducteur.fcm_id as driverfcmid')
+            ->where('tj_requete.id', '=', $ride_id)
+            ->get();
+
+            foreach ($sql as $row) {
+                $iduserapp = $row->id_user_app;
+                $drivername = $row->driverfirstname .' '. $row->driverlastnae;
+                $pickup_Location = $row->depart_name;
+                $drop_Location = $row->destination_name;
+                $pickupdate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
+                $pickuptime = date("h:m A", strtotime($row->ride_required_on_time));
+                $tokens = $row->fcm_id;
+                $drivertokens = $row->driverfcmid;
+            }
+
+            $addontrans = DB::table('tj_transaction')
+            ->Join('pricing_by_car_models','tj_transaction.addon_id','=','pricing_by_car_models.PricingID')
+            ->select('tj_transaction.amount', 'tj_transaction.payment_status','tj_transaction.payment_method',DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
+            ->where('tj_transaction.is_addon', '=', 'yes')
+            ->where('tj_transaction.ride_id', '=', $ride_id)
+            ->where('tj_transaction.id_user_app', '=', $iduserapp)
+            ->where('tj_transaction.addon_id','=',$addon_id)
+            ->orderby('tj_transaction.id','DESC')
+            ->limit(1)
+            ->first();
+         
+            $addonamount= $addontrans->amount;
+            $addonname = $addontrans->add_on_label;
+            $paymentmethod='';
+            $paymentstatus ='';
+            if($addontrans->payment_method=="5")
+            {
+              $paymentmethod = "Cash on Dropping";
+            }
+            else{
+              $paymentmethod = "Online";
+            }
+
+            if($addontrans->payment_status=="yes")
+            {
+              $paymentstatus= "Successful";
+            }
+            else{
+              $paymentstatus= "failed";
+            }
+            
+
+            $tmsg = '';
+            $terrormsg = '';
+
+            $title = "Addon ".$paymentstatus;
+            
+            $msg = str_replace("{AddonAmount}", $addonamount, "Payment of {AddonAmount} for an Addon {AddoName} in mode of {paymentmethod}  got {paymentstatus}.");
+            $msg = str_replace("{AddoName}", $addonname, $msg);
+            $msg = str_replace("{paymentmethod}", $paymentmethod, $msg);
+            $msg = str_replace("{paymentstatus}", $paymentstatus, $msg);
+            $msg = str_replace("'", "\'", $msg);
+        
+            $tab[] = array();
+            $tab = explode("\\", $msg);
+            $msg_ = "";
+            for ($i = 0; $i < count($tab); $i++) {
+                $msg_ = $msg_ . "" . $tab[$i];
+            }
+
+            $data = [
+                'ride_id' => $ride_id
+            ];
+
+            $message1 = [
+                'title' => $title,
+                'body' => $msg_,
+                'sound'=> 'mySound',
+                'tag' => 'addontried'
+            ];
+
+            $notifications= new NotificationsController();
+            $response['Response'] = $notifications->sendNotification($tokens, $message1,$data);
+            if($addontrans->payment_status=="yes")
+            {
+              $response['driverResponse'] = $notifications->sendNotification($drivertokens, $message1,$data);
+            }
+
+            return response()->json($response);
+    }
 
 }
