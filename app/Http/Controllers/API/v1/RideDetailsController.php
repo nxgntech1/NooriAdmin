@@ -12,6 +12,7 @@ use DB;
 use Illuminate\Http\Request;
 use App\Models\Currency;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class RideDetailsController extends Controller
 {
@@ -377,7 +378,7 @@ class RideDetailsController extends Controller
                 'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image')
             ->where('tj_requete.id_user_app', '=', $id_user_app)
             ->where('tj_requete.statut','!=','paymentfailed')
-            ->orderBy('tj_requete.id', 'desc')
+            ->orderByRaw("CASE WHEN tj_requete.statut = 'completed' THEN 1 ELSE 0 END, tj_requete.id DESC")
             ->get();
         //}
 
@@ -749,7 +750,7 @@ class RideDetailsController extends Controller
                 $row->sub_total = $row->sub_total;
                 $row->BookigDate = $row->ride_required_on_date;
                 $row->BookingTime = $row->ride_required_on_time;
-
+                $row->ride_starttime=null;
                 
 
                 if($row->statut=="completed")
@@ -772,9 +773,22 @@ class RideDetailsController extends Controller
                         }
                 }
                 else{
+                    if($row->booking_type_id=="3")
+                    {
+                        $ridestatus = DB::table('ride_status_change_log')
+                            ->select('ride_status_change_log.created_on as starttime')
+                            ->where('ride_status_change_log.status', 'On Ride')
+                            ->where('ride_status_change_log.ride_id', $ride_id)
+                            ->first();
+                        if(!empty($ridestatus))
+                        {
+                            $row->ride_starttime= $ridestatus->starttime;
+                        }
+                    }
                     $distance =$row->distance;
                     $row->duree = $row->duree;
                 }
+
                 $row->distance = (string)$distance;
                 $row->distance_unit = $row->distance_unit;
                 $row->latitude_depart = $row->latitude_depart;
@@ -1061,7 +1075,7 @@ class RideDetailsController extends Controller
                 )
                 ->where('tj_requete.id_conducteur', '=', $id_driver)
                 ->where('tj_requete.vehicle_Id', '!=', '')
-                ->orderBy('tj_requete.id', 'desc')
+                ->orderByRaw("CASE WHEN tj_requete.statut = 'completed' THEN 1 ELSE 0 END, tj_requete.id DESC")
                 ->get();
 
             foreach ($sql as $row) {
@@ -1435,6 +1449,342 @@ class RideDetailsController extends Controller
         return response()->json($response);
 
 
+    }
+
+    public function generateRideInvoice(Request $request)
+    {
+        $id_user_app = $request->get('id_user_app');
+        $ride_id = $request->get('ride_id');
+
+        if (empty($id_user_app)) {
+            $response['success'] = 'Failed';
+            $response['error'] = 'Missing id_user_app';
+            return response()->json($response);
+        }
+        $currency = Currency::where('statut', 'yes')->first();
+        $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+        
+        $sql = DB::table('tj_requete')
+        ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
+        ->Join('car_model', 'car_model.id', '=', 'tj_requete.model_id')
+        ->Join('brands', 'brands.id', '=', 'tj_requete.brand_id')
+        ->Join('tj_payment_method', 'tj_payment_method.id', '=', 'tj_requete.id_payment_method')
+        ->Join('bookingtypes','tj_requete.booking_type_id','=','bookingtypes.id')
+        ->select('tj_requete.id', 'tj_requete.ride_type', 'tj_requete.id_user_app', 'tj_requete.depart_name',
+            'tj_requete.distance_unit', 'tj_requete.destination_name', 'tj_requete.latitude_depart',
+            'tj_requete.longitude_depart', 'tj_requete.latitude_arrivee', 'tj_requete.longitude_arrivee',
+            'tj_requete.number_poeple', 'tj_requete.place', 'tj_requete.statut', 'tj_requete.id_conducteur',
+            'tj_requete.creer', 'tj_requete.trajet', 'tj_requete.trip_objective', 'tj_requete.trip_category',
+            'tj_requete.tax','tj_requete.discount','tj_requete.tip_amount','tj_requete.montant',
+            'tj_requete.admin_commission', 'tj_user_app.nom', 'tj_user_app.prenom', 'tj_requete.otp',
+            'tj_requete.distance', 'tj_user_app.phone', 'tj_user_app.photo_path as userphoto',
+            'tj_requete.date_retour', 'tj_requete.heure_retour', 'tj_requete.statut_round',
+            'tj_requete.montant', 'tj_requete.duree', 'tj_requete.statut_paiement',
+            'tj_requete.car_Price','tj_requete.sub_total','bookingtypes.bookingtype','tj_requete.booking_type_id',
+            'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time','tj_requete.tax_amount','tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
+            'tj_requete.vehicle_Id','tj_requete.id_conducteur','car_model.name as carmodel','brands.name as brandname',
+            'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image','tj_requete.id_payment_method as paymentmethodid','tj_requete.addon',
+            'tj_requete.odometer_start_reading', 'tj_requete.odometer_end_reading'
+)
+            ->where('tj_requete.id_user_app', '=', $id_user_app)
+            ->where('tj_requete.id', '=', $ride_id)
+            //->orderBy('tj_requete.id', 'desc')
+            ->get();
+        
+        
+        if (!empty($sql)){
+            foreach ($sql as $row) {
+                $row->id = (string) $row->id;
+                $row->brand = $row->brandname;
+                $row->model = $row->carmodel;
+
+                $id_conducteur = $row->id_conducteur;
+                $id_vehicle = $row->vehicle_Id;
+
+                $row->bookingtype = $row->bookingtype;
+                $row->booking_type_id = $row->booking_type_id;
+                $row->depart_name = $row->depart_name;
+                $row->destination_name = $row->destination_name;
+                $row->statut = Str::lower($row->statut);
+                $row->montant = $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit); 
+                $row->car_Price = $row->car_Price;
+                $row->sub_total = $row->sub_total;
+                $row->BookigDate = $row->ride_required_on_date;
+                $row->BookingTime = $row->ride_required_on_time;
+
+                
+
+                if($row->statut=="completed")
+                {
+                    $distance = (int)$row->odometer_end_reading-(int)$row->odometer_start_reading;
+                    $statusrideduration = DB::table('ride_status_change_log as r1')
+                        ->join('ride_status_change_log as r2', 'r1.ride_id', '=', 'r2.ride_id')
+                        ->select(
+                            'r1.id as start_id',
+                            'r2.id as end_id',
+                            DB::raw('TIMEDIFF(r2.created_on, r1.created_on) as time_diff')
+                        )
+                        ->where('r1.status', 'On Ride')
+                        ->where('r2.status', 'Completed')
+                        ->where('r1.ride_id', $ride_id)
+                        ->first();
+                        if($statusrideduration)
+                        {
+                            $row->duree = $statusrideduration->time_diff ? $statusrideduration->time_diff : $row->duree;
+                        }
+                }
+                else{
+                    $distance =$row->distance;
+                    $row->duree = $row->duree;
+                }
+                $row->distance = (string)$distance;
+                $row->distance_unit = $row->distance_unit;
+                $row->latitude_depart = $row->latitude_depart;
+                $row->longitude_depart = $row->longitude_depart;
+                $row->latitude_arrivee = $row->latitude_arrivee;
+                $row->longitude_arrivee = $row->longitude_arrivee;
+                $row->paymentmethodid = $row->paymentmethodid;
+                $row->paymentmethod = $row->payment;
+                $row->payment = $row->paymentmethodid=="5" ? "Cash" : "Online";
+                $row->discount = $row->discount;
+                $row->tax_amount = $row->tax_amount;
+                $row->bookfor_others_mobileno = $row->bookfor_others_mobileno;
+                $row->bookfor_others_name = $row->bookfor_others_name;
+
+                if ($row->otp == null) {
+                    $row->otp = '';
+                }else{
+                    if($row->statut=="completed")
+                    {
+                        $row->otp = '';
+                    }
+                    $row->otp = $row->otp;
+                }
+
+                if (!empty($id_vehicle))
+                {
+                    $sql_vehicle = DB::table('tj_vehicule')
+                    ->select('tj_vehicule.id', 'tj_vehicule.car_make', 'tj_vehicule.milage', 'tj_vehicule.km',
+                    'tj_vehicule.color', 'tj_vehicule.numberplate',
+                    'tj_vehicule.passenger', 'tj_vehicule.primary_image_id')
+                    ->where('id', '=', $id_vehicle)->get();
+
+                    foreach ($sql_vehicle as $row_vehicle) {
+                        $row->idVehicule = (string) $row_vehicle->id;
+                    
+                        $row->car_make = $row_vehicle->car_make;
+                        $row->milage = $row_vehicle->milage;
+                        $row->km = $row_vehicle->km;
+                        $row->color = $row_vehicle->color;
+                        $row->numberplate = $row_vehicle->numberplate;
+                        $row->passenger = $row_vehicle->passenger;
+                        $row->vehicle_imageid = $row_vehicle->primary_image_id;
+                    }
+                }else{
+                        $row->idVehicule = "";
+                        $row->car_make = "";
+                        $row->milage = "";
+                        $row->km = "";
+                        $row->color = "";
+                        $row->numberplate = "";
+                        $row->passenger = "";
+                        $row->vehicle_imageid = "";
+                }
+
+                if (!empty( $row->vehicle_imageid)) {
+                    if (file_exists(public_path('assets/images/vehicle' . '/' . $row->vehicle_imageid))) {
+                        $vehicle_imageid = asset('assets/images/vehicle') . '/' . $row->vehicle_imageid;
+                    } else {
+                        $vehicle_imageid = asset('assets/images/placeholder_img_car.png');
+                    }
+                    
+                }
+                else {
+                    $vehicle_imageid = asset('assets/images/placeholder_img_car.png');
+                }
+                $row->vehicle_imageid = $vehicle_imageid;
+
+                if ($row->payment_image != '') {
+                    if (file_exists(public_path('assets/images/payment_method' . '/' . $row->payment_image))) {
+                        $image = asset('assets/images/payment_method') . '/' . $row->payment_image;
+                    } else {
+                        $image = asset('assets/images/placeholder_image.jpg');
+                    }
+                    $row->payment_image = $image;
+                }
+
+                $sql_tax = DB::table('ride_tax_details')
+                ->select('tax_type', 'tax_label as taxlabel', 'tax', 'ride_tax_amount')
+                ->whereNull('addonid')
+                ->where('bookingid', '=', $row->id)->get();
+                $ride_taxes ='';
+                foreach ($sql_tax as $sql_rowtax) {
+                    $sql_rowtax->tax_type = $sql_rowtax->tax_type;
+                    $sql_rowtax->taxlabel = $sql_rowtax->taxlabel;
+                    $sql_rowtax->tax = $sql_rowtax->tax;
+                    $sql_rowtax->ride_tax_amount = $currency->symbole . "" . number_format($sql_rowtax->ride_tax_amount,$currency->decimal_digit); 
+                    $ride_taxes = $ride_taxes.'<tr>
+        <td style="color: #666666; font-size: 13px;padding-bottom: 5px;">'.$sql_rowtax->taxlabel.'</td>
+        <td style="color: #666666; font-size: 15px;padding-bottom: 5px;" align="right">'.$sql_rowtax->ride_tax_amount.'</td>
+      </tr>';
+                    //$row->tax = $sql_rowtax;
+                    $tax[] = $sql_rowtax;
+                }
+                $row->tax = $tax;
+
+                if (!empty($id_conducteur)) {
+
+                    $sql_cond = DB::table('tj_conducteur')->select('nom as nomConducteur', 
+                    'prenom as prenomConducteur', 'phone as driverPhone', 'photo_path as driverphoto')
+                    ->where('id', '=', $id_conducteur)
+                    ->get();
+                    
+                    // 'tj_conducteur.nom as nomConducteur', 'tj_conducteur.prenom as prenomConducteur', 'tj_conducteur.phone as driverPhone', 'tj_conducteur.photo_path as driverphoto',
+                    foreach ($sql_cond as $row_cond)
+                    {
+                        $row->driverPhone = $row_cond->driverPhone;
+                        $row->driverphoto = $row_cond->driverphoto;
+                        $row->drivername = $row_cond->prenomConducteur.' '.$row_cond->nomConducteur;
+
+                    }
+    
+                    
+                    if ($row->driverphoto != '') {
+                        if (file_exists(public_path('assets/images/driver' . '/' . $row->driverphoto))) {
+                            $image_driver = asset('assets/images/driver') . '/' . $row->driverphoto;
+                        } else {
+                            $image_driver = asset('assets/images/placeholder_image.jpg');
+                        }
+                        $row->driverphoto = $image_driver;
+                    }
+                    else{
+                        $row->driverphoto='';
+                    }
+    
+                        
+                } else {
+                    $row->nomConducteur = "";
+                    //$row->prenomConducteur = "";
+                   // $row->moyenne = "0.0";
+                    $row->driver_phone = "";
+                    //$row->moyenne_driver = "0.0";
+                }
+                $subtotal = ($row->car_Price -$row->discount);
+                $row->car_Price = $currency->symbole . "" . number_format($row->car_Price,$currency->decimal_digit);
+            
+                if (!empty($row->discount) && $row->discount != '0')
+                    $row->discount = $currency->symbole . "" . number_format($row->discount,$currency->decimal_digit);
+            
+                    $row->sub_total = $currency->symbole . "" . number_format($subtotal,$currency->decimal_digit); 
+                $row->tax_amount =$currency->symbole . "" . number_format($row->tax_amount,$currency->decimal_digit);
+                //addon checking
+                $addon = DB::Table('addon_payments')
+                ->where('bookingid','=',$row->id)
+                ->where('payment_status','=','success')
+                ->whereNotNull('transaction_id')
+                
+                ->get();
+               // $row->addon = json_encode($addon,JSON_PRETTY_PRINT);
+               $ride_addons ='';
+                if(!empty($addon))
+                {
+                    $addons = [];
+                    foreach ($addon as $row_addon) {
+                        $row_addon->addon_total_amount = $currency->symbole . "" . number_format($row_addon->addon_total_amount,$currency->decimal_digit); 
+                        $row_addon->addonid = $row_addon->addonid;
+                        $row_addon->payment_status = $row_addon->transaction_id=="cod" ? 'Cash' : 'Online';
+                        $addonPricing = DB::Table('pricing_by_car_models')
+                            ->where('PricingID','=',$row_addon->addonid)
+                            ->where('is_Add_on','=','yes')
+                            ->first();
+                        if($addonPricing)
+                        {
+                            $row_addon->add_on_label =$addonPricing->hours.' hours |'.$addonPricing->kms.' KMs';
+                            $row_addon->package_price = $currency->symbole . "" . number_format($addonPricing->Price,$currency->decimal_digit);  
+                        }
+
+                        $ride_addons=$ride_addons.'<table style="width: 100%; margin-bottom: 20px; border: 1px solid #cccccc; padding: 5px;">
+      <tr>
+        <td style="color: #130e4d; font-size: 15px; font-weight: 500; border-bottom: 1px solid #cccccc; padding-bottom: 5px; margin-bottom: 5px;">Add-ons Package</td>
+        <td style="color: #130e4d; font-size: 15px; font-weight: 500; border-bottom: 1px solid #cccccc; padding-bottom: 5px; margin-bottom: 5px;" align="right">'.$row_addon->add_on_label.'</td>
+      </tr>
+      
+      <tr>
+        <td style="color: #666666; font-size: 13px;padding-bottom: 5px;">Package Fare</td>
+        <td style="color: #666666; font-size: 13px;padding-bottom: 5px;" align="right">'.$row_addon->package_price.'</td>
+      </tr>';
+
+                        $addon_tax = DB::table('ride_tax_details')
+                            ->select('tax_type', 'tax_label as taxlabel', 'tax', 'ride_tax_amount')
+                            ->where('addonid','=',$row_addon->addonid)
+                            ->where('bookingid', '=', $row->id)
+                            ->distinct()
+                            ->get();
+                            if($addon_tax)
+                            {
+                                $addontax = [];
+                            foreach ($addon_tax as $addon_rowtax) {
+                                $addon_rowtax->tax_type = $addon_rowtax->tax_type;
+                                $addon_rowtax->taxlabel = $addon_rowtax->taxlabel;
+                                $addon_rowtax->tax = $addon_rowtax->tax;
+                                $addon_rowtax->ride_tax_amount = $currency->symbole . "" . number_format($addon_rowtax->ride_tax_amount,$currency->decimal_digit); 
+                                $ride_addons=$ride_addons.'<tr>
+        <td style="color: #666666; font-size: 13px;padding-bottom: 5px;">'.$addon_rowtax->taxlabel.'</td>
+        <td style="color: #666666; font-size: 15px;padding-bottom: 5px;" align="right">'.$addon_rowtax->ride_tax_amount.'</td>
+      </tr>';
+                                //$row->tax = $sql_rowtax;
+                                $addontax[] = $addon_rowtax;
+                            }
+                            $row_addon->taxes = $addontax;
+                            $addons[] = $row_addon;
+                        }
+                        $ride_addons=$ride_addons.'<tr>
+        <td style="color: #130e4d; font-size: 15px; font-weight: 500; padding-bottom: 5px; margin-bottom: 5px;">Total Paid</td>
+        <td style="color: #130e4d; font-size: 15px; font-weight: 500; padding-bottom: 5px; margin-bottom: 5px;"  align="right">'.$row_addon->addon_total_amount.'</td>
+      </tr>
+    </table>';
+                    }
+                    $row->addon = $addons;
+                }
+                $output[] = $row;
+                $data = [
+                    'statut' => $row->statut,
+                    'model' => $row->model,
+                    'brand' => $row->brand,
+                    'BookigDate' => Carbon::parse($row->BookigDate)->format('D, d M \'y'),
+                    'BookingTime' => Carbon::parse($row->BookingTime)->format('h:i A'),
+                    'montant' => str_replace("₹","Rs: ",$row->montant),
+                    'depart_name' => $row->depart_name,
+                    'destination_name' => $row->destination_name,
+                    'BookingTime' => $row->BookingTime,
+                    'distance' => $row->distance,
+                    'duree' => $row->duree,
+                    'car_Price' => str_replace("₹","Rs: ",$row->car_Price),
+                    'discount' => str_replace("₹","Rs: ",$row->discount),
+                    'sub_total' => str_replace("₹","Rs: ",$row->sub_total),
+                    'ride_taxes' => str_replace("₹","Rs: ",$ride_taxes),
+                    'ride_addons' => str_replace("₹","Rs: ",$ride_addons),
+                    'driverphoto' => $row->driverphoto,
+                    'numberplate' => $row->numberplate,
+                    'drivername' => $row->drivername,
+                    'vehicle_imageid' => $row->vehicle_imageid
+                ];
+            }
+
+            $pdf = Pdf::loadView('reports.rideinvoice', $data);
+            
+        } 
+        // if (!empty($output)) {
+        //     $response['success'] = 'success';
+        //     $response['error'] = null;
+        //     $response['message'] = 'Successfully';
+        //     $response['data'] = $output;
+        // } else {
+        //     $response['success'] = 'Failed';
+        //     $response['error'] = 'Failed to fetch data';
+        // }
+
+        return $pdf->download('Ride_Invoice.pdf');
     }
 
 }

@@ -514,8 +514,8 @@ public function getCarModels(Request $request)
                     
                 }
 
-                $totalTaxAmount += floatval(number_format($taxValue,$currency->decimal_digit));
-
+                //$totalTaxAmount += floatval(number_format($taxValue,$currency->decimal_digit));
+                $totalTaxAmount += floatval($taxValue);
                 if ($currency->symbol_at_right == "true") {
                     $taxValueAmount = number_format($taxValue,$currency->decimal_digit) . "" . $currency->symbole;
                 } else {
@@ -605,7 +605,7 @@ public function getCarModels(Request $request)
           'TIMESTAMPDIFF(HOUR, 
               TIMESTAMP(current_ride.ride_required_on_date, current_ride.ride_required_on_time), 
               TIMESTAMP(next_ride.ride_required_on_date, next_ride.ride_required_on_time)
-          ) as hours_gap'
+          ) as hours_gap','current_ride.booking_type_id'
       ))
       ->where('current_ride.id', $ride_id)
       ->whereRaw('TIMESTAMP(next_ride.ride_required_on_date, next_ride.ride_required_on_time) > TIMESTAMP(current_ride.ride_required_on_date, current_ride.ride_required_on_time)')
@@ -613,24 +613,64 @@ public function getCarModels(Request $request)
       ->limit(1)
       ->first();
 
-      if(!empty($hoursgap) && $hoursgap->hours_gap > 0)
+
+
+      if(!empty($hoursgap))
       {
-      $sql = DB::table('tj_requete')
-            ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
-            ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
-            'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing',
-            DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
-            ->where('pricing_by_car_models.is_add_on','=','yes')
-            ->where('pricing_by_car_models.status','=','yes')
-            ->where('pricing_by_car_models.hours','<=',$hoursgap->hours_gap)
-            ->where('tj_requete.id','=',$ride_id)
-            ->get();
+        if($hoursgap->hours_gap > 0)
+        {
+        if( $hoursgap->booking_type_id=="1" || $hoursgap->booking_type_id=="2")
+          {
+            $hoursgap->hours_gap = (int)$hoursgap->hours_gap - 6;
+          }
+        else if($hoursgap->booking_type_id=="3"){
+          $hoursgap->hours_gap = (int)$hoursgap->hours_gap - 10;
+        }
+
+        if($hoursgap->hours_gap > 0)
+        {
+          $sql = DB::table('tj_requete')
+                ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
+                ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
+                'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
+                DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
+                ->where('pricing_by_car_models.is_add_on','=','yes')
+                ->where('pricing_by_car_models.status','=','yes')
+                ->where('pricing_by_car_models.hours','<=',$hoursgap->hours_gap)
+                ->where('tj_requete.id','=',$ride_id)
+                ->get();
+        }
+        else{
+          $sql = DB::table('tj_requete')
+              ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
+              ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
+              'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
+              DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
+              ->where('pricing_by_car_models.is_add_on','=','yes')
+              ->where('pricing_by_car_models.status','=','yes')
+              ->where('tj_requete.id','=',$ride_id)
+              ->where('1','!=','1')
+              ->get();
+        }
       }
       else{
         $sql = DB::table('tj_requete')
             ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
             ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
-            'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing',
+            'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
+            DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
+            ->where('pricing_by_car_models.is_add_on','=','yes')
+            ->where('pricing_by_car_models.status','=','yes')
+            ->where('tj_requete.id','=',$ride_id)
+            ->where('1','!=','1')
+            ->get();
+      }
+      }
+      else{
+        $sql = DB::table('tj_requete')
+            ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
+            ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
+            'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
             DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
             ->where('pricing_by_car_models.is_add_on','=','yes')
             ->where('pricing_by_car_models.status','=','yes')
@@ -749,6 +789,23 @@ public function getCarModels(Request $request)
       $stmt = $pdo->query('SELECT @intout as INTRETURN');
       $result = $stmt->fetch(PDO::FETCH_ASSOC);
       $intout = $result['INTRETURN'];
+      $addonhours =0;
+      if($paymentstatus=="success")
+      {
+
+      $addon = DB::table('pricing_by_car_models')
+      ->select('pricing_by_car_models.*')
+      ->where('pricing_by_car_models.is_Add_on','=','yes')
+      ->where('pricing_by_car_models.status','=','yes')
+      ->where('pricing_by_car_models.PricingID','=',$addon_id)
+      ->first();
+        if(!empty($addon))
+        {
+          $addonhours = $addon->hours;
+        }
+
+      }
+      
 
     }
    
@@ -759,6 +816,7 @@ public function getCarModels(Request $request)
       $response['success']= 'Success';
       $response['error']= null;
       $response['message']= 'Successfully fetch data';
+      $response['data'] = $addonhours;
       
     }else{
       $response['success']= 'Failed';

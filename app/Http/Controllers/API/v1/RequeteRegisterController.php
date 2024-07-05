@@ -230,6 +230,13 @@ class RequeteRegisterController extends Controller
         else
             $coupon_id = '0';
 
+
+        $user = DB::table('tj_user_app')
+        ->where('id','=',$user_id)
+        ->first();
+
+
+
         // $cout = $request->get('cout');
         // $age_children1 = $request->get('age_children1');
         // $age_children2 = $request->get('age_children2');
@@ -271,8 +278,12 @@ class RequeteRegisterController extends Controller
             // Discount Details 
             
             //$cout = 500;
-
-        if (!empty($id_payment)) {
+        if(!empty($user))
+        {
+            if($user->statut=="yes")
+            {
+        if (!empty($id_payment)) 
+        {
            
                 if ($id_payment == "5")
                 {
@@ -483,6 +494,16 @@ class RequeteRegisterController extends Controller
             $response['success'] = 'Failed';
             $response['error'] = 'some field required';
         }
+    }
+    else{
+        $response['success'] = 'Failed';
+        $response['error'] = 'Your are not active. Please contact support.';
+    }
+    }
+    else {
+        $response['success'] = 'Failed';
+        $response['error'] = 'user not found';
+    }
 
 
         return response()->json($response);

@@ -330,15 +330,7 @@ Route::get('/getlang', [App\Http\Controllers\languageController::class, 'getLang
         Route::get('/commission/changeStatus/{id}', [App\Http\Controllers\CommissionController::class, 'changeStatus'])->name('commission.changeStatus');
         Route::get('/commission/search', [App\Http\Controllers\CommissionController::class, 'searchCommision'])->name('commision.search');
 
-        Route::get('/tax', [App\Http\Controllers\TaxController::class, 'index'])->name('tax');
-        Route::get('/tax/create', [App\Http\Controllers\TaxController::class, 'create'])->name('tax.create');
-        Route::post('/tax/store', [App\Http\Controllers\TaxController::class, 'store'])->name('tax.store');
-        Route::get('/tax/edit/{id}', [App\Http\Controllers\TaxController::class, 'edit'])->name('tax.edit');
-        Route::put('/tax/update/{id}', [App\Http\Controllers\TaxController::class, 'update'])->name('tax.update');
-        Route::get('/tax/delete/{id}', [App\Http\Controllers\TaxController::class, 'delete'])->name('tax.delete');
-        Route::get('/tax/show/{id}', [App\Http\Controllers\TaxController::class, 'show'])->name('tax.show');
-        Route::get('/tax/changeStatus/{id}', [App\Http\Controllers\TaxController::class, 'changeStatus'])->name('tax.changeStatus');
-        Route::get('/tax/search', [App\Http\Controllers\TaxController::class, 'searchTax'])->name('tax.search');
+       
 
         Route::get('cash_collection',[App\Http\Controllers\CashCollectionController:: class, 'index'])->name('cash_collection');
         Route::get('cash_collection/detail/{id}',[App\Http\Controllers\CashCollectionController:: class, 'detail'])->name('cash_collection.detail');
@@ -392,7 +384,16 @@ Route::get('/getlang', [App\Http\Controllers\languageController::class, 'getLang
         Route::get('email_template', [App\Http\Controllers\EmailTemplateController::class, 'index'])->name('email_template.index');
         Route::get('email_template/edit/{id}', [App\Http\Controllers\EmailTemplateController::class, 'edit'])->name('email_template.edit');
         Route::put('email_template/update/{id}', [App\Http\Controllers\EmailTemplateController::class, 'update'])->name('email_template.update');
-
+        
+        Route::get('/tax', [App\Http\Controllers\TaxController::class, 'index'])->name('tax');
+        Route::get('/tax/create', [App\Http\Controllers\TaxController::class, 'create'])->name('tax.create');
+        Route::post('/tax/store', [App\Http\Controllers\TaxController::class, 'store'])->name('tax.store');
+        Route::get('/tax/edit/{id}', [App\Http\Controllers\TaxController::class, 'edit'])->name('tax.edit');
+        Route::put('/tax/update/{id}', [App\Http\Controllers\TaxController::class, 'update'])->name('tax.update');
+        Route::get('/tax/delete/{id}', [App\Http\Controllers\TaxController::class, 'delete'])->name('tax.delete');
+        Route::get('/tax/show/{id}', [App\Http\Controllers\TaxController::class, 'show'])->name('tax.show');
+        Route::get('/tax/changeStatus/{id}', [App\Http\Controllers\TaxController::class, 'changeStatus'])->name('tax.changeStatus');
+        Route::get('/tax/search', [App\Http\Controllers\TaxController::class, 'searchTax'])->name('tax.search');
     });
     Route::prefix('settings')->group(function(){
         Route::get('app/globals', [App\Http\Controllers\SettingsController::class, 'globals'])->name('settings.app.globals');

@@ -56,7 +56,7 @@
                         <div class="form-group row width-100">
 						<div class="form-check">                    
 							<input type="checkbox" class="user_active" id="status" name="status">
-							<label class="col-3 control-label" for="status">{{trans('lang.status')}}</label>
+							<label class="col-3 control-label" for="status">{{trans('lang.active')}}</label>
 
 						</div>
 					</div> 

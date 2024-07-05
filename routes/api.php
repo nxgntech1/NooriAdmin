@@ -243,6 +243,7 @@ Route::group(['middleware' => ['apiKeyAuth']], function () {
     Route::get('v1/get-user-all-rides/', [RideDetailsController::class, 'getUserAllRides']);
     Route::post('v1/get-user-latest-rides/', [RideDetailsController::class, 'getUserLatestRides']);
     Route::post('v1/get-user-rides-details/', [RideDetailsController::class, 'getUserRidesDetails']);
+    Route::post('v1/get-ride-invoice/',[RideDetailsController::class, 'generateRideInvoice']);
     Route::get('v1/driver-all-rides/', [RideDetailsController::class, 'getDriverRides']);
 
     Route::get('v1/driver/', [DriverController::class, 'getData']);

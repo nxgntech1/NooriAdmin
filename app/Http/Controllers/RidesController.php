@@ -963,6 +963,7 @@ class RidesController extends Controller
             ->whereNotIn('ID', $subquery)
             ->where('is_verified','=',1)
             ->where('statut','=','yes')
+            ->where('online','=','yes')
             ->select('id','prenom','nom','photo_path')
             ->get();
 

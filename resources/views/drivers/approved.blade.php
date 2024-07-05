@@ -96,7 +96,8 @@
                                             <button type="submit" class="btn-flat position-absolute">
                                                 <i class="fa fa-search"></i>
                                             </button>
-                                            <!-- <input type="search" id="search" class="search form-control" placeholder="Search" aria-controls="users-table"></label>&nbsp;<button onclick="searchtext();" class="btn btn-warning btn-flat">Search</button>&nbsp; -->
+                                            <!-- <input type="search" id="search" class="search form-control" placeholder="Search" aria-controls="users-table"></label>-->
+                                             &nbsp;<button onclick="searchtext();" class="btn btn-warning">Search</button>&nbsp; 
                                             <!-- <button onclick="searchclear();" class="btn btn-warning btn-flat">Clear</button> -->
                                             <a class="btn btn-warning btn-flat" href="{{url('drivers/approved')}}">Clear</a>
                                         </div>
