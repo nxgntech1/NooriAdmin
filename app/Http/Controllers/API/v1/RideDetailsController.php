@@ -950,6 +950,8 @@ class RideDetailsController extends Controller
                         {
                             $row_addon->add_on_label =$addonPricing->hours.' hours |'.$addonPricing->kms.' KMs';
                             $row_addon->package_price = $currency->symbole . "" . number_format($addonPricing->Price,$currency->decimal_digit);  
+                            $row_addon->hours = $addonPricing->hours;
+                            $row_addon->kms = $addonPricing->kms;
                         }
                         $addon_tax = DB::table('ride_tax_details')
                             ->select('tax_type', 'tax_label as taxlabel', 'tax', 'ride_tax_amount')

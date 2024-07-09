@@ -84,17 +84,16 @@
                                   					</div>
 
                                         </fieldset>
-                                        <fieldset>
+                                        <!-- <fieldset>
                                             <legend>{{trans('lang.delivery_charge')}}</legend>
                                             <div class="form-group row width-100">
 
 
-                                                <label class="col-3 control-label">{{trans('lang.delivery_charge_per')}} {{$delivery_distance}}</label>
+                                                <label class="col-3 control-label">{{trans('lang.delivery_charge_per')}} {{--$delivery_distance--}}</label>
                                                 <div class="col-7">
                                                     <input type="number" class="form-control"
                                                            value="{{ Request::old('delivery_charge_per_km') }}"
                                                            name="delivery_charge_per_km">
-                                                    <!-- <div class="form-text text-muted"></div> -->
                                                 </div>
                                             </div>
 
@@ -104,21 +103,19 @@
                                                     <input type="number" class="form-control"
                                                            name="minimum_delivery_charge"
                                                            value="{{ Request::old('minimum_delivery_charge') }}">
-                                                    <!-- <div class="form-text text-muted"></div> -->
                                                 </div>
                                             </div>
 
                                             <div class="form-group row width-100">
-                                                <label class="col-3 control-label">{{trans('lang.minimum_delivery_charge_within')}} {{$delivery_distance}}</label>
+                                                <label class="col-3 control-label">{{trans('lang.minimum_delivery_charge_within')}} {{--$delivery_distance--}}</label>
                                                 <div class="col-7">
                                                     <input type="number" class="form-control"
                                                            name="minimum_delivery_charge_within_km"
                                                            value="{{ Request::old('minimum_delivery_charge_within_km') }}">
-                                                    <!-- <div class="form-text text-muted"></div> -->
                                                 </div>
                                             </div>
 
-                                        </fieldset>
+                                        </fieldset> -->
                                     </div>
                                 </div>
                         </div>

@@ -139,7 +139,7 @@ Route::get('/getlang', [App\Http\Controllers\languageController::class, 'getLang
         Route::get('/ride/delete/{rideid}', [App\Http\Controllers\RidesController::class, 'deleteRide'])->name('ride.delete');
         Route::get('/ride/show/{id}', [App\Http\Controllers\RidesController::class, 'show'])->name('ride.show');
         Route::get('/rides/filter', [App\Http\Controllers\RidesController::class, 'filterRides'])->name('rides.filter');
-        Route::put('/rides/update/{id}', [App\Http\Controllers\RidesController::class, 'updateRide'])->name('rides.update');
+        Route::post('/rides/update/{id}', [App\Http\Controllers\RidesController::class, 'updateRide'])->name('rides.update');
         Route::get('/reviews/{id}', [App\Http\Controllers\RidesController::class, 'index'])->name('restaurants.reviews');
         
         // parcle orders routes

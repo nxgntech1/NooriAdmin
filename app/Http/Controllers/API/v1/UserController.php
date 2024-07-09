@@ -515,7 +515,7 @@ class UserController extends Controller
                     $row['id']=(string)$id;
                     $response['data'] = $row;
 
-                    $this->sendemail($account_type,$id);
+                    $this->sendemail($email,$account_type,$id);
 
                 } else {
                     $response['success'] = 'Failed';
@@ -601,7 +601,7 @@ class UserController extends Controller
 
                 $admintoemail=env('ADMIN_EMAILID','govind.p.raj@gmail.com');
                 $notifications= new NotificationsController();
-                $response['customerregEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
+                $response['customerregEmailResponse'] = $notifications->sendEmail($useremail, $emailsubject,$emailmessage);
                 
                 $emailsubject='';
                 $emailmessage='';

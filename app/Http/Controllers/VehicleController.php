@@ -53,12 +53,13 @@ class VehicleController extends Controller
     public function creates()
     {
         $vehicle = VehicleType::all();
-        $Settings = Settings::all();
+        // $Settings = Settings::all();
 
-        foreach ($Settings as $data)
-            $delivery_distance = $data->delivery_distance;
+        // foreach ($Settings as $data)
+        //     $delivery_distance = $data->delivery_distance;
 
-        return view('vehicle.creates', compact('vehicle'))->with('delivery_distance', $delivery_distance);
+        return view('vehicle.creates', compact('vehicle'));
+        // ->with('delivery_distance', $delivery_distance);
     }
 
     public function store(Request $request)
@@ -72,16 +73,16 @@ class VehicleController extends Controller
         $validator = Validator::make($request->all(), $rules = [
             'libelle' => 'required',
             'image' => $image_validation,
-            'delivery_charge_per_km'=>'required',
-            'minimum_delivery_charge'=>'required',
-            'minimum_delivery_charge_within_km'=>'required',
+            // 'delivery_charge_per_km'=>'required',
+            // 'minimum_delivery_charge'=>'required',
+            // 'minimum_delivery_charge_within_km'=>'required',
 
         ], $messages = [
             'libelle.required' => 'The Vehicle Type field is required!',
             'image.required' => 'The Image field is required!',
-            'delivery_charge_per_km.required'=>'Delivery Charges per Miles is required!',
-            'minimum_delivery_charge.required' => 'Minimum Delivery Charges is required!',
-            'minimum_delivery_charge_within_km.required'=>'Minimum Delivery Charges Within Miles is required!',
+            // 'delivery_charge_per_km.required'=>'Delivery Charges per Miles is required!',
+            // 'minimum_delivery_charge.required' => 'Minimum Delivery Charges is required!',
+            // 'minimum_delivery_charge_within_km.required'=>'Minimum Delivery Charges Within Miles is required!',
 
 
         ]);
@@ -109,16 +110,16 @@ class VehicleController extends Controller
         $vehicle->modifier = date('Y-m-d H:i:s');
         $vehicle->updated_at = date('Y-m-d H:i:s');
         $vehicle->save();
-        $vedicleType_id = $vehicle->id;
+        // $vedicleType_id = $vehicle->id;
 
-        $delivery = new DeliveryCharges;
-        $delivery->delivery_charges_per_km = $request->input('delivery_charge_per_km');
-        $delivery->minimum_delivery_charges = $request->input('minimum_delivery_charge');
-        $delivery->minimum_delivery_charges_within_km = $request->input('minimum_delivery_charge_within_km');
-        $delivery->id_vehicle_type = $vedicleType_id;
-        $delivery->created = date('Y-m-d H:i:s');
-        $delivery->modifier = date('Y-m-d H:i:s');
-        $delivery->save();
+        // $delivery = new DeliveryCharges;
+        // $delivery->delivery_charges_per_km = $request->input('delivery_charge_per_km');
+        // $delivery->minimum_delivery_charges = $request->input('minimum_delivery_charge');
+        // $delivery->minimum_delivery_charges_within_km = $request->input('minimum_delivery_charge_within_km');
+        // $delivery->id_vehicle_type = $vedicleType_id;
+        // $delivery->created = date('Y-m-d H:i:s');
+        // $delivery->modifier = date('Y-m-d H:i:s');
+        // $delivery->save();
 
         return redirect('vehicle/index');
     }
@@ -128,13 +129,14 @@ class VehicleController extends Controller
 
         $type = VehicleType::find($id);
        
-        $delivery_charges = DeliveryCharges::where('id_vehicle_type', $id)->first();
-        $Settings = Settings::all();
+        // $delivery_charges = DeliveryCharges::where('id_vehicle_type', $id)->first();
+        // $Settings = Settings::all();
 
-        foreach ($Settings as $data)
-            $delivery_distance = $data->delivery_distance;
+        // foreach ($Settings as $data)
+        //     $delivery_distance = $data->delivery_distance;
 
-        return view("vehicle.edits")->with("type", $type)->with('delivery_charges', $delivery_charges)->with('delivery_distance', $delivery_distance);
+        return view("vehicle.edits")->with("type", $type);
+        //->with('delivery_charges', $delivery_charges)->with('delivery_distance', $delivery_distance);
     }
 
     public function vehicleTypeUpdate(Request $request, $id)
@@ -150,17 +152,17 @@ class VehicleController extends Controller
         $validator = Validator::make($request->all(), $rules = [
             'libelle' => 'required',
             'image' => $image_validation,
-            'delivery_charge_per_km'=>'required',
-            'minimum_delivery_charge'=>'required',
-            'minimum_delivery_charge_within_km'=>'required',
+            // 'delivery_charge_per_km'=>'required',
+            // 'minimum_delivery_charge'=>'required',
+            // 'minimum_delivery_charge_within_km'=>'required',
 
 
         ], $messages = [
             'libelle.required' => 'The Vehicle Type field is required!',
             'image.required' => 'The Image field is required!',
-            'delivery_charge_per_km.required'=>'Delivery Charges per Miles is required!',
-            'minimum_delivery_charge.required' => 'Minimum Delivery Charges is required!',
-            'minimum_delivery_charge_within_km.required'=>'Minimum Delivery Charges Within Miles is required!',
+            // 'delivery_charge_per_km.required'=>'Delivery Charges per Miles is required!',
+            // 'minimum_delivery_charge.required' => 'Minimum Delivery Charges is required!',
+            // 'minimum_delivery_charge_within_km.required'=>'Minimum Delivery Charges Within Miles is required!',
 
 
         ]);

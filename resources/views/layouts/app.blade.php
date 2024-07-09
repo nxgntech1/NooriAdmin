@@ -229,6 +229,35 @@
             .nav-tabs.card-header-tabs .nav-link.active span.badge-success, .nav-tabs.card-header-tabs .nav-link:hover span.badge-success, .sidebar-nav ul li a.active, .sidebar-nav ul li a.active:hover, .sidebar-nav ul li.active a.has-arrow:hover, .topbar ul.dropdown-user li a:hover{color: <?php echo $_COOKIE['admin_panel_color']; ?>}
         }
         .mini-sidebar .sidebar-nav #sidebarnav > li:hover a i {color: <?php echo $_COOKIE['admin_panel_color']; ?> !important;}
+        /* Spinner CSS */
+        .spinner-overlay {
+            display: none; /* Hidden by default */
+            position: fixed; /* Sit on top of the page content */
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5); /* Black background with opacity */
+            z-index: 1000; /* Specify a stack order in case you're using a different order for other elements */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border: 0.25em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-border .75s linear infinite;
+        }
+
+        @keyframes spinner-border {
+            to { transform: rotate(360deg); }
+        }
     </style>
     <?php } ?>
 

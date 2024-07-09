@@ -89,14 +89,14 @@
                                   					</div>
 
                                         </fieldset>
-                                        <fieldset>
+                                        <!-- <fieldset>
                                             <legend>{{trans('lang.delivery_charge')}}</legend>
                                             <div class="form-group row width-100">
-                                                <label class="col-3 control-label">{{trans('lang.delivery_charge_per')}} {{$delivery_distance}}</label>
+                                                <label class="col-3 control-label">{{trans('lang.delivery_charge_per')}} {{--$delivery_distance--}}</label>
                                                 <div class="col-7">
                                                     @if(!empty($delivery_charges))
                                                         <input type="number" class="form-control"
-                                                               value="{{ $delivery_charges->delivery_charges_per_km }}"
+                                                               value="{{-- $delivery_charges->delivery_charges_per_km --}}"
                                                                name="delivery_charge_per_km">
                                                     @else
                                                         <input type="number" class="form-control" value=""
@@ -112,7 +112,7 @@
                                                     @if(!empty($delivery_charges))
                                                         <input type="number" class="form-control"
                                                                name="minimum_delivery_charge"
-                                                               value="{{ $delivery_charges->minimum_delivery_charges }}">
+                                                               value="{{-- $delivery_charges->minimum_delivery_charges --}}">
                                                     @else
                                                         <input type="number" class="form-control"
                                                                name="minimum_delivery_charge" value="">
@@ -122,12 +122,12 @@
                                             </div>
 
                                             <div class="form-group row width-100">
-                                                <label class="col-3 control-label">{{trans('lang.minimum_delivery_charge_within')}} {{$delivery_distance}}</label>
+                                                <label class="col-3 control-label">{{trans('lang.minimum_delivery_charge_within')}} {{-- $delivery_distance --}}</label>
                                                 <div class="col-7">
                                                     @if(!empty($delivery_charges))
                                                         <input type="number" class="form-control"
                                                                name="minimum_delivery_charge_within_km"
-                                                               value="{{ $delivery_charges->minimum_delivery_charges_within_km }}">
+                                                               value="{{-- $delivery_charges->minimum_delivery_charges_within_km --}}">
                                                     @else
                                                         <input type="number" class="form-control"
                                                                name="minimum_delivery_charge_within_km" value="">
@@ -136,7 +136,7 @@
                                                 </div>
                                             </div>
 
-                                        </fieldset>
+                                        </fieldset> -->
                                     </div>
                                 </div>
                         </div>

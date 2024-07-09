@@ -110,7 +110,7 @@ class SendResetPasswordOtpController extends Controller
                 // $headers .= 'From: ' . $app_name . '<' . $contact_us_email . '>' . "\r\n";
 
                 // mail($to, $emailsubject, $emailmessage, $headers);
-                $this->SendForgotpasswordEmailNotifiaction($user_name,$otp);
+                $this->SendForgotpasswordEmailNotifiaction($email,$user_name,$otp);
 
                 // Always set content-type when sending HTML email
 
@@ -126,7 +126,7 @@ class SendResetPasswordOtpController extends Controller
         return response()->json($response);
     }
 
-    public function SendForgotpasswordEmailNotifiaction($username, $otp)
+    public function SendForgotpasswordEmailNotifiaction($email, $username, $otp)
     {
 
         $emailsubject = '';
@@ -144,7 +144,7 @@ class SendResetPasswordOtpController extends Controller
 
         //$response['EmailResponseSql'] = $emailmessage;
         $notifications = new NotificationsController();
-        $response['EmailResponse'] = $notifications->sendEmail($to, $emailsubject, $emailmessage);
+        $response['EmailResponse'] = $notifications->sendEmail($email, $emailsubject, $emailmessage);
 
         return response()->json($response);
     }

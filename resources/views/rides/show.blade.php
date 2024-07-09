@@ -139,7 +139,9 @@
 				</div>
 			</div>
 		</div>--}}
-		<div id="data-table_processing" class="dataTables_processing panel panel-default" style="display: none;">{{trans('lang.processing')}}</div>
+		<div class="spinner-overlay" id="spinnerOverlay" style="display: none;">
+			<div class="spinner-border" title="{{trans('lang.processing')}}"  role="status"></div>
+		</div>
 		<div class="col-md-12">
 			<div class="print-top non-printable mt-3">
 				<div class="text-right print-btn non-printable">
@@ -150,7 +152,7 @@
 			<hr class="non-printable">
 		</div>
 					
-		<form method="post" action="{{ route('rides.update',$ride->id) }}" enctype="multipart/form-data">
+		<!-- <form method="post" action="{{ route('rides.update',$ride->id) }}" enctype="multipart/form-data"> -->
 			@csrf
 			@method("PUT")
 			<div class="order_detail printableArea" id="order_detail">
@@ -504,8 +506,10 @@
 									</div> --}}
 									<div class="row">
 									<div class="form-group col-12 text-center btm-btn">
-                                        <button type="submit" class="btn btn-primary save_driver_btn"><i
-                                                class="fa fa-save"></i> {{ trans('lang.save')}}</button>
+                                        <button type="submit" id="btnAssignDriver" class="btn btn-primary save_driver_btn"><i
+                                                class="fa fa-save"></i> {{ trans('lang.save')}}
+												<!-- <span class="spinner-border" id="spinner" role="status"></span> -->
+											</button>
                                         <a href="{!! route('vehicles') !!}" class="btn btn-default"><i
                                                 class="fa fa-undo"></i>{{ trans('lang.cancel')}}</a>
                                     </div>
@@ -931,6 +935,10 @@ $(document).ready(function() {
     });
 });
 
+document.getElementById('create_driver').addEventListener('submit', function() {
+	var spinnerOverlay = document.getElementById('spinnerOverlay');
+	spinnerOverlay.style.display = 'flex'; // Show the spinner overlay
+        });
 </script>
 
 @endsection

@@ -1065,6 +1065,7 @@ class RidesController extends Controller
             foreach ($sql as $row) {
                 $customer_name = $row->prenom.' '.$row->nom;
                 $customerphone = $row->customerphone;
+                $customeremail = $row->customeremail;
                 $carmodelandbrand = $row->brandname .' / '. $row->carmodel;
                 $pickup_Location = $row->depart_name;
                 $drop_Location = $row->destination_name;
@@ -1076,6 +1077,7 @@ class RidesController extends Controller
                 $pickuptime = date("h:m A", strtotime($row->ride_required_on_time));
                 $brandname = $row->brandname;
                 $numberplate = $row->numberplate;
+
              }
             // admin email
             
@@ -1100,7 +1102,7 @@ class RidesController extends Controller
 
             $admintoemail=env('ADMIN_EMAILID','govind.p.raj@gmail.com');
             $notifications= new NotificationsController();
-            $response['CustomerEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
+            $response['CustomerEmailResponse'] = $notifications->sendEmail($customeremail, $emailsubject,$emailmessage);
              // driver email
             $emailsubject = '';
             $emailmessage = '';
@@ -1109,7 +1111,7 @@ class RidesController extends Controller
             $emailmessage = file_get_contents(resource_path('views/emailtemplates/to_driver_assign-driver.html'));
 
             $drivername = $driverinfo->prenom.' '.$driverinfo->nom;
-            
+            $driveremail = $driverinfo->email;
 
             $emailmessage = str_replace("{DriverName}", $drivername, $emailmessage);
             $emailmessage = str_replace("{carmodel}", $carmodelandbrand, $emailmessage);
@@ -1124,7 +1126,7 @@ class RidesController extends Controller
             
             $admintoemail=env('ADMIN_EMAILID','govind.p.raj@gmail.com');
             $notifications= new NotificationsController();
-            $response['DriverEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
+            $response['DriverEmailResponse'] = $notifications->sendEmail($driveremail, $emailsubject,$emailmessage);
 
 
             // App Notification to Consumer 

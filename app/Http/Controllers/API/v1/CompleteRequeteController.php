@@ -638,6 +638,7 @@ class CompleteRequeteController extends Controller
             foreach ($sql as $row) {
                 $customer_name = $row->prenom.' '.$row->nom;
                 $customerphone = $row->customerphone;
+                $customeremail = $row->customeremail;
                 $carmodelandbrand = $row->brandname .' / '. $row->carmodel;
                 $pickup_Location = $row->depart_name;
                 $drop_Location = $row->destination_name;
@@ -704,7 +705,7 @@ class CompleteRequeteController extends Controller
 
                 $admintoemail=env('ADMIN_EMAILID','govind.p.raj@gmail.com');
                 $notifications= new NotificationsController();
-                $response['CustomerEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
+                $response['CustomerEmailResponse'] = $notifications->sendEmail($customeremail, $emailsubject,$emailmessage);
              }
              else if($usertype=="admin")
              {

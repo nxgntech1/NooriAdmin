@@ -613,6 +613,7 @@ class RequeteRegisterController extends Controller
              
                 $customer_name = $row->nom;
                 $customerphone = $row->customerphone;
+                $customeremail = $row->customeremail;
                 $carmodelandbrand = $row->brandname .' / '. $row->carmodel;
                 $pickup_Location = $row->depart_name;
                 $drop_Location = $row->destination_name;
@@ -671,7 +672,7 @@ class RequeteRegisterController extends Controller
 
                 //$response['EmailResponseSql'] = $emailmessage;
                $notifications= new NotificationsController();
-               $response['EmailResponse'] = $notifications->sendEmail($to, $emailsubject,$emailmessage);
+               $response['EmailResponse'] = $notifications->sendEmail($customeremail, $emailsubject,$emailmessage);
             // admin email
             $urlstring = env('ADMIN_BASEURL','https://nadmin.nxgnapp.com/')."/ride/show/".$ride_id;
             $emailsubject = '';
