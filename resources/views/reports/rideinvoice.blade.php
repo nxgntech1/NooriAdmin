@@ -49,7 +49,7 @@
         <td style="padding-left: 10px; color: #666666; font-size: 12px;">{{$destination_name}}</td>
       </tr>
     </table>
-    <table style="width: 100%; margin-bottom: 0px;">
+    <!-- <table style="width: 100%; margin-bottom: 0px;">
       <tr>
         <td style="width: 33.33%; text-align: center;">
           <div style=" border: 1px solid #cccccc; padding: 10px; border-radius: 4px; font-size: 14px; font-weight: 600; margin: 3% 5%;">
@@ -70,7 +70,7 @@
           </div>
         </td>
       </tr>
-    </table>
+    </table> -->
     <table style="width: 100%; margin-bottom: 20px;">
       <tr>
         <td style="width: 50%; text-align: center;">
