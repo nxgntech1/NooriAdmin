@@ -13,7 +13,7 @@ use DB;
 use PDO;
 use Illuminate\Http\Request;
 use App\Services;
-
+use App\Services\SMSCountryService;
 use Google\Client as Google_Client;
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -27,6 +27,7 @@ class NotificationsController extends Controller
     protected $twilio;
     protected $fcmService;
     protected $textLocalService;
+    protected $smscountryservice;
 
     // ------------ Twilio SMS 
     // public function __construct(TwilioService $twilio)
@@ -49,8 +50,10 @@ class NotificationsController extends Controller
     public function __construct()
     {
         $this->textLocalService = new TextLocalService();
+        $this->smscountryservice = new SMSCountryService();
         $this->fcmService = new FcmService();
         $this->twilio = new TwilioService();
+
     }
 
     public function sendSMS($number,$message)
@@ -61,6 +64,20 @@ class NotificationsController extends Controller
         // ]);
 
         $response = $this->textLocalService->sendSMS($number, $message);
+        
+
+        return response()->json($response);
+    }
+
+    public function sendSMSBySMSCountry($number,$message)
+    {
+        // $request->validate([
+        //     'numbers' => 'required|array',
+        //     'message' => 'required|string',
+        // ]);
+
+        //$response = $this->textLocalService->sendSMS($number, $message);
+        $response = $this->smscountryservice->sendSMS($number, $message);
 
         return response()->json($response);
     }

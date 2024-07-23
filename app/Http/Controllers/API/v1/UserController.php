@@ -66,7 +66,8 @@ class UserController extends Controller
             }
 
             $notifications= new NotificationsController();
-            $SMS_Notifiaction = $notifications->sendSMS($phone,'OTP is for ' . $otp . ' TeamPlay app. Do not share the OTP with anyone for security reasons');
+            //$SMS_Notifiaction = $notifications->sendSMS($phone,'OTP is for ' . $otp . ' TeamPlay app. Do not share the OTP with anyone for security reasons');
+            $SMS_Notifiaction = $notifications->sendSMSBySMSCountry($phone,'Your OTP for the Noori Travels app is ' . $otp . '. Do not share this OTP with anyone for security reasons.');
 
             //$response["whatsappRes"] = $notifications->sendWhatsappMessage('+919985702076', $otp .' is your verification code. For your security, do not share this code.');
            // $response["whatsappResfreeform"] = $notifications->sendWhatsappMessage('+919985702076', 'Welcome to Noori Travels!');
