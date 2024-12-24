@@ -385,6 +385,7 @@ class RideDetailsController extends Controller
         
         if (!empty($sql)){
             foreach ($sql as $row) {
+                $totalamount=0;
                 $row->id = (string) $row->id;
                 $row->brand = $row->brandname;
                 $row->model = $row->carmodel;
@@ -395,9 +396,10 @@ class RideDetailsController extends Controller
                 $row->depart_name = $row->depart_name;
                 $row->destination_name = $row->destination_name;
                 $row->statut = Str::lower($row->statut);
-                $row->montant = $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit); //$row->montant;
+                $totalamount = $row->montant;
+                //$row->montant = $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit); //$row->montant;
                 $row->BookigDate = $row->ride_required_on_date;
-                $row->BookingTime = $row->ride_required_on_time;
+                $row->BookingTime = Carbon::createFromFormat('H:i:s', $row->ride_required_on_time)->format('h:i A'); 
                 $row->distance = $row->distance;
                 $row->distance_unit = $row->distance_unit;
                 $row->latitude_depart = $row->latitude_depart;
@@ -488,7 +490,22 @@ class RideDetailsController extends Controller
                     $row->driver_phone = "";
                     //$row->moyenne_driver = "0.0";
                 }
+                $addon = DB::Table('addon_payments')
+                ->where('bookingid','=',$row->id)
+                ->where('payment_status','=','success')
+                ->whereNotNull('transaction_id')
+                
+                ->get();
+               // $row->addon = json_encode($addon,JSON_PRETTY_PRINT);
 
+                if(!empty($addon))
+                {
+                    foreach ($addon as $row_addon) {
+                       $totalamount= $totalamount+ (int)$row_addon->addon_total_amount;
+                    }
+                }
+                $row->montant = $currency->symbole . "" . number_format($totalamount,$currency->decimal_digit);
+                $row->totaltripamount = $currency->symbole . "" . number_format($totalamount,$currency->decimal_digit);
                 $output[] = $row;
 
             }
@@ -576,7 +593,7 @@ class RideDetailsController extends Controller
                 $row->statut = Str::lower($row->statut);
                 $row->montant = $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit);
                 $row->BookigDate = $row->ride_required_on_date;
-                $row->BookingTime = $row->ride_required_on_time;
+                $row->BookingTime = Carbon::createFromFormat('H:i:s', $row->ride_required_on_time)->format('h:i A');  
                 $row->distance = $row->distance;
                 $row->distance_unit = $row->distance_unit;
                 $row->latitude_depart = $row->latitude_depart;
@@ -732,6 +749,9 @@ class RideDetailsController extends Controller
         
         
         if (!empty($sql)){
+            $totalamount=0;
+            $addontotalamount=0;
+            $tripamount =0;
             foreach ($sql as $row) {
                 $row->id = (string) $row->id;
                 $row->brand = $row->brandname;
@@ -739,19 +759,34 @@ class RideDetailsController extends Controller
 
                 $id_conducteur = $row->id_conducteur;
                 $id_vehicle = $row->vehicle_Id;
-
+                $row->consumer_name =$row->prenom. ' ' .$row->nom;
                 $row->bookingtype = $row->bookingtype;
                 $row->booking_type_id = $row->booking_type_id;
                 $row->depart_name = $row->depart_name;
                 $row->destination_name = $row->destination_name;
                 $row->statut = Str::lower($row->statut);
-                $row->montant = $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit); 
+                $tripamount = $row->montant;
+                //$row->montant = $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit);
                 $row->car_Price = $row->car_Price;
                 $row->sub_total = $row->sub_total;
+                $row->ride_required_on_date = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date))." ". date("h:i A", strtotime($row->ride_required_on_time)) ;
                 $row->BookigDate = $row->ride_required_on_date;
-                $row->BookingTime = $row->ride_required_on_time;
+                $row->BookingTime = Carbon::createFromFormat('H:i:s', $row->ride_required_on_time)->format('h:i A');  
                 $row->ride_starttime=null;
-                
+                if ($row->userphoto != '') {
+                    if (file_exists(public_path('assets/images/users' . '/' . $row->userphoto))) {
+                        $image_user = asset('assets/images/users') . '/' . $row->userphoto;
+                    } else {
+                        $image_user = asset('assets/images/placeholder_image.jpg');
+
+                    }
+                    $row->userphoto = $image_user;
+                }
+                else{
+                    $row->userphoto = asset('assets/images/placeholder_image.jpg');
+                }
+
+
 
                 if($row->statut=="completed")
                 {
@@ -939,6 +974,7 @@ class RideDetailsController extends Controller
                 {
                     $addons = [];
                     foreach ($addon as $row_addon) {
+                        $addontotalamount = $addontotalamount+ $row_addon->addon_total_amount;
                         $row_addon->addon_total_amount = $currency->symbole . "" . number_format($row_addon->addon_total_amount,$currency->decimal_digit); 
                         $row_addon->addonid = $row_addon->addonid;
                         $row_addon->payment_status = $row_addon->transaction_id=="cod" ? 'Cash' : 'Online';
@@ -977,6 +1013,9 @@ class RideDetailsController extends Controller
                     }
                     $row->addon = $addons;
                 }
+                $totalamount=$tripamount + $addontotalamount;
+                $row->totaltripamount = $currency->symbole . "" . number_format($totalamount,$currency->decimal_digit);
+                $row->montant = $currency->symbole . "" . number_format($totalamount,$currency->decimal_digit);
                 $output[] = $row;
             }
         }
@@ -1407,7 +1446,7 @@ class RideDetailsController extends Controller
                 $row->creer = date("d", strtotime($row->creer)) . " " . $months[date("F", strtotime($row->creer))] . ", " . date("Y", strtotime($row->creer));
                 $row->date_retour = date("d", strtotime($row->date_retour)) . " " . $months[date("F", strtotime($row->date_retour))] . ", " . date("Y", strtotime($row->date_retour));
 
-                $row->ride_required_on_date = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date))." ". date("h:m A", strtotime($row->ride_required_on_time)) ;
+                $row->ride_required_on_date = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date))." ". date("h:i A", strtotime($row->ride_required_on_time)) ;
                 
 
                 if ($row->photo_path != '') {
@@ -1418,6 +1457,9 @@ class RideDetailsController extends Controller
 
                     }
                     $row->photo_path = $image_user;
+                }
+                else{
+                    $row->photo_path = asset('assets/images/placeholder_image.jpg');
                 }
                 if ($row->payment_image != '') {
                     if (file_exists(public_path('assets/images/payment_method' . '/' . $row->payment_image))) {
@@ -1465,7 +1507,7 @@ class RideDetailsController extends Controller
         }
         $currency = Currency::where('statut', 'yes')->first();
         $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
-        
+        $tripamount=0;
         $sql = DB::table('tj_requete')
         ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
         ->Join('car_model', 'car_model.id', '=', 'tj_requete.model_id')
@@ -1492,7 +1534,7 @@ class RideDetailsController extends Controller
             ->where('tj_requete.id', '=', $ride_id)
             //->orderBy('tj_requete.id', 'desc')
             ->get();
-        
+      
         
         if (!empty($sql)){
             foreach ($sql as $row) {
@@ -1508,11 +1550,13 @@ class RideDetailsController extends Controller
                 $row->depart_name = $row->depart_name;
                 $row->destination_name = $row->destination_name;
                 $row->statut = Str::lower($row->statut);
+                $tripamount = $row->montant;
                 $row->montant = $currency->symbole . "" . number_format($row->montant,$currency->decimal_digit); 
                 $row->car_Price = $row->car_Price;
                 $row->sub_total = $row->sub_total;
                 $row->BookigDate = $row->ride_required_on_date;
                 $row->BookingTime = $row->ride_required_on_time;
+                $row->UserName = $row->prenom .' '.$row->nom;
 
                 
 
@@ -1688,10 +1732,12 @@ class RideDetailsController extends Controller
                 ->get();
                // $row->addon = json_encode($addon,JSON_PRETTY_PRINT);
                $ride_addons ='';
+               $addonsTotalamount = 0;
                 if(!empty($addon))
                 {
                     $addons = [];
                     foreach ($addon as $row_addon) {
+                        $addonsTotalamount = $addonsTotalamount+$row_addon->addon_total_amount;
                         $row_addon->addon_total_amount = $currency->symbole . "" . number_format($row_addon->addon_total_amount,$currency->decimal_digit); 
                         $row_addon->addonid = $row_addon->addonid;
                         $row_addon->payment_status = $row_addon->transaction_id=="cod" ? 'Cash' : 'Online';
@@ -1749,6 +1795,9 @@ class RideDetailsController extends Controller
                     $row->addon = $addons;
                 }
                 $output[] = $row;
+                $totalamount= $addonsTotalamount + $tripamount;
+                $totalamount = $currency->symbole . "" . number_format($totalamount,$currency->decimal_digit);
+                $noorilogo = asset('assets/images') . '/app_logo_small.png'; 
                 $data = [
                     'statut' => $row->statut,
                     'model' => $row->model,
@@ -1769,7 +1818,10 @@ class RideDetailsController extends Controller
                     'driverphoto' => $row->driverphoto,
                     'numberplate' => $row->numberplate,
                     'drivername' => $row->drivername,
-                    'vehicle_imageid' => $row->vehicle_imageid
+                    'vehicle_imageid' => $row->vehicle_imageid,
+                    'totmontant' => str_replace("₹","Rs: ",$totalamount),
+                    'noorilogo' => $noorilogo,
+                    'consumername' => $row->UserName
                 ];
             }
 

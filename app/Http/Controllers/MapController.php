@@ -27,7 +27,7 @@ class MapController extends Controller
     public function getRideInfo(Request $request){
 
         //$rides = $request->rides;
-        $rides=Requests::where('statut', 'on ride')->orwhere('statut', 'confirmed')->orderBy('creer','desc')->get();
+        $rides=Requests::where('statut', 'On Ride')->orderBy('creer','desc')->get();
         $rides = $rides->toArray();
     
         $drivers = $request->drivers;
@@ -41,24 +41,24 @@ class MapController extends Controller
                 $ride_info = Requests::find($ride['id']);
                 $user_info = '';
                 $userName = '';
-                if (array_key_exists("ride_type", $ride)) {
-                    if ($ride['ride_type'] != "driver") {
-                        $user_info = UserApp::find($ride['id_user_app']);
-                        if(!empty($user_info)){
-                            $userName = $user_info->prenom . " " . $user_info->nom;
-                        }
-                    }else{
-                        if (!empty($ride_info)) {
-                            if ($user_info == '') {
-                                $user_info = json_decode($ride_info->user_info, true);
-                                if(!empty($user_info)){
-                                    $userName = $user_info['name'];
-                                }
-                            }
-                        }
+                // if (array_key_exists("ride_type", $ride)) {
+                    // if ($ride['ride_type'] != "driver") {
+                        // $user_info = UserApp::find($ride['id_user_app']);
+                        // if(!empty($user_info)){
+                        //     $userName = $user_info->prenom . " " . $user_info->nom;
+                        // }
+                    // }else{
+                    //     if (!empty($ride_info)) {
+                    //         if ($user_info == '') {
+                    //             $user_info = json_decode($ride_info->user_info, true);
+                    //             if(!empty($user_info)){
+                    //                 $userName = $user_info['name'];
+                    //             }
+                    //         }
+                    //     }
 
-                    }
-                }else{
+                    // }
+                // }else{
                     //if(array_key_exists("user_id",$ride)){
                         $user_info = UserApp::find($ride['id_user_app']);
                         if(!empty($user_info)){
@@ -68,34 +68,42 @@ class MapController extends Controller
 
                    // }
 
-                }
+                //}
                 $driver_info = '';
                 if (array_key_exists('id_conducteur', $ride)) {
-                    $driver_info = Driver::select(
-                        'tj_conducteur.*',
-                        'tj_vehicule.numberplate as car_number',
-                        'tj_vehicule.car_make',
-                        'brands.name as brand_name',
-                        'car_model.name as car_model',
-                    )
-                        ->join('tj_vehicule', 'tj_vehicule.id_conducteur', '=', 'tj_conducteur.id')
-                        ->join('tj_type_vehicule', 'tj_type_vehicule.id', '=', 'tj_vehicule.id_type_vehicule')
-                        ->leftjoin('brands', 'tj_vehicule.brand', '=', 'brands.id')
-                        ->leftjoin('car_model', 'tj_vehicule.model', '=', 'car_model.id')
-                        ->find($ride['id_conducteur']);
+                    $driver_info =  DB::table('tj_requete')
+                ->leftJoin('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
+                ->Join('tj_conducteur', 'tj_conducteur.id', '=', 'tj_requete.id_conducteur')
+                ->Join('tj_payment_method', 'tj_payment_method.id', '=', 'tj_requete.id_payment_method')
+                ->Join('bookingtypes', 'tj_requete.booking_type_id', '=', 'bookingtypes.id')
+                ->join('tj_vehicule','tj_requete.vehicle_Id','=','tj_vehicule.id')
+                ->join('brands', 'tj_requete.brand_id', '=', 'brands.id')
+                ->join('car_model', 'tj_requete.model_id', '=', 'car_model.id')
+                ->select(
+                    'tj_conducteur.*',
+                    'tj_vehicule.numberplate as car_number',
+                    'tj_vehicule.car_make',
+                    'brands.name as brand_name',
+                    'car_model.name as car_model',
+                )
+                ->where('tj_requete.id','=',$ride['id'])
+                ->where('tj_requete.id_conducteur', '=', $ride['id_conducteur'])
+                ->where('tj_requete.vehicle_Id', '!=', '')
+                ->first();
+
                     if (isset($drivers) && count($drivers) > 0) {
                         $ride['driver_latitude'] ='';
                         $ride['driver_longitude'] = '';
 
                         foreach ($drivers as $driver) {
                             if($driver['driver_id']==$ride['id_conducteur']){
-                                $ride['driver_latitude'] = $driver['driver_latitude'];
-                                $ride['driver_longitude'] = $driver['driver_longitude'];
+                                $ride['driver_latitude'] = $driver['live_latitude'];
+                                $ride['driver_longitude'] = $driver['live_longitude'];
                             }
                         }
                     }      
                 }
-                if($ride_info && $driver_info  && ($ride_info->statut == "on ride" || $ride_info->statut == "confirmed")){
+                if($ride_info && $driver_info  && ($ride_info->statut == "On Ride")){
 
                     $data[] = array(
                         'driver_id' => $ride['id_conducteur'],
@@ -107,8 +115,8 @@ class MapController extends Controller
                         'vehicle_make' => $driver_info->car_make,
                         'user_id' => $ride['id_user_app'],
                         'user_name' => $userName,
-                        'driver_latitude' => $ride['driver_latitude'],
-                        'driver_longitude' => $ride['driver_longitude'],
+                        'driver_latitude' => $driver_info->live_latitude,
+                        'driver_longitude' => $driver_info->live_longitude,
                         //'rotation' => $ride['rotation'],
                         'doc_id' => $ride['id'],
                         'ride_id' => $ride['id'],

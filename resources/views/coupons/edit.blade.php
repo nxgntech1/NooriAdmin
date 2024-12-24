@@ -100,8 +100,8 @@
                       <label class="col-3 control-label">{{trans('lang.coupon_type')}}</label>
                       <div class="col-7">
                         <select id="coupon_type" class="form-control" name="coupon_type">
-                        <option value="Ride" {{ $discount->coupon_type == 'Ride' ? 'selected' : '' }}>{{trans('lang.ride')}}</option>
-                          <option value="Parcel" {{ $discount->coupon_type == 'Parcel' ? 'selected' : '' }}>{{trans('lang.parcel')}}</option>
+                        <option value="Single" {{ $discount->coupon_type == 'Single' ? 'selected' : '' }}>{{trans('lang.single')}}</option>
+                          <option value="Multiple" {{ $discount->coupon_type == 'Multiple' ? 'selected' : '' }}>{{trans('lang.multiple')}}</option>
 
                         </select>
                         <div class="form-text text-muted">

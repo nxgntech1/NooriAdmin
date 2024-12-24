@@ -26,7 +26,7 @@ class ReportController extends Controller
     }    
 
     public function downloadExcel(Request $request){
-    	       
+
         $finalarr=array();         
         $status = $request->input('user_status');
         
@@ -63,7 +63,6 @@ class ReportController extends Controller
         $from_date = $request->input('from');
         $to_date = $request->input('to');
         $type = $request->input('type');
-        
     	$users = UserApp::when($status, function ($query) use ($status) {
             return $query->where('statut', $status);})
         ->when($today, function ($query) use ($today) {
@@ -79,9 +78,11 @@ class ReportController extends Controller
             return $query->whereBetween('creer', [$from_date, $to_date]);
             })
         ->get();
-                
+    
         $fp = fopen('php://output', 'w');
-
+        if ($users->count() === 0) {
+            return back()->with('message', 'No Data Found');
+        }
         if($users->count() > 0){
         	
         	$users11 = array("Sr. No.","First Name", "Last Name", "Email", "Phone","statut"); 
@@ -142,28 +143,40 @@ class ReportController extends Controller
                 header("Content-Disposition: attachment; filename=".$filename." ");
                 
             }else{
-                
+               
                 $arrnew = array();
                 $pdf = new FPDF('P','mm',array(400,550));
                 $pdf->SetFont('Arial','',8);
                 $pdf->AddPage();
                 
-                foreach($users11 as $col)
-                $pdf->Cell(40,7,$col,1,0);
+                // foreach($users11 as $col)
+                // $pdf->Cell(50,7,$col,1,0);
+                $pdf->Cell(10,7,'Sr. No.',1,0);
+                $pdf->Cell(40,7,'First Name',1,0);
+                $pdf->Cell(40,7,'Last Name',1,0);
+                $pdf->Cell(60,7,'email',1,0);
+                $pdf->Cell(40,7,'phone',1,0);
+               
+                $pdf->Cell(20,7,'Status',1,0);
+                
                
                 $pdf->Ln();
                 
                 foreach($users as $row){
-                    $pdf->Cell(40,7,$row['id'],1,0);
+                    $pdf->Cell(10,7,$row['id'],1,0);
                     $pdf->Cell(40,7,$row['nom'],1,0);
                     $pdf->Cell(40,7,$row['prenom'],1,0);
-                    $pdf->Cell(40,7,$row['email'],1,0);
+                    $pdf->Cell(60,7,$row['email'],1,0);
                     $pdf->Cell(40,7,$row['phone'],1,0);
-                    $pdf->Cell(40,7,$row['statut'],1,0);
+                    $pdf->Cell(20,7,$row['statut'],1,0);
                     $pdf->Ln();
                     
                 }
-                $pdf->Output();
+             $pdfcontent =  $pdf->Output('S');
+                
+             return response($pdfcontent)
+             ->header('Content-Type', 'application/pdf')
+             ->header('Content-Disposition', '_blank; filename="' . $filename . '"'); // 'inline' opens in browser; 'attachment' forces download
                 
             }
 
@@ -221,7 +234,7 @@ class ReportController extends Controller
 
         }else{
             $error = 'No Data Found';
-            return Redirect()->back()->with(['message' => $error]);
+            return back()->with(['message' => $error]);
         }
 		
         fclose($fp);
@@ -291,6 +304,10 @@ class ReportController extends Controller
             ->get();
 
         $fp = fopen('php://output', 'w');
+
+        if ($drivers->count() === 0) {
+            return back()->with('message', 'No Data Found');
+        }
 
         if($drivers->count() > 0){
         $drivers11 = array("Sr. No.","First Name", "Last Name","Phone", "Latitude", "Longitude","email","Status","online", "Login Type", "Photo Path","Tonotify","Address", "Bank Name", "Branch Name", "Holder Name" ,"Account No","Other Info","Creer","Modifier","Amount"); 
@@ -386,20 +403,20 @@ class ReportController extends Controller
                 $pdf->Cell(20,7,'First Name',1,0);
                 $pdf->Cell(20,7,'Last Name',1,0);
                 $pdf->Cell(30,7,'phone',1,0);
-                $pdf->Cell(15,7,'Latitude',1,0);
-                $pdf->Cell(15,7,'Longitude',1,0);
+                // $pdf->Cell(15,7,'Latitude',1,0);
+                // $pdf->Cell(15,7,'Longitude',1,0);
                 $pdf->Cell(40,7,'email',1,0);
                 $pdf->Cell(10,7,'Status',1,0);
                 $pdf->Cell(10,7,'online',1,0);
                 $pdf->Cell(15,7,'Login Type',1,0);
                 $pdf->Cell(30,7,'Address',1,0);
-                $pdf->Cell(20,7,'Bank Name',1,0);
-                $pdf->Cell(20,7,'Branch Name',1,0);
-                $pdf->Cell(30,7,'Holder Name',1,0);
-                $pdf->Cell(30,7,'Account',1,0);
-                $pdf->Cell(30,7,'Other Info',1,0);
+                // $pdf->Cell(20,7,'Bank Name',1,0);
+                // $pdf->Cell(20,7,'Branch Name',1,0);
+                // $pdf->Cell(30,7,'Holder Name',1,0);
+                // $pdf->Cell(30,7,'Account',1,0);
+                // $pdf->Cell(30,7,'Other Info',1,0);
                 $pdf->Cell(30,7,'Creer',1,0);
-                $pdf->Cell(15,7,'Amount',1,0);
+                // $pdf->Cell(15,7,'Amount',1,0);
                 $pdf->Ln();
                 
                 foreach($drivers as $row)
@@ -409,26 +426,31 @@ class ReportController extends Controller
                     $pdf->Cell(20,7,$row['nom'],1,0);
                     $pdf->Cell(20,7,$row['prenom'],1,0);
                     $pdf->Cell(30,7,$row['phone'],1,0);
-                    $pdf->Cell(15,7,$row['latitude'],1,0);
-                    $pdf->Cell(15,7,$row['longitude'],1,0);
+                    // $pdf->Cell(15,7,$row['latitude'],1,0);
+                    // $pdf->Cell(15,7,$row['longitude'],1,0);
                     $pdf->Cell(40,7,$row['email'],1,0);
                     $pdf->Cell(10,7,$row['statut'],1,0);
                     $pdf->Cell(10,7,$row['online'],1,0);
                     $pdf->Cell(15,7,$row['login_type'],1,0);
                     $pdf->Cell(30,7,$row['address'],1,0);
-                    $pdf->Cell(20,7,$row['bank_name'],1,0);
-                    $pdf->Cell(20,7,$row['branch_name'],1,0);
-                    $pdf->Cell(30,7,$row['holder_name'],1,0);
-                    $pdf->Cell(30,7,$row['account_no'],1,0);
-                    $pdf->Cell(30,7,$row['other_info'],1,0);
+                    // $pdf->Cell(20,7,$row['bank_name'],1,0);
+                    // $pdf->Cell(20,7,$row['branch_name'],1,0);
+                    // $pdf->Cell(30,7,$row['holder_name'],1,0);
+                    // $pdf->Cell(30,7,$row['account_no'],1,0);
+                    // $pdf->Cell(30,7,$row['other_info'],1,0);
                     $pdf->Cell(30,7,$row['creer'],1,0);
-                    $pdf->Cell(15,7,$row['amount'],1,0);
+                    // $pdf->Cell(15,7,$row['amount'],1,0);
                     $pdf->Ln();
                     
                 }
                 
-                $pdf->Output();
-              
+               // $pdf->Output();
+              $pdfcontent =  $pdf->Output('S');
+                
+             return response($pdfcontent)
+             ->header('Content-Type', 'application/pdf')
+             ->header('Content-Disposition', '_blank; filename="' . $filename . '"'); // 'inline' opens in browser; 'attachment' forces download
+                
             }
             if($type != 'pdf'){
             fputcsv($fp,$drivers11,',','"');  
@@ -513,7 +535,7 @@ class ReportController extends Controller
 
         }else{
             $error = 'No Data Found';
-            return Redirect()->back()->with(['message' => $error]);
+            return back()->with(['message' => $error]);
         }
        fclose($fp);
 
@@ -525,283 +547,113 @@ class ReportController extends Controller
         return view("reports.travelreport")->with('type',$type);
     }    
 
-    public function downloadExcelTravel(Request $request){       
-        $finalarr=array();         
-        $trip_status = $request->input('trip_status');
-        $payment = $request->input('payment');
-        if($request->input('date') == 'today')
-        {   $now = Carbon::now();
-            $today =  $now->format('Y-m-d');
-        }
-        else{
-            $today = '';
-        }
-        if($request->input('date') == 'week')
-        {
-            $now = Carbon::now();
-            $week_start = $now->startOfWeek()->format('Y-m-d'); 
-            $week_end = $now->endOfWeek()->format('Y-m-d'); 
-        }
-        else{
-            $week_start = '';
-            $week_end = '';
-        }
-        if($request->input('date') == 'month')
-        {
-            $now = Carbon::now();
-            $month =  $now->month;
-        }
-        else{
-            $month = '';
-        }
-        if($request->input('date') == 'year'){
-            $now = Carbon::now();
-            $year =  $now->year;
-        }else{
-            $year ='';
-        }
-        
-        $from_date = $request->input('from');
-        $to_date = $request->input('to');
-        $type = $request->input('type');
-        
-        $rides = Requests::when($trip_status, function ($query) use ($trip_status) {
-            return $query->where('statut', $trip_status);})
-            ->when($payment, function ($query) use ($payment) {
-                return $query->where('id_payment_method', $payment);})
-        ->when($today, function ($query) use ($today) {
-            return $query->whereDate('creer', $today);})
-            ->when($week_start && $week_end, function ($query, $condition) use($week_start, $week_end) { 
-            return $query->whereBetween('creer', [$week_start, $week_end]);
-            })
-        ->when($month, function ($query) use ($month) {
-            return $query->whereMonth('creer', $month);})
-        ->when($year, function ($query) use ($year) {
-            return $query->whereYear('creer', $year);})
-        ->when($from_date && $to_date, function ($query, $condition) use($from_date, $to_date) { 
-            return $query->whereBetween('creer', [$from_date, $to_date]);
-            })
-        
-        ->get();
-        
-        $fp = fopen('php://output', 'w');
+    public function downloadExcelTravel(Request $request)
+    {
+    $type = $request->input('type', 'csv'); // Default to 'csv' if type is not provided
+    $tripStatus = $request->input('trip_status');
+    $payment = $request->input('payment');
+    $dateFilter = $request->input('date');
+    $fromDate = $request->input('from');
+    $toDate = $request->input('to');
 
-        if($rides->count() > 0){
-        $rides11 = array("S.No","Trip Start From","Trip End To","User Name","Driver Name","Trip Status","Paid Status","Payment Option","Trip Distance","Total Amount"); 
-            $temp_max=0;
+    // Handle date filters
+    $now = Carbon::now();
+    $filters = [
+        'today' => fn($query) => $query->whereDate('request.creer', $now->format('Y-m-d')),
+        'week' => fn($query) => $query->whereBetween('request.creer', [$now->startOfWeek()->format('Y-m-d'), $now->endOfWeek()->format('Y-m-d')]),
+        'month' => fn($query) => $query->whereMonth('request.creer', $now->month),
+        'year' => fn($query) => $query->whereYear('request.creer', $now->year),
+    ];
 
-            foreach ($rides as $row1 => $k1) {
-               
-    
-                 $followupslist=array();
-                 $followupslist = DB::table('tj_requete as request')
-                 ->join('tj_user_app', 'request.id_user_app', '=', 'tj_user_app.id')
-                 ->join('tj_conducteur', 'request.id_conducteur', '=', 'tj_conducteur.id')
-                 ->join('tj_payment_method', 'request.id_payment_method', '=', 'tj_payment_method.id')
-                 ->select('request.id','request.statut', 'request.statut_paiement','request.depart_name','request.destination_name','request.distance','request.montant','request.creer','tj_conducteur.id as driver_id','tj_conducteur.prenom as driverPrenom','tj_conducteur.nom as driverNom','tj_user_app.id as user_id','tj_user_app.prenom as userPrenom','tj_user_app.nom as userNom','tj_payment_method.libelle','tj_payment_method.image')
-                 ->where('tj_conducteur.id','=','request.id_conducteur')
-                 ->where('tj_user_app.id','=','request.id_user_app')
-                 ->where('tj_payment_method.id','=','request.id_payment_method')
-                 ->get();
-                $finalarr=$followupslist->toArray();
+    $ridesQuery = DB::table('tj_requete as request')
+        ->join('tj_user_app', 'request.id_user_app', '=', 'tj_user_app.id')
+        ->join('tj_conducteur', 'request.id_conducteur', '=', 'tj_conducteur.id')
+        ->join('tj_payment_method', 'request.id_payment_method', '=', 'tj_payment_method.id')
+        ->join('bookingtypes', 'request.booking_type_id', '=', 'bookingtypes.id')
+        ->join('tj_vehicule', 'request.vehicle_Id', '=', 'tj_vehicule.id')
+        ->join('car_model', 'request.model_id', '=', 'car_model.id')
+        ->join('brands', 'request.brand_id', '=', 'brands.id')
+        ->select(
+            'request.id as ID',
+            'request.creer as DateCreated',
+            DB::raw("CONCAT(DATE_FORMAT(request.ride_required_on_date , '%Y-%m-%d'), ' ', TIME_FORMAT(request.ride_required_on_time, '%H:%i:%s')) AS TripDateTime"),
+            'request.depart_name as TripStart',
+            'request.destination_name as TripEnd',
+            'bookingtypes.bookingtype as Package',
+            DB::raw("CONCAT(tj_user_app.prenom, ' ', tj_user_app.nom) as UserName"),
+            DB::raw("REPLACE(tj_user_app.phone, '+91', '') as UserMobile"),
+            'tj_vehicule.numberplate',
+            'car_model.name as car_model',
+            'brands.name as car_brand',
+            DB::raw("CONCAT(tj_conducteur.prenom, ' ', tj_conducteur.nom) as DriverName"),
+            'request.statut',
+            'request.statut_paiement',
+            'tj_payment_method.libelle as payment_method',
+            'request.distance',
+            'request.montant'
+            
+        );
 
-                $description=array();
+    // Apply filters
+    if ($tripStatus) $ridesQuery->where('request.statut', $tripStatus);
+    if ($payment) $ridesQuery->where('request.id_payment_method', $payment);
+    if (isset($filters[$dateFilter])) $ridesQuery = $filters[$dateFilter]($ridesQuery);
+    if ($fromDate && $toDate) $ridesQuery->whereBetween('request.creer', [$fromDate, $toDate]);
 
-                $description = array_column($finalarr, 'description');
+    $rides = $ridesQuery->get();
 
-                $description_cnt=count($description);
-                $temp_max = max(isset($description_cnt)?$description_cnt:$temp_max,$temp_max);
-                $tArray = array();
-                $max_value =array('');
-              
-                foreach ($description as $key1 => $value1)
-                {
-                   $tArray[$key1] = $value1;
-
-                   $max_value[] = $tArray;
-                }
-
-            }            
-            $myarr = array();
-
-            foreach ($max_value as $key => $value)
-
-            {
-                $max_count =count(array($value));
-
-                $myarr[] =  $max_count;                    
-
-            }   
-
-            $num=1;
-
-           for ($i=0; $i < $temp_max; $i++)
-            { 
-
-              $mytest = 'Follow-up '.$num;
-
-              $drivers11[]=$mytest;
-
-              $num++;
-
-            }          
-            $filename = "Travel_report_".date("Y.m.d").".".$type;
-
-            if($type== 'csv')
-
-            {
-
-                 header("Content-type: application/csv");
-                 header("Content-Disposition: attachment; filename=".$filename." ");
-            }
-
-            elseif($type == 'xlsx')
-
-            {
-                header("Content-type: application/xlsx");
-
-                header("Content-Disposition: attachment; filename=".$filename." ");
-                
-            }
-
-            elseif($type == 'xls')
-
-
-            {
-                header("Content-type: application/xls");
-
-                header("Content-Disposition: attachment; filename=".$filename." ");
-            }
-            else  {
-                
-                $arrnew = array();
-                $dir = 'assets\pdf';
-                $pdf = new FPDF('P','mm','A4');
-                $pdf->SetFont('Arial','',8);
-                $pdf->AddPage();
-                
-                $pdf->Cell(20,7,'Sr. No.',1,0);
-                $pdf->Cell(20,7,'Request Id',1,0);
-                $pdf->Cell(30,7,'Trip Start From',1,0);
-                $pdf->Cell(30,7,'Trip End To',1,0);
-                $pdf->Cell(15,7,'User Name',1,0);
-                $pdf->Cell(15,7,'Driver Name',1,0);
-                $pdf->Cell(15,7,'Trip Status',1,0);
-                $pdf->Cell(15,7,'Paid Status',1,0);
-                $pdf->Cell(10,7,'Payment Option',1,0);
-                $pdf->Cell(15,7,'Trip Distance',1,0);
-                $pdf->Cell(30,7,'Total Amount',1,0);
-              
-                $pdf->Ln();
-                
-                foreach($rides as $row)
-                {
-                    
-                    $pdf->Cell(20,7,$row['id'],1,0);
-                    $pdf->Cell(20,7,$row['id'],1,0);
-                    $pdf->Cell(30,7,$row['depart_name'],1,0);
-                    $pdf->Cell(30,7,$row['destination_name'],1,0);
-                    $userName = UserApp::where('id',$row['id_user_app'])->get();
-                    foreach($userName as $row_user) {
-                        $pdf->Cell(15,7,$row_user['nom'],1,0);
-                    }
-                    $driverName = Driver::where('id',$row['id_conducteur'])->get();
-                    foreach($driverName as $row_driver) {
-                        $pdf->Cell(15,7,$row_driver['nom'],1,0);
-                    }
-                    $pdf->Cell(15,7,$row['statut'],1,0);
-                    $pdf->Cell(15,7,$row['statut_paiement'],1,0);
-                    $payment = PaymentMethod::where('id',$row['id_payment_method'])->get();
-                    foreach($payment as $row_payment) {
-                        $pdf->Cell(10,7,$row_payment['libelle'],1,0);
-
-                    }
-                    $pdf->Cell(15,7,$row['distance'],1,0);
-                    $pdf->Cell(30,7,$row['montant'],1,0);
-                    $pdf->Ln();
-                    
-                }
-                
-                $pdf->Output();
-              
-            }
-            if($type != 'pdf'){
-            fputcsv($fp,$rides11,',','"');  
-            }
-            $arrnew=array();  
-
-            $fp = fopen('php://output', 'w');
-
-            foreach ($rides as $row) {
-
-                 $listarray=array('request.id','request.depart_name','request.destination_name','tj_user_app.nom','tj_conducteur.nom','request.statut','request.statut_paiement','tj_payment_method.libelle','request.distance','request.montant');
-                 
-                 $list = DB::table('tj_requete as request')
-                ->join('tj_user_app', 'request.id_user_app', '=', 'tj_user_app.id')
-                 ->join('tj_conducteur', 'request.id_conducteur', '=', 'tj_conducteur.id')
-                 ->join('tj_payment_method', 'request.id_payment_method', '=', 'tj_payment_method.id')
-                 ->select('request.id','request.statut', 'request.statut_paiement','request.depart_name','request.destination_name','request.distance','request.montant','request.creer','tj_conducteur.id as driver_id','tj_conducteur.prenom as driverPrenom','tj_conducteur.nom as driverNom','tj_user_app.id as user_id','tj_user_app.prenom as userPrenom','tj_user_app.nom as userNom','tj_payment_method.libelle','tj_payment_method.image')
-                 ->where('tj_conducteur.id',$row['id_conducteur'])   
-                 ->where('tj_user_app.id',$row['id_user_app'])   
-                 ->where('tj_payment_method.id',$row['id_payment_method'])  
-                 ->get();
-
-                $arrnew=$list->toArray();
-
-                $description = array_column($arrnew, 'description');
-                $row5=array();
-
-                foreach($arrnew as $key2 => $value2)
-
-                {
-                   
-                    $row5['id']=$row['id'];
-
-                    $row5['depart_name']=$row['depart_name'];                    
-
-                    $row5['destination_name']=$row['destination_name'];
-                    $userName = UserApp::where('id',$row['id_user_app'])->get();
-                    foreach($userName as $row_user) {
-                        $row5['userNom']=$row_user['nom'];
-                    }
-                    $driverName = Driver::where('id',$row['id_conducteur'])->get();
-                    foreach($driverName as $row_driver) {
-                        $row5['driverNom']=$row_driver['nom'];
-
-                    }
-                   
-                    $row5['statut']=$row['statut'];
-
-                    $row5['statut_paiement']=$row['statut_paiement'];
-                    $payment = PaymentMethod::where('id',$row['id_payment_method'])->get();
-                    foreach($payment as $row_payment) {
-                        $row5['libelle']=$row_payment['libelle'];
-
-                    }
-                    $row5['distance']=$row['distance'];
-
-                    $row5['montant']=$row['montant'];
-
-                  
-                }
-              
-                foreach ($description as $key1 => $value1){
-
-                        $mytest = 'Follow-up '.$key1;
-
-                         $row5[$mytest]=$value1;
-
-                }
-
-            fputcsv($fp, $row5);
-
-           }
-
-        }else{
-            $error = 'No Data Found';
-            return Redirect()->back()->with(['message' => $error]);
-        }
-       fclose($fp);
-
+    if ($rides->isEmpty()) {
+        return back()->with('message', 'No Data Found');
     }
+
+    // Generate File
+    // if ($type === 'pdf') {
+    //     return $this->generatePdf($rides);
+    // }
+
+    return $this->generateCsvOrExcel($rides, $type);
+}
+
+
+private function generateCsvOrExcel($rides, $type)
+{
+    $filename = "Travel_report_" . date("Y-m-d") . ".$type";
+    header("Content-Type: text/$type");
+    header("Content-Disposition: attachment; filename=$filename");
+
+    $fp = fopen('php://output', 'w');
+    fputcsv($fp, array_keys((array)$rides->first()));
+
+    foreach ($rides as $ride) {
+        fputcsv($fp, (array)$ride);
+    }
+    $rides11 = array("S.No","Date Created", "Trip Date and Time", "Trip Start","Trip End", "Package", "User Name",
+    "Mobile No", "Vehicle","Driver Name","Trip Status","Paid Status","Payment Option","Trip Distance","Total Amount"); 
+    //fputcsv($fp, array_keys($rides11));
+    //$row5=array();
+    
+    // foreach ($rides as $ride) {
+    //     $row5['S.No'] = $ride['id'];
+    //     $row5['Date Created'] = $ride['date_created'];
+    //     $row5['Trip Date and Time'] = Carbon::parse($ride['ride_required_on_date'])->format('d-m-Y').' '.$ride['ride_required_on_time'];
+    //     $row5['Trip Start'] = $ride['depart_name'];
+    //     $row5['Trip End'] =$ride['destination_name'];
+    //     $row5['Package'] = $ride['bookingtype'];
+    //     $row5['User Name'] = $ride['user_first_name'].' '.$ride['user_last_name'];
+    //     $row5['Mobile No'] = $ride['phone'];
+    //     $row5['Vehicle'] = $ride['numberplate'].'('.$ride['carmodel'].'-'.$ride['carbrand'].')';
+    //     $row5['Driver Name'] = $ride['driver_first_name'].' '.$ride['driver_last_name'];
+    //     $row5['Trip Status'] = $ride['statut'];
+    //     $row5['Paid Status'] = $ride['payment_method'];
+    //     $row5['Payment Option'] = $ride['statut_paiement'];
+    //     $row5['Trip Distance'] = $ride['distance'];
+    //     $row5['Total Amount'] = $ride['montant'];
+
+    // }
+    // fputcsv($fp, $row5);
+    
+    fclose($fp);
+    exit;
+}
+    
 }

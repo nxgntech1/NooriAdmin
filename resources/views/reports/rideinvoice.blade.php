@@ -11,19 +11,34 @@
 </head>
 
 <body>
+  
   <table style="max-width: 640px; margin: 0 auto; width: 100%; border: 1px solid #eeeeee; padding: 15px 25px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); font-weight: 500; font-family: Open Sans;">
-    <tr>
-      <td>
-    <table style="border-collapse: collapse; margin-bottom: 20px;" align="right">
-      <tr>
-        <th colspan="3" style="background: #C3E54B; padding: 2px 15px; font-size: 12px; color: #000000; font-weight: 600; border-radius: 4px;">
-          {{$statut}}
-        </th>
-      </tr>
-</table>
+    <tr style="margin-bottom: 0px;">
+      <td style="align-content: center;text-align: center;margin: 0px;padding: 0px;" >
+        <table  style="border-collapse: collapse;">
+          <tr>
+            <td> <img src="{{$noorilogo}}" style="width: 40px; height: 40px;" alt="Noori Travels">
+            <p style="font-size: 16px;margin: 0px;padding: 0px;">Noori Travels</p></td>
+            <td align="right">
+            <p style="font-size: 12px;margin: 0px;padding: 0px;">6-2-338/1, Noori Towers, Hill Colony, Khairatabad, Hyderabad-500004, Telangana, Tel: 040 23323232, 9885566101, info@nooritravels.com, www.nooritravels.com, GSTIN: 36AADFN2683D1ZE, PAN: AADFN2683D</p>
 
-   
+            </td>
+          </tr>
+        </table>
+       
+    </td>
+    </tr>
+    
+  <tr>
+      <td>
+    
     <table style="width: 100%; margin-bottom: 20px;">
+    <tr>
+      <td style="width: 100px;color: #666666;">Consumer :</td>
+    <td style="align-content: start;" > {{ $consumername }}</td>
+    <td align="right" style="background: #C3E54B; padding: 2px 15px; font-size: 12px; color: #000000; font-weight: 600; border-radius: 4px; text-align:center;">
+    {{$statut}}</td>
+  </tr>
       <tr>
         <td style="width: 70px;">
           <div style="max-width: 70px;">
@@ -35,11 +50,11 @@
           <p style="font-size: 12px; padding-top: 0px; color: #666666;">{{$BookigDate}} | {{$BookingTime}}</p>
         </td>
         <td  align="right">
-          <h5>{!! $montant !!}</h5>
+          <h5>{!! $totmontant !!}</h5>
         </td>
       </tr>
     </table>
-    <table style="width: 100%; margin-bottom: 20px;">
+    <table style="width: 100%; margin-bottom: 10px;">
       <tr>
         <td style="width: 30px; text-align: center;"><img src="https://nadmin.nxgnapp.com/images/location_pdf.png" height="20"></td>
         <td style="padding-left: 10px; color: #666666; font-size: 12px;">{{$depart_name}}</td>
@@ -71,7 +86,7 @@
         </td>
       </tr>
     </table> -->
-    <table style="width: 100%; margin-bottom: 20px;">
+    <table style="width: 100%; margin-bottom: 10px;">
       <tr>
         <td style="width: 50%; text-align: center;">
           <div style="border: 1px solid #cccccc; padding: 10px; border-radius: 4px; font-size: 14px; font-weight: 600; margin:  3% 5%;">
@@ -104,14 +119,14 @@
       </tr>
       {!! $ride_taxes !!}
     </table>
-    <table style="width: 100%; margin-bottom: 20px;">
+    <table style="width: 100%; margin-bottom: 10px;">
       <tr>
         <td style="color: #a9700d; font-weight: 500; font-size: 15px;">Total Paid</td>
         <td style="color: #a9700d; font-weight: 500; font-size: 15px;" align="right">{{$montant}}</td>
       </tr>
     </table>
     {!! $ride_addons !!}
-    <table style="width: 100%; margin-bottom: 20px; border: 0;">
+    <table style="width: 100%; margin-bottom: 10px; border: 0;">
       <tr>
         <th colspan="2" style="padding: 10px; border: 0px solid #cccccc; text-align: left;">Driver Details</th>
       </tr>

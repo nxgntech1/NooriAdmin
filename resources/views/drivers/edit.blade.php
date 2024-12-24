@@ -182,6 +182,15 @@
                     </div>
                   </div>
                 </div>
+                <div class="form-group row width-50">
+                    <label class="col-3 control-label">{{trans('lang.password')}}</label>
+                    <div class="col-7">
+                        <input type="password" class="form-control user_password"
+                            name="password" value="{{Request::old('password')}}">
+                        <div class="form-text text-muted">{{trans('lang.user_password_help')}}
+                        </div>
+                    </div>
+                </div>
 
                 <div class="form-group row width-50">
                   <label class="col-3 control-label">{{trans('lang.user_phone')}}</label>
@@ -243,197 +252,7 @@
                   </div>
 
                 </div>
-                <div class="form-check  width-50">
-                  <input type="checkbox" class="col-7 form-check-inline parcel_delivery" id="parcel_delivery"
-                    name="parcel_delivery" value="yes" {{($driver->parcel_delivery=="yes") ? "checked" : ""}}>
-                  <label class="col-3 control-label" for="parcel_delivery">{{trans('lang.active_parcel_delivery')}}</label>
-                </div>
-
-  
               </fieldset>
-
-              <fieldset>
-                <legend>{{trans('lang.vehicle_info')}}</legend>
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.vehicle_type')}}</label>
-                  <div class="col-7">
-                    <select class="form-control model" name="id_type_vehicule" id="id_type_vehicule">
-                      <option value="">{{trans('lang.select_type')}}</option>
-                      @foreach($vehicleType as $value)
-                      <?php if ($value->id == !empty($vehicle) ? $vehicle->id_type_vehicule : '') {
-                        $selected = 'Selected';
-                      } else {
-                        $selected = '';
-                      }
-                      ?>
-                      <option value="{{ $value->id }}" <?php echo $selected ?>>{{$value->libelle}}</option>
-                      @endforeach
-                    </select>
-                  </div>
-                </div>
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.vehicle_brand')}}</label>
-                  <div class="col-7">
-                    <select class="form-control brand_id" name="brand">
-                      <option value="">{{trans('lang.select_brand')}}</option>
-                      {{--<input type="text" class="form-control address_line1" name="brand"
-                        value="{{Request::old('brand')}}">--}}
-                      @foreach($brand as $value)
-                      <?php if ($value->id == !empty($vehicle) ? $vehicle->brand : '') {
-                        $selected = 'Selected';
-                      } else {
-                        $selected = '';
-                      }
-                      ?>
-                      <option value="{{ $value->id }}" <?php echo $selected ?>>{{$value->name}}</option>
-                      @endforeach
-                    </select>
-                  </div>
-
-                </div>
-
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.vehicle_model')}}</label>
-                  <div class="col-7">
-                    <select class="form-control model" name="model" id="model">
-                      <option value="">{{trans('lang.select_model')}}</option>
-                      @foreach($model as $value)
-                      <?php
-                      if ($value->id == !empty($vehicle) ? $vehicle->model : '') {
-                        $selected = 'Selected';
-                      } else {
-                        $selected = '';
-                      }
-                      ?>
-                      <option value="{{ $value->id }}" <?php echo $selected ?>>{{$value->name}}</option>
-                      @endforeach
-                    </select>
-                    <div class="form-text text-muted">{{trans('lang.car_model_help')}}</div>
-                  </div>
-                </div>
-
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.vehicle_color')}}</label>
-                  <div class="col-7">
-                    <input type="text" class="form-control user_last_name" name="color"
-                      value="{{!empty($vehicle) ? $vehicle->color : ''}}">
-                    <div class="form-text text-muted">
-                      {{ trans("lang.car_color_help") }}
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.vehicle_numberplate')}}</label>
-                  <div class="col-7">
-                    <input type="text" class="form-control user_email" name="numberplate"
-                      value="{{!empty($vehicle) ? $vehicle->numberplate : ''}}">
-                    <div class="form-text text-muted">{{trans('lang.car_number_help')}}</div>
-                  </div>
-                </div>
-
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.number_of_pessanger')}}</label>
-                  <div class="col-7">
-                    <input type="number" class="form-control user_phone" name="passenger"
-                      value="{{!empty($vehicle) ? $vehicle->passenger : ''}}">
-                    <div class="form-text text-muted w-50">
-                      {{ trans("lang.number_of_passenger_help") }}
-                    </div>
-                  </div>
-
-                </div>
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.vehicle_milage')}}</label>
-                  <div class="col-7">
-                    <input type="number" class="form-control user_phone" name="milage"
-                      value="{{ !empty($vehicle) ? $vehicle->milage : ''}}">
-                    <div class="form-text text-muted w-50">
-
-                    </div>
-                  </div>
-
-                </div>
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.vehicle_km')}}</label>
-                  <div class="col-7">
-                    <input type="number" class="form-control user_phone" name="km"
-                      value="{{ !empty($vehicle) ? $vehicle->km : ''}}">
-                    <div class="form-text text-muted">
-                      {{trans('lang.vehicle_km_help')}}
-                    </div>
-                  </div>
-
-                </div>
-
-              </fieldset>
-
-              <fieldset>
-                <legend>{{trans('lang.driver_bank_details')}}</legend>
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.bank_name')}}</label>
-                  <div class="col-7">
-                    <input type="text" class="form-control address_line1" name="bank_name"
-                      value="{{$driver->bank_name}}">
-                  </div>
-
-                </div>
-
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.branch_name')}}</label>
-                  <div class="col-7">
-                    <input type="text" class="form-control user_first_name" name="branch_name"
-                      value="{{$driver->branch_name}}">
-                    {{--<div class="form-text text-muted">
-                      {{ trans("lang.user_first_name_help") }}
-                    </div>--}}
-                  </div>
-                </div>
-
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.holder_name')}}</label>
-                  <div class="col-7">
-                    <input type="text" class="form-control user_last_name" name="holder_name"
-                      value="{{$driver->holder_name}}">
-                    {{-- <div class="form-text text-muted">
-                      {{ trans("lang.user_last_name_help") }}
-                    </div>--}}
-                  </div>
-                </div>
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.account_no')}}</label>
-                  <div class="col-7">
-                    <input type="text" class="form-control user_email" name="account_no"
-                      value="{{$driver->account_no}}">
-                    {{-- <div class="form-text text-muted">
-                      {{ trans("lang.user_email_help") }}
-                    </div>--}}
-                  </div>
-                </div>
-
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{trans('lang.Other_info')}}</label>
-                  <div class="col-7">
-                    <input type="text" class="form-control user_phone" name="other_info"
-                      value="{{$driver->other_info}}">
-                    {{-- <div class="form-text text-muted w-50">
-                      {{ trans("lang.user_phone_help") }}
-                    </div>--}}
-                  </div>
-
-                </div>
-                <div class="form-group row width-50">
-                  <label class="col-3 control-label">{{ trans("lang.ifsc_code") }}</label>
-                  <div class="col-7">
-                    <input type="text" class="form-control user_phone" name="ifsc_code" value="{{$driver->ifsc_code}}">
-
-                  </div>
-
-                </div>
-
-
-              </fieldset>
-
-
             </div>
           </div>
       </div>

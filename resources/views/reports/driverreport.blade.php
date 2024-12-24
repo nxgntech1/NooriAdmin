@@ -16,6 +16,11 @@
     </div>
 </div>
 
+@if(session()->has('message'))
+		<div class="alert alert-danger center">
+			{{ session()->get('message') }}
+		</div>
+	@endif
 <div class="container-fluid">
   <div class="row">
     <div class="col-12">
@@ -95,7 +100,6 @@
                       </fieldset>
                    </div>              
               </div>
-          </div>
 
           <div class="form-group col-12 text-center btm-btn">
             <button type="submit" class="btn btn-primary download" ><i class="fa fa-save"></i> {{ trans('lang.download')}}</button>

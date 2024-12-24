@@ -13,6 +13,10 @@ use Illuminate\Http\Request;
 use DB;
 use PDO;
 use App\Models\Requests;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use App\CustomClasses\addonpricing;
+
 
 
 class VehicleController extends Controller
@@ -440,8 +444,20 @@ public function getVehicleCategoryData(Request $request)
 public function getCarModels(Request $request)
 {
 
-    $ride_required_date = $request->get('ride_required_date');
-    $ride_required_time = $request->get('ride_required_time');
+    $ride_required_date = $request->get('ride_requird_date');
+
+    $rideRequiredTime = $request->get('ride_requird_time');
+
+    // Check if the input is in 12-hour or 24-hour format
+    if (preg_match('/\d{1,2}:\d{2}\s?(AM|PM)/i', $rideRequiredTime)) {
+        // 12-hour format
+        $ride_required_time = Carbon::createFromFormat('h:i A', $rideRequiredTime)->format('H:i');
+    } else {
+        // 24-hour format
+        $ride_required_time = Carbon::createFromFormat('H:i', $rideRequiredTime)->format('H:i');
+    }
+
+    //$ride_required_time = Carbon::createFromFormat('h:i A', $request->get('ride_requird_time'))->format('H:i');
     $booking_type_id =(int) $request->get('booking_type_id');
         
     $currency = Currency::where('statut', 'yes')->first();
@@ -469,7 +485,7 @@ public function getCarModels(Request $request)
 
           // Fetch the first result set
           $listmodelcars = $stmt->fetchAll(PDO::FETCH_OBJ);
-
+          $count = count($listmodelcars);
         foreach($listmodelcars as $row)
         {
        
@@ -554,6 +570,7 @@ public function getCarModels(Request $request)
           $response['message']= 'Successfully fetch data';
           $response['carmodels'] = $CarModelsoutput;// $output[0];
           $response['vehicleTypes'] = $VehicleTypesoutput;// $output[1];
+          //$response["modelscount"] = $count .'::'.$ride_required_date.'::'.$ride_required_time.'::'.$booking_type_id;
         }else{
           $response['success']= 'Failed';
           $response['error']= 'Failed To Fetch Data';
@@ -599,95 +616,118 @@ public function getCarModels(Request $request)
     
     if (!empty($ride_id))
     {
-      $hoursgap =DB::table('tj_requete as current_ride')
-      ->join('tj_requete as next_ride', 'next_ride.id_conducteur', '=', 'current_ride.id_conducteur')
-      ->select(DB::raw(
-          'TIMESTAMPDIFF(HOUR, 
-              TIMESTAMP(current_ride.ride_required_on_date, current_ride.ride_required_on_time), 
-              TIMESTAMP(next_ride.ride_required_on_date, next_ride.ride_required_on_time)
-          ) as hours_gap','current_ride.booking_type_id'
-      ))
-      ->where('current_ride.id', $ride_id)
-      ->whereRaw('TIMESTAMP(next_ride.ride_required_on_date, next_ride.ride_required_on_time) > TIMESTAMP(current_ride.ride_required_on_date, current_ride.ride_required_on_time)')
-      ->orderBy('next_ride.creer', 'ASC')
-      ->limit(1)
-      ->first();
+    //   $hoursgap =DB::table('tj_requete as current_ride')
+    //   ->join('tj_requete as next_ride', 'next_ride.id_conducteur', '=', 'current_ride.id_conducteur')
+    //   ->select(DB::raw(
+    //       'TIMESTAMPDIFF(HOUR, 
+    //           TIMESTAMP(current_ride.ride_required_on_date, current_ride.ride_required_on_time), 
+    //           TIMESTAMP(next_ride.ride_required_on_date, next_ride.ride_required_on_time)
+    //       ) as hours_gap','current_ride.booking_type_id'
+    //   ))
+    //   ->where('current_ride.id', $ride_id)
+    //   ->whereRaw('TIMESTAMP(next_ride.ride_required_on_date, next_ride.ride_required_on_time) > TIMESTAMP(current_ride.ride_required_on_date, current_ride.ride_required_on_time)')
+    //   ->orderBy('next_ride.creer', 'ASC')
+    //   ->limit(1)
+    //   ->first();
 
 
 
-      if(!empty($hoursgap))
-      {
-        if($hoursgap->hours_gap > 0)
-        {
-        if( $hoursgap->booking_type_id=="1" || $hoursgap->booking_type_id=="2")
-          {
-            $hoursgap->hours_gap = (int)$hoursgap->hours_gap - 6;
-          }
-        else if($hoursgap->booking_type_id=="3"){
-          $hoursgap->hours_gap = (int)$hoursgap->hours_gap - 10;
-        }
+      // if(!empty($hoursgap))
+      // {
+      //   if($hoursgap->hours_gap > 0)
+      //   {
+      //   if( $hoursgap->booking_type_id=="1" || $hoursgap->booking_type_id=="2")
+      //     {
+      //       $hoursgap->hours_gap = (int)$hoursgap->hours_gap - 6;
+      //     }
+      //   else if($hoursgap->booking_type_id=="3"){
+      //     $hoursgap->hours_gap = (int)$hoursgap->hours_gap - 10;
+      //   }
 
-        if($hoursgap->hours_gap > 0)
-        {
-          $sql = DB::table('tj_requete')
-                ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
-                ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
-                'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
-                DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
-                ->where('pricing_by_car_models.is_add_on','=','yes')
-                ->where('pricing_by_car_models.status','=','yes')
-                ->where('pricing_by_car_models.hours','<=',$hoursgap->hours_gap)
-                ->where('tj_requete.id','=',$ride_id)
-                ->get();
-        }
-        else{
-          $sql = DB::table('tj_requete')
-              ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
-              ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
-              'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
-              DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
-              ->where('pricing_by_car_models.is_add_on','=','yes')
-              ->where('pricing_by_car_models.status','=','yes')
-              ->where('tj_requete.id','=',$ride_id)
-              ->where('1','!=','1')
-              ->get();
-        }
-      }
-      else{
-        $sql = DB::table('tj_requete')
-            ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
-            ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
-            'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
-            DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
-            ->where('pricing_by_car_models.is_add_on','=','yes')
-            ->where('pricing_by_car_models.status','=','yes')
-            ->where('tj_requete.id','=',$ride_id)
-            ->where('1','!=','1')
-            ->get();
-      }
-      }
-      else{
-        $sql = DB::table('tj_requete')
-            ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
-            ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
-            'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
-            DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
-            ->where('pricing_by_car_models.is_add_on','=','yes')
-            ->where('pricing_by_car_models.status','=','yes')
-            ->where('tj_requete.id','=',$ride_id)
-            ->get();
-      }
-    }
+      //   if($hoursgap->hours_gap > 0)
+      //   {
+      //     $sql = DB::table('tj_requete')
+      //           ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
+      //           ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
+      //           'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
+      //           DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
+      //           ->where('pricing_by_car_models.is_add_on','=','yes')
+      //           ->where('pricing_by_car_models.status','=','yes')
+      //           ->where('pricing_by_car_models.hours','<=',$hoursgap->hours_gap)
+      //           ->where('tj_requete.id','=',$ride_id)
+      //           ->get();
+      //   }
+      //   else{
+      //     $sql = DB::table('tj_requete')
+      //         ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
+      //         ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
+      //         'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
+      //         DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
+      //         ->where('pricing_by_car_models.is_add_on','=','yes')
+      //         ->where('pricing_by_car_models.status','=','yes')
+      //         ->where('tj_requete.id','=',$ride_id)
+      //         ->where('1','!=','1')
+      //         ->get();
+      //   }
+      // }
+      // else{
+      //   $sql = DB::table('tj_requete')
+      //       ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
+      //       ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
+      //       'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
+      //       DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
+      //       ->where('pricing_by_car_models.is_add_on','=','yes')
+      //       ->where('pricing_by_car_models.status','=','yes')
+      //       ->where('tj_requete.id','=',$ride_id)
+      //       ->where('1','!=','1')
+      //       ->get();
+      // }
+      // }
+      // else{
+      //   $sql = DB::table('tj_requete')
+      //       ->Join('pricing_by_car_models', 'pricing_by_car_models.carmodelid', '=', 'tj_requete.model_id')
+      //       ->select('tj_requete.id_user_app','tj_requete.model_id','tj_requete.id_conducteur',
+      //       'pricing_by_car_models.pricingid','pricing_by_car_models.price as AddOnPricing','pricing_by_car_models.hours','pricing_by_car_models.kms',
+      //       DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
+      //       ->where('pricing_by_car_models.is_add_on','=','yes')
+      //       ->where('pricing_by_car_models.status','=','yes')
+      //       ->where('tj_requete.id','=',$ride_id)
+      //       ->get();
+      // }
+    //}
 
+    $pdo = DB::getPdo();
+    $stmt = $pdo->prepare('CALL GetAddOnsPricingAndAvailability(:ride_id)');
+    $stmt->bindParam(':ride_id', $ride_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Fetch the first result set
+    $listmodelcars = $stmt->fetchAll(PDO::FETCH_OBJ);
+    //$count = count($listmodelcars);
+    $stmt->closeCursor();
     $rowOutput='';
     $CarModelID = '';
     $output = array();	
     
-    foreach($sql as $row){
-      $CarModelID = $row->model_id;
-      $output[] = $row;
-    }
+    $customObjects = array_map(function ($row) {
+      // return (object) [
+      //   'id_user_app' => (string) $row->id_user_app, 
+      //   'model_id' => $row->model_id, 
+      //   'id_conducteur' => (string) $row->id_conducteur,
+      //   'pricingid' => $row->pricingid,
+      //   'AddOnPricing' => $row->AddOnPricing,
+      //   'hours' => $row->hours,
+      //   'kms' => $row->kms,
+      //   'add_on_label' => $row->add_on_label
+      // ];
+       return new addonpricing((string)$row->id_user_app, $row->model_id, (string)$row->id_conducteur,$row->pricingid,$row->AddOnPricing,$row->hours,$row->kms,$row->add_on_label);
+  }, $listmodelcars);
 
+    foreach($customObjects as $row){
+      $CarModelID = $row->model_id;
+      $output[] =$row;
+    }
+    
     $allowcod = 'no';
 
     if (!empty($CarModelID)){
@@ -702,20 +742,22 @@ public function getCarModels(Request $request)
         $allowcod = $rowCod->allow_cod;
       }
     }
-
-
     if(!empty($output)){
       $response['success']= 'Success';
       $response['error']= null;
       $response['message']= 'Successfully fetch data';
-      $response['data'] = $output;
+      $response['data'] = $customObjects;
       $response['allow_cod'] = $allowcod;
     }else{
       $response['success']= 'Failed';
       $response['error']= 'Failed To Fetch Data';
     }
+    }
+    else{
+      $response['success']= 'Failed';
+      $response['error']= 'Failed To Fetch Data';
+    }
     return response()->json($response);
-    
   }
 
   public function getaddOnsTaxPricing(Request $request)
@@ -812,6 +854,7 @@ public function getCarModels(Request $request)
     if(!empty($intout)){
 
       $this->SendAddonAppNotification($bookingid,$addon_id);
+      $this->SendUpgradeRideEmailNotifiaction($bookingid,$addon_id);
 
       $response['success']= 'Success';
       $response['error']= null;
@@ -923,6 +966,148 @@ public function getCarModels(Request $request)
             }
 
             return response()->json($response);
+    }
+
+    public function SendUpgradeRideEmailNotifiaction($ride_id,$addon_id)
+    {
+        $months = array("January" => 'Jan', "February" => 'Feb', "March" => 'Mar', "April" => 'Apr', "May" => 'May', "June" => 'Jun', "July" => 'Jul', "August" => 'Aug', "September" => 'Sep', "October" => 'Oct', "November" => 'Nov', "December" => 'Dec');
+
+        $sql = DB::table('tj_requete')
+            ->Join('tj_user_app', 'tj_user_app.id', '=', 'tj_requete.id_user_app')
+            ->Join('car_model', 'car_model.id', '=', 'tj_requete.model_id')
+            ->Join('brands', 'brands.id', '=', 'tj_requete.brand_id')
+            ->Join('tj_payment_method', 'tj_payment_method.id', '=', 'tj_requete.id_payment_method')
+            ->Join('bookingtypes', 'tj_requete.booking_type_id', '=', 'bookingtypes.id')
+            ->select(
+                'tj_requete.id',
+                'tj_requete.id_user_app',
+                'tj_requete.depart_name',
+                'tj_requete.distance_unit',
+                'tj_requete.destination_name',
+                'tj_requete.latitude_depart',
+                'tj_requete.longitude_depart',
+                'tj_requete.latitude_arrivee',
+                'tj_requete.longitude_arrivee',
+                'tj_requete.statut',
+                'tj_requete.id_conducteur',
+                'tj_requete.creer',
+                'tj_requete.tax_amount',
+                'tj_requete.discount',
+                'tj_user_app.nom',
+                'tj_user_app.prenom',
+                'tj_requete.otp',
+                'tj_user_app.email as customeremail',
+                'tj_user_app.phone as customerphone',
+                'tj_requete.distance',
+                'tj_user_app.phone',
+                'tj_requete.date_retour',
+                'tj_requete.heure_retour',
+                'tj_requete.montant',
+                'tj_requete.duree',
+                'tj_requete.statut_paiement',
+                'tj_requete.car_Price',
+                'tj_requete.sub_total',
+                'tj_requete.ride_required_on_date',
+                'tj_requete.ride_required_on_time',
+                'tj_requete.bookfor_others_mobileno',
+                'tj_requete.bookfor_others_name',
+                'tj_requete.vehicle_Id',
+                'tj_requete.id_conducteur',
+                'car_model.name as carmodel',
+                'brands.name as brandname',
+                'tj_payment_method.libelle as payment',
+                'tj_payment_method.image as payment_image',
+                'tj_requete.id_payment_method as paymentmethodid',
+                'bookingtypes.bookingtype as bookingtype'
+            )
+            ->where('tj_requete.id', '=', $ride_id)
+            ->get();
+
+            
+
+        foreach ($sql as $row) {
+
+            $emailsubject = '';
+            $emailmessage = '';
+            
+            $currency = DB::table('tj_currency')->select('*')->where('statut', 'yes')->first();
+            $customer_name = $row->prenom.' '.$row->nom;
+            $customerphone = $row->customerphone;
+            $customeremail = $row->customeremail;
+            $carmodelandbrand = $row->brandname . ' / ' . $row->carmodel;
+            $pickup_Location = $row->depart_name;
+            $drop_Location = $row->destination_name;
+            $booking_date = date("d", strtotime($row->creer)) . " " . $months[date("F", strtotime($row->creer))] . ", " . date("Y", strtotime($row->creer));
+            $booking_time = date("h:i A", strtotime(Carbon::parse($row->creer)->timezone('Asia/Kolkata')));
+            $payment_method = $row->payment;
+            $bookingtype = $row->bookingtype;
+            $iduserapp = $row->id_user_app;
+            
+            $pickupdate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date));
+            $pickuptime = date("h:i A", strtotime($row->ride_required_on_time));
+            
+            $addontrans = DB::table('tj_transaction')
+            ->Join('pricing_by_car_models','tj_transaction.addon_id','=','pricing_by_car_models.PricingID')
+            ->select('tj_transaction.amount', 'tj_transaction.payment_status','tj_transaction.payment_method',DB::raw('CONCAT(CAST(pricing_by_car_models.hours AS CHAR), " hours | ", CAST(pricing_by_car_models.kms AS CHAR), " KMs") as add_on_label'))
+            ->where('tj_transaction.is_addon', '=', 'yes')
+            ->where('tj_transaction.ride_id', '=', $ride_id)
+            ->where('tj_transaction.id_user_app', '=', $iduserapp)
+            ->where('tj_transaction.addon_id','=',$addon_id)
+            ->orderby('tj_transaction.id','DESC')
+            ->limit(1)
+            ->first();
+         
+            $addonamount= $addontrans->amount;
+            $addonname = $addontrans->add_on_label;
+            $paymentmethod='';
+            $paymentstatus ='';
+            if($addontrans->payment_method=="5")
+            {
+              $paymentmethod = "Cash on Dropping";
+            }
+            else{
+              $paymentmethod = "Online";
+            }
+
+            if($addontrans->payment_status=="yes")
+            {
+              $paymentstatus= "Successful";
+            }
+            else{
+              $paymentstatus= "failed";
+            }
+            
+            //$response['EmailResponseSql'] = $emailmessage;
+            $notifications = new NotificationsController();
+            
+            // admin email
+            $urlstring = env('ADMIN_BASEURL', 'https://nadmin.nxgnapp.com/') . "/ride/show/" . $ride_id;
+            $emailsubject = '';
+            $emailmessage = '';
+
+            $emailsubject = "Booking upgrade Notification";
+            $emailmessage = file_get_contents(resource_path('views/emailtemplates/upgrade.html'));
+
+            $emailmessage = str_replace("{CustomerName}", $customer_name, $emailmessage);
+            //$emailmessage = str_replace("{CustomerNumber}", $customerphone, $emailmessage);
+            $emailmessage = str_replace("{NewTripDate}", $pickupdate, $emailmessage);
+            $emailmessage = str_replace("{NewTriptime}", $pickuptime, $emailmessage);
+            $emailmessage = str_replace("{BookingType}", $bookingtype, $emailmessage);
+            $emailmessage = str_replace("{BookingID}", $ride_id, $emailmessage);
+            $emailmessage = str_replace("{AddoName}", $addonname, $emailmessage);
+            $emailmessage = str_replace("{paymentmethod}", $paymentmethod, $emailmessage);
+            $emailmessage = str_replace("{paymentstatus}", $paymentstatus, $emailmessage);
+
+            // $emailmessage = str_replace("{PickupLocation}", $pickup_Location, $emailmessage);
+            // $emailmessage = str_replace("{DropoffLocation}", $drop_Location, $emailmessage);
+            
+
+            $admintoemail = env('ADMIN_EMAILID', 'info@nooritravels.com');
+
+            $response['AdminEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject, $emailmessage);
+        }
+
+        return response()->json($response);
     }
 
 }

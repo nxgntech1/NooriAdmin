@@ -115,7 +115,14 @@
 
 
     <div class="login-register">
-
+                @if(count($errors) > 0)
+                    @foreach( $errors->all() as $message )
+                        <div class="alert alert-danger display-hide">
+                            <button class="close" data-close="alert"></button>
+                            <span>{{ $message }}</span>
+                        </div>
+                    @endforeach
+                @endif
 
         <div class="login-logo text-center py-3">
 
@@ -129,14 +136,7 @@
             <div class="card-body">
 
 
-                @if(count($errors) > 0)
-                    @foreach( $errors->all() as $message )
-                        <div class="alert alert-danger display-hide">
-                            <button class="close" data-close="alert"></button>
-                            <span>{{ $message }}</span>
-                        </div>
-                    @endforeach
-                @endif
+                
 
                 <form class="form-horizontal form-material" method="POST" action="{{ route('login') }}">
 

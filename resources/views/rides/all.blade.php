@@ -68,7 +68,7 @@
                                         <select name="selected_search" id="selected_search"
                                         class="form-control input-sm">
                                         <option value="userName">{{trans('lang.user_name')}}</option>
-                                        <option value="status">{{trans('lang.status')}}</option>
+                                        <option value="status">{{trans('lang.status')}}</option>                                        
                                       </select>
                                       @endif
 
@@ -164,7 +164,7 @@
                               <th>{{trans('lang.cost_amount')}}</th>
                               <th>{{trans('lang.bookingtype_name')}}</th>
                               <th>{{trans('lang.status')}}</th>
-
+                              <th>{{trans('lang.trip_date_time')}}</th>
                               <th>{{trans('lang.bookingdate_time')}}</th>
                               <th>{{trans('lang.actions')}}</th>
 
@@ -199,11 +199,11 @@
                                 <?php $montant=floatval($ride->montant);
                                 $total_price =$montant;
 
-                                $discount=$ride->discount;
-                                if($discount)
-                                {
-                                  $total_price =$montant-$discount;
-                                }
+                                // $discount=$ride->discount;
+                                // if($discount)
+                                // {
+                                //   $total_price =$montant-$discount;
+                                // }
                                 $tax=json_decode($ride->tax,true);
                                 $totalTaxAmount=0;
                                 if(!empty($tax)){
@@ -255,6 +255,9 @@
                                         <td class="dt-time"><span class="date">{{ date('d F Y',strtotime($ride->bookeddatetime))}}</span>
                                           <span class="time">{{ date('h:i A',strtotime($ride->bookeddatetime))}}</span>
 
+                                        </td>
+                                        <td class="dt-time"><span class="date">{{ date('d F Y',strtotime($ride->creer))}}</span>
+                                            <span class="time">{{ date('h:i A',strtotime($ride->creer))}}</span>
                                         </td>
                                         <td class="action-btn">
                                           <a href="{{route('ride.show', ['id' => $ride->id])}}" class=""

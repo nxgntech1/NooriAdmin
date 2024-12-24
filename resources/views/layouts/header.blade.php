@@ -35,6 +35,12 @@
             </select>
         </div>
     </div> -->
+    <div  class="language-list icon d-flex align-items-center text-light ml-2" id="language_dropdown_box">
+        <div class="language-select">
+           <a href="javascript:location.reload();" title="Refresh the page" alt="Refresh the page"> <i class="fa fa-refresh" style="font-size:36px;color:white;margin-right: 100px;"></i></a>
+        </div>
+    </div>
+    
     <ul class="navbar-nav my-lg-0">
       
         <li class="nav-item dropdown">

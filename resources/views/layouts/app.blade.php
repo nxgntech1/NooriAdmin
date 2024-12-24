@@ -1,5 +1,6 @@
 <!doctype html>
 
+
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
     <?php if(str_replace('_', '-', app()->getLocale()) == 'ar' || @$_COOKIE['is_rtl'] == 'true'){ ?> dir="rtl" <?php } ?>>
 
@@ -8,19 +9,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Laravel') }}</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-small.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ secure_asset('images/logo-small.png') }}">
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
-    <link href="{{ asset('assets/plugins/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/icons/font-awesome/css/font-awesome.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/icons/font-awesome/css/all.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/icons/font-awesome/css/regular.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/icons/font-awesome/css/solid.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/plugins/toast-master/css/jquery.toast.css')}}" rel="stylesheet">
-    <link href="{{ asset('css/colors/blue.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/plugins/summernote/summernote.css')}}" rel="stylesheet">
-    <link href="{{ asset('assets/plugins/select2/dist/css/select2.min.css')}}" rel="stylesheet">
+    <link href="{{ secure_asset('https://nadmin.nxgnapp.com/assets/plugins/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ secure_asset('https://nadmin.nxgnapp.com/css/style.css') }}" rel="stylesheet">
+    <link href="{{ secure_asset('https://nadmin.nxgnapp.com/css/icons/font-awesome/css/font-awesome.css') }}" rel="stylesheet">
+    <link href="{{ secure_asset('https://nadmin.nxgnapp.com/css/icons/font-awesome/css/all.css') }}" rel="stylesheet">
+    <link href="{{ secure_asset('https://nadmin.nxgnapp.com/css/icons/font-awesome/css/regular.css') }}" rel="stylesheet">
+    <link href="{{ secure_asset('https://nadmin.nxgnapp.com/css/icons/font-awesome/css/solid.css') }}" rel="stylesheet">
+    <link href="{{ secure_asset('https://nadmin.nxgnapp.com/assets/plugins/toast-master/css/jquery.toast.css')}}" rel="stylesheet">
+    <link href="{{ secure_asset('https://nadmin.nxgnapp.com/css/colors/blue.css') }}" rel="stylesheet">
+    <link href="{{ secure_asset('https://nadmin.nxgnapp.com/assets/plugins/summernote/summernote.css')}}" rel="stylesheet">
+    <link href="{{ secure_asset('https://nadmin.nxgnapp.com/assets/plugins/select2/dist/css/select2.min.css')}}" rel="stylesheet">
 
     @php $app_setting = App\Models\Settings::first(); @endphp
 	<script src="https://maps.googleapis.com/maps/api/js?key={{$app_setting->google_map_api_key}}&libraries=drawing,geometry,places"></script>
@@ -262,11 +263,11 @@
     <?php } ?>
 
     <?php if(str_replace('_', '-', app()->getLocale()) == 'ar' || @$_COOKIE['is_rtl'] == 'true'){ ?>
-    	<link href="{{asset('assets/plugins/bootstrap/css/bootstrap-rtl.min.css')}}" rel="stylesheet">
+    	<link href="{{secure_asset('assets/plugins/bootstrap/css/bootstrap-rtl.min.css')}}" rel="stylesheet">
     <?php } ?>
 
     <?php if(str_replace('_', '-', app()->getLocale()) == 'ar' || @$_COOKIE['is_rtl'] == 'true'){ ?>
-    	<link href="{{asset('css/style_rtl.css')}}" rel="stylesheet">
+    	<link href="{{secure_asset('css/style_rtl.css')}}" rel="stylesheet">
     <?php } ?>
     
 </head>
@@ -298,16 +299,16 @@
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="{{ asset('assets/plugins/bootstrap/js/popper.min.js') }}"></script>
-<script src="{{ asset('assets/plugins/bootstrap/js/bootstrap.min.js') }}"></script>
-<script src="{{ asset('js/jquery.slimscroll.min.js') }}"></script>
-<script src="{{ asset('js/waves.js') }}"></script>
-<script src="{{ asset('js/sidebarmenu.js') }}"></script>
-<script src="{{ asset('assets/plugins/sticky-kit-master/dist/sticky-kit.min.js') }}"></script>
-<script src="{{ asset('assets/plugins/sparkline/jquery.sparkline.min.js')}}"></script>
-<script src="{{ asset('js/custom.min.js') }}"></script>
-<script src="{{ asset('assets/plugins/summernote/summernote.js')}}"></script>
-<script src="{{ asset('assets/plugins/select2/dist/js/select2.min.js') }}"></script>
+<script src="{{ secure_asset('https://nadmin.nxgnapp.com/assets/plugins/bootstrap/js/popper.min.js') }}"></script>
+<script src="{{ secure_asset('https://nadmin.nxgnapp.com/assets/plugins/bootstrap/js/bootstrap.min.js') }}"></script>
+<script src="{{ secure_asset('https://nadmin.nxgnapp.com/js/jquery.slimscroll.min.js') }}"></script>
+<script src="{{ secure_asset('https://nadmin.nxgnapp.com/js/waves.js') }}"></script>
+<script src="{{ secure_asset('https://nadmin.nxgnapp.com/js/sidebarmenu.js') }}"></script>
+<script src="{{ secure_asset('https://nadmin.nxgnapp.com/assets/plugins/sticky-kit-master/dist/sticky-kit.min.js') }}"></script>
+<script src="{{ secure_asset('https://nadmin.nxgnapp.com/assets/plugins/sparkline/jquery.sparkline.min.js')}}"></script>
+<script src="{{ secure_asset('https://nadmin.nxgnapp.com/js/custom.min.js') }}"></script>
+<script src="{{ secure_asset('https://nadmin.nxgnapp.com/assets/plugins/summernote/summernote.js')}}"></script>
+<script src="{{ secure_asset('https://nadmin.nxgnapp.com/assets/plugins/select2/dist/js/select2.min.js') }}"></script>
 
 <script type="text/javascript">
     jQuery(window).scroll(function () {

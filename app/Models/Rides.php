@@ -41,7 +41,10 @@ class Rides extends Authenticatable
         'creer',
         'modifier', 
         'date_retour',
-        'heure_retour'
+        'heure_retour',
+        'cancelby',
+        'cancel_remarks',
+        'duty_slip_no'
         
     ];
 

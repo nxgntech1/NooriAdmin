@@ -166,12 +166,15 @@ return [
     'bookingtype_name_help' => "Insert Booking Type",
     'bookingtype_select_help' => "Select Booking Type",
     'bookingdate_time' => "Booking Date Time",
+    'booked_for_name' => "Booked For",
+    'booked_for_phone' => "Booked For Phone",
 
     //---------------------------------------CCCC---------------------------------------
     'calories' => "Calories",
     'cancel' => 'Back',
     'close' => 'Close',
     'cancels' => 'cancel',
+    'cancel_ride' => 'Cancel Ride',
     'car_image' => "Car Image",
     'car_image_help' => "Insert Car Image",
     'car_name' => "Car Name",
@@ -340,6 +343,7 @@ return [
     'driver_phone' => 'Phone',
     'date' => 'Date Option',
     'destination_address' => "Destination Address",
+    'duty_slip_no' => "Duty Slip No",
     //---------------------------------------EEEE---------------------------------------
     'earning_plural' => 'Earnings',
     'edit' => 'Edit',
@@ -394,7 +398,7 @@ return [
     'ingredients' => "Ingredients",
     'in_transit' => "In Transit",
     'inactive' => "Inactive",
-    
+    'online_status' => "Online Status",
     
     //---------------------------------------JJJJ---------------------------------------
     'joined_today' => "Joined today",
@@ -413,6 +417,7 @@ return [
     'message' => "Message",
     'menu_card' => "Menu Card Images",
     'millage_achieved' => "Mileage achieved",
+    'multiple' => "Multiple",
 
     //---------------------------------------NNNN---------------------------------------
     'name' => "Name",
@@ -438,6 +443,8 @@ return [
     'order_user_id' => 'Client',
     'on_going_trips' => "On-going trips",
     'otp' => "OTP",
+    'online' => "Online",
+    'offline' => "Offline",
     //---------------------------------------PPPP---------------------------------------
     'paid_amount' => "Paid Amount",
     'password' => 'Password',
@@ -521,6 +528,7 @@ return [
     'registered_today' => "Registered today",
     'ride_requests' => "Ride requests",
     'rides_completed' => "Rides completed",
+    'remarks' => "Remarks",
     //---------------------------------------SSSS---------------------------------------
     'save' => 'Save',
     'save_changes' => 'Save changes',
@@ -552,6 +560,7 @@ return [
     'source_amount' => "Source Address",
     'start_ride' => "Start Ride",
     'signed_up_today' => "Signed up today",
+    'single' => "Single",
     //---------------------------------------TTTT---------------------------------------
     'terms_and_conditions' => "Terms and Conditions",
     'title' => "Title",
@@ -994,7 +1003,7 @@ return [
     'no_result' => 'No results found',
     'all_drivers' => 'All Drivers',
     'approved_drivers' => 'Approved Drivers',
-    'pending_drivers' => 'Approval Pending Drivers',
+    'pending_drivers' => 'Pending Drivers',
     'add_comment_disapprove' => 'Add your comment to disapprove',
     'add_comment' => 'Please add your comment',
     'dispatcher_user' => 'Dispatcher Users',

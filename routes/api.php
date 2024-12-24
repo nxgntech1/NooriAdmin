@@ -197,6 +197,9 @@ Route::group(['middleware' => ['apiKeyAuth']], function () {
     Route::post('v1/requete-register/', [RequeteRegisterController::class, 'register']);
     Route::post('v1/book-ride/', [RequeteRegisterController::class, 'BookRide']);
     Route::post('v1/update-ride-status/', [RequeteRegisterController::class, 'updateRideStatus']);
+    Route::post('v1/update-ride-reschedule/', [RequeteRegisterController::class, 'rescheduleRide']);
+    Route::post('v1/cancel-ride/', [RequeteRegisterController::class, 'cancelRide']);
+    Route::post('v1/driver-location_update/', [RequeteRegisterController::class, 'updateDriverLivelocation']);
     Route::post('v1/amount/', [AddAmountController::class, 'register']);
     Route::get('v1/otp_verify/', [OtpVerificationController::class, 'VerifyOTP']);
     Route::get('v1/otp/', [generateotpController::class, 'OTP']);
@@ -285,6 +288,7 @@ Route::group(['middleware' => ['apiKeyAuth']], function () {
     Route::post('v1/user-pending-payment/', [UserPendingPaymentController::class, 'userpayment']);
 
     Route::post('v1/changestatus-starttrip/', [CompleteRequeteController::class, 'startTripRequest']);
+    Route::post('v1/update-arrival-odo/', [CompleteRequeteController::class, 'arrivalODORequest']);
     Route::post('v1/changestatus-arrived/', [CompleteRequeteController::class, 'arrivedRequest']);
     Route::post('v1/changestatus-onride/', [CompleteRequeteController::class, 'onRideRequest']);
     Route::post('v1/changestatus-completed/', [CompleteRequeteController::class, 'RideCompleteRequest']);

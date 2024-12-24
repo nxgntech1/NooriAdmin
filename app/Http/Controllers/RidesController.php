@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\API\v1\NotificationsController;
+use Google\Service\CloudControlsPartnerService\Console;
+
+use function Laravel\Prompts\alert;
 
 class RidesController extends Controller
 {
@@ -84,11 +87,13 @@ class RidesController extends Controller
                   if($id!='' || $id!=null){
                     $rides->where('tj_user_app.prenom', 'LIKE', '%' . $search . '%')->where('tj_requete.id_conducteur','=',$id);
                     $rides->orwhere('tj_user_app.nom', 'LIKE', '%' . $search . '%')->where('tj_requete.id_conducteur','=',$id);
+                    $rides->orWhere('tj_requete.duty_slip_no', 'LIKE', '%' . $search . '%');
                     $rides->orWhere(DB::raw('CONCAT(tj_user_app.prenom, " ",tj_user_app.nom)'), 'LIKE', '%' . $search . '%')->where('tj_requete.id_conducteur','=',$id);
                   }
                   else{
                     $rides->where('tj_user_app.prenom', 'LIKE', '%' . $search . '%');
                     $rides->orwhere('tj_user_app.nom', 'LIKE', '%' . $search . '%');
+                    $rides->orWhere('tj_requete.duty_slip_no', 'LIKE', '%' . $search . '%');
                     $rides->orWhere(DB::raw('CONCAT(tj_user_app.prenom, " ",tj_user_app.nom)'), 'LIKE', '%' . $search . '%');
 
                   }
@@ -150,7 +155,23 @@ class RidesController extends Controller
         }
         foreach ($rides as $row)
         {
-            $row->bookeddatetime = Carbon::parse($row->bookeddatetime)->timezone('Asia/Kolkata');
+            $totalAmount= $row->montant;
+            $row->creer = Carbon::parse($row->creer)->timezone('Asia/Kolkata');
+            $addon = DB::Table('addon_payments')
+             ->where('bookingid','=',$row->id)
+             ->where('payment_status','=','success')
+             ->whereNotNull('transaction_id')
+             
+             ->get();
+            // $row->addon = json_encode($addon,JSON_PRETTY_PRINT);
+
+             if(!empty($addon))
+             {
+                 foreach ($addon as $row_addon) {
+                    $totalAmount= $totalAmount + (int)$row_addon->addon_total_amount;
+                 }
+             }
+             $row->montant = $totalAmount;
         }
 
         return view("rides.all")->with("rides", $rides)->with('currency', $currency)->with('id',$id);
@@ -261,7 +282,7 @@ class RidesController extends Controller
         }
         foreach ($rides as $row)
         {
-            $row->bookeddatetime = Carbon::parse($row->bookeddatetime)->timezone('Asia/Kolkata');
+            $row->creer = Carbon::parse($row->creer)->timezone('Asia/Kolkata');
         }
         return view("rides.new")->with("rides", $rides)->with('currency', $currency);
     }
@@ -823,7 +844,7 @@ class RidesController extends Controller
      {
         $currency = Currency::where('statut', 'yes')->first();
         $selectedride = Requests::where('id',$id)->first();
-        if($selectedride->statut =='new')
+        if($selectedride->statut =='new' || $selectedride->statut =='canceled')
         {
             $ride = Requests::leftjoin('tj_user_app', 'tj_requete.id_user_app', '=', 'tj_user_app.id')
              ->join('bookingtypes', 'tj_requete.booking_type_id', '=', 'bookingtypes.id' )
@@ -842,7 +863,7 @@ class RidesController extends Controller
              ->join('tj_conducteur', 'tj_requete.id_conducteur', '=', 'tj_conducteur.id')
              ->join('bookingtypes', 'tj_requete.booking_type_id', '=', 'bookingtypes.id' )
              ->join('tj_payment_method', 'tj_requete.id_payment_method', '=', 'tj_payment_method.id')
-             ->join('tj_vehicule', 'tj_requete.vehicle_id', '=', 'tj_vehicule.id')
+             ->leftjoin('tj_vehicule', 'tj_requete.vehicle_id', '=', 'tj_vehicule.id')
              ->leftjoin('brands', 'tj_vehicule.brand', '=', 'brands.id')
              ->leftjoin('car_model', 'tj_vehicule.model', '=', 'car_model.id')
              ->select('tj_requete.*',DB::raw('TIMESTAMP(ride_required_on_date, ride_required_on_time) as requireddatetime'))
@@ -861,6 +882,7 @@ class RidesController extends Controller
          $tip = $ride->tip_amount;
          $totalAmount = floatval($montant);
          $totalTaxAmount = 0;
+         
          $taxHtml = '';
          if (!empty($tax)) {
              for ($i = 0; $i < sizeof($tax); $i++) {
@@ -889,6 +911,21 @@ class RidesController extends Controller
             $totalAmount = floatval($totalAmount) ;
 
         }
+             
+             $addon = DB::Table('addon_payments')
+             ->where('bookingid','=',$id)
+             ->where('payment_status','=','success')
+             ->whereNotNull('transaction_id')
+             
+             ->get();
+            // $row->addon = json_encode($addon,JSON_PRETTY_PRINT);
+
+             if(!empty($addon))
+             {
+                 foreach ($addon as $row_addon) {
+                    $totalAmount= $totalAmount + (int)$row_addon->addon_total_amount;
+                 }
+             }
              $totalAmount = floatval($totalAmount);
              $customer_review = DB::table('tj_note')->where('tj_note.ride_id', $id)->select('comment','niveau')->get();
              $driver_review = DB::table('tj_user_note')->where('tj_user_note.ride_id', $id)->select('comment','niveau_driver')->get();
@@ -984,11 +1021,11 @@ class RidesController extends Controller
         $subqueryVehicle = DB::table('TJ_REQUETE')
             ->select('vehicle_Id')
             ->whereNotNull('vehicle_Id')
-            ->whereNotIn('STATUT', ['Completed'])
+            ->whereNotIn('STATUT', ['Completed', 'canceled'])
             ->whereRaw("TIMESTAMPDIFF(HOUR, TIMESTAMP(ride_required_on_date, ride_required_on_time), TIMESTAMP('.$ride->requireddatetime.')) < 8");
 
         // Define the main query
-        $vehicles = DB::table('tj_vehicule as v')
+        $vehiclesspecific = DB::table('tj_vehicule as v')
             ->join('car_model as cm', 'v.model', '=', 'cm.id')
             ->join('brands as b', 'v.brand', '=', 'b.id')
             ->join('tj_requete as r', function($join) use ($id) {
@@ -996,12 +1033,26 @@ class RidesController extends Controller
                      ->on('r.model_id', '=', 'cm.id')
                      ->where('r.id', $id);
             })
+            ->where('v.statut','=','yes')
+            ->where('cm.status','=','yes')
+            ->where('b.status','=','yes')
             ->whereNotIn('v.id', $subqueryVehicle)
             ->distinct()
-            ->select('v.*')
+            ->select('v.*','cm.name as model')
+            ->get();
+        
+        $vehiclesother = DB::table('tj_vehicule as v')
+            ->join('car_model as cm', 'v.model', '=', 'cm.id')
+            ->join('brands as b', 'v.brand', '=', 'b.id')
+            ->where('v.statut','=','yes')
+            ->where('cm.status','=','yes')
+            ->where('b.status','=','yes')
+            ->whereNotIn('v.id', $subqueryVehicle)
+            ->distinct()
+            ->select('v.*','cm.name as model')
             ->get();
 
-
+            $vehicles = $vehiclesspecific->merge($vehiclesother)->unique();
         $localTime = Carbon::parse($ride->creer)->timezone('Asia/Kolkata');
         $msg="This is testing";
         //echo json_encode($vehicles,JSON_PRETTY_PRINT);
@@ -1018,21 +1069,30 @@ class RidesController extends Controller
 
     public function updateRide(Request $request, $id)
     {
+        $request->validate([
+            'order_status' => 'required|integer', 
+            'selectedvehicleid' => 'required|integer',
+            'duty_slip_no' => 'required|string',
+            'vehicle_assign_remarks' => 'required|string'
+        ]);
 
         $rides = Rides::find($id);
         $driver = $request->input('order_status');
         $vehicleid = $request->input('selectedvehicleid');
+        $dutyslipno = $request->input('duty_slip_no');
+        $assignremarks = $request->input('vehicle_assign_remarks');
 
         if ($rides) {
 
             $rides->statut = "vehicle assigned";
             $rides->id_conducteur= $driver;
             $rides->vehicle_Id=$vehicleid;
+            $rides->duty_slip_no = $dutyslipno;
             $rides->save();
 
             $date_heure=date('Y-m-d H:i:s');
-            $query = DB::insert("insert into ride_status_change_log(ride_id,status,driver_id,user_id, latitude,longitude,created_on)
-            values('".$rides->id."','vehicle assigned','".$driver."','".Auth::id()."','".''."','".''."','".$date_heure."')");
+            $query = DB::insert("insert into ride_status_change_log(ride_id,status,driver_id,user_id, latitude,longitude,duty_slip_no,remarks,created_on)
+            values('".$rides->id."','vehicle assigned','".$driver."','".Auth::id()."','".''."','".''."','".$dutyslipno."','".$assignremarks."','".$date_heure."')");
             
 
              $driverinfo = Driver::where('id',$driver)->where('fcm_id', '!=', '')->first();
@@ -1070,11 +1130,11 @@ class RidesController extends Controller
                 $pickup_Location = $row->depart_name;
                 $drop_Location = $row->destination_name;
                 $booking_date = date("d", strtotime($row->creer)) . " " . $months[date("F", strtotime($row->creer))] . ", " . date("Y", strtotime($row->creer));
-                $booking_time = date("h:m A", strtotime($row->creer)); 
+                $booking_time = date("h:i A", strtotime($row->creer)); 
                 $payment_method = $row->payment;
                 $bookingtype = $row->bookingtype;
-                $pickupdate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
-                $pickuptime = date("h:m A", strtotime($row->ride_required_on_time));
+                $pickupdate = date("d", strtotime($row->ride_required_on_date )) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
+                $pickuptime = date("h:i A", strtotime($row->ride_required_on_time));
                 $brandname = $row->brandname;
                 $numberplate = $row->numberplate;
 
@@ -1218,7 +1278,7 @@ class RidesController extends Controller
                 $PickUpLocation = $row->depart_name;
                 $DropLocation = $row->destination_name;
                 $PickUpDate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
-                $PickUpTime = date("h:m A", strtotime($row->ride_required_on_time));
+                $PickUpTime = date("h:i A", strtotime($row->ride_required_on_time));
             }
             
             $msg = str_replace("{carmodel}", $carmodelandbrand, "You have been assigned for a new ride with {carmodel} Reg. no {carnumber} from {PickupLocation} to {DropoffLocation} on {PickupDate} at {PickupTime}");
@@ -1255,6 +1315,24 @@ class RidesController extends Controller
             }
 
             return response()->json($response);
+    }
+
+    public function updateRideStatus(Request $request, $id)
+    {
+        $request->validate([
+            'cancel_remarks' => 'required|string|max:500',
+        ]);
+
+        $cancelremarks = $request->get('cancel_remarks');
+        $rides = Rides::find($id);
+        if ($rides && !empty($cancelremarks)) {
+            $rides->statut = 'canceled';
+            $rides->cancelby= Auth::id();
+            $rides->cancel_remarks=$cancelremarks;
+            $rides->save();
+        }
+       
+        return redirect()->back();
     }
 
 }

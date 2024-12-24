@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trip Rescheduling Notification</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <!-- Outer Container -->
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 0;">
+
+                    <!-- Header with Logo -->
+                    <tr>
+                        <td align="center" style="background-color: #000000; padding: 20px; border-radius: 8px 8px 0 0;">
+                            <img src="https://nooritravels.com/Professional%20Chauffeur%20Driven%20Car%20Rentals%20in%20Hyderabad%20_%20Noori%20Travels_files/logo.png" alt="Noori Travels Logo" style="display: block; width: 150px; height: auto;">
+                        </td>
+                    </tr>
+
+                    <!-- Title -->
+                    <tr>
+                        <td align="center" style="padding: 20px; color: #333333; font-size: 22px; font-weight: bold;">
+                            Trip Rescheduling Notification
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td style="padding: 20px; color: #555555; font-size: 16px; line-height: 1.5;">
+                            <p>Dear Admin,</p>
+                            <p>The following trip has been <span style="font-weight: bold; color: #E53935;">rescheduled</span>:</p>
+                        </td>
+                    </tr>
+
+                    <!-- Table for Trip Details -->
+                    <tr>
+                        <td style="padding: 0 20px 20px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="8" border="1" style="border-collapse: collapse; border-color: #dddddd;">
+                                <tr>
+                                    <td style="background-color: #f0f0f0; font-weight: bold;">Client Name</td>
+                                    <td>{CustomerName}</td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #f0f0f0; font-weight: bold;">Mobile No</td>
+                                    <td>{CustomerNumber}</td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #f0f0f0; font-weight: bold;">Original Date</td>
+                                    <td>{OldTripDate} {OldTriptime}</td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #f0f0f0; font-weight: bold;">New Date</td>
+                                    <td>{NewTripDate} {NewTriptime}</td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #f0f0f0; font-weight: bold;">Package</td>
+                                    <td>{BookingType}</td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #f0f0f0; font-weight: bold;">Booking ID</td>
+                                    <td>{BookingID}</td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #f0f0f0; font-weight: bold;">Trip Starts From</td>
+                                    <td>{PickupLocation}</td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #f0f0f0; font-weight: bold;">Trip Ends</td>
+                                    <td>{DropoffLocation}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 20px; color: #555555; font-size: 16px; line-height: 1.5;">
+                            <p>Please take the necessary actions regarding this reschedule.</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding-bottom: 20px; color: #888888; font-size: 14px;">
+                            Best regards,<br>
+                            <strong>Noori Travels</strong><br>
+                            Email: <a href="mailto:info@nooritravels.com" style="color: #0078D7; text-decoration: none;">info@nooritravels.com</a>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -143,6 +143,7 @@
                                     <th>{{trans('lang.total_ride')}}</th>
                                     <th>{{trans('lang.wallet_history')}}</th>
                                     <th>{{trans('lang.status')}}</th>
+                                    <th>{{trans('lang.online_status')}}</th>
                                     <th>{{trans('lang.actions')}}</th>
                                 </tr>
                                 </thead>
@@ -194,7 +195,10 @@
                                       @else <label class="switch"><input type="checkbox" id="{{ $driver->id }}" name="publish"><span class="slider round"></span></label><span>
                                       @endif
                                     </td>
-
+                                    <td>@if ($driver->online=="yes") <span class="btn btn-success btn-sm" id="{{ $driver->id }}">{{trans('lang.online')}} </span>
+                                      @else <span class="btn btn-warning btn-sm" id="{{ $driver->id }}"> {{trans('lang.offline')}} </span>
+                                      @endif
+                                    </td>
                                     <td class="action-btn">
                                       <a data-toggle="dropdown" data-original-title="View détails">
                                       <i

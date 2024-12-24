@@ -27,20 +27,42 @@ class DiscountController extends Controller
   public function discountList(Request $request)
   {
     $rideType =$request->get('ride_type');
+    $userid =$request->header('user_id');
     
     $today = Carbon::now();
 
-    if(!empty($rideType) && $rideType=="parcel"){
+    if(!empty($rideType) && $rideType=="Multiple"){
         $sql = DB::table('tj_discount')
         ->where('statut','=','yes')
-        ->where('coupon_type','=','Parcel')
+        ->where('coupon_type','=','Multiple')
         ->where('expire_at','>=',$today)
         ->get();
-      }else{
+      }
+      else if(!empty($rideType) && $rideType=="Single")
+      {
         $sql = DB::table('tj_discount')
+        ->leftJoin('user_coupon_used_log', function($join) use ($userid) {
+          $join->on('tj_discount.id', '=', 'user_coupon_used_log.couponid')
+               ->where('user_coupon_used_log.userid', '=', $userid);
+      })
+      ->select('tj_discount.*')
         ->where('statut','=','yes')
-        ->where('coupon_type','=','Ride')
+        ->where('coupon_type','=','Single')
         ->where('expire_at','>=',$today)
+        ->whereNull('user_coupon_used_log.id')
+        ->get();
+      }
+      else{
+        $sql = DB::table('tj_discount')
+        ->leftJoin('user_coupon_used_log', function($join) use ($userid) {
+            $join->on('tj_discount.id', '=', 'user_coupon_used_log.couponid')
+                 ->where('user_coupon_used_log.userid', '=', $userid)
+                 ->where('tj_discount.coupon_type', '=', 'Single'); // Included in the join condition
+        })
+        ->select('tj_discount.*')
+        ->where('tj_discount.statut', '=', 'yes')
+        ->where('tj_discount.expire_at', '>=', $today)
+        ->whereNull('user_coupon_used_log.id') // Ensures the coupon has not been used by the user
         ->get();
       }
       

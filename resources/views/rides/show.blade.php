@@ -170,6 +170,11 @@
 													: </strong><span id="ride_id">{{ $ride->id}}</span></label>
 											<label class="col-12 control-label"><strong>{{trans('lang.otp')}}
 													: </strong><span id="ride_id">{{ $ride->otp}}</span></label>
+											<label class="col-12 control-label"><strong>{{trans('lang.ride_status')}}
+													: </strong><span id="ride_id">{{ strtoupper($ride->statut) }}</span></label>
+											<label class="col-12 control-label"><strong>{{trans('lang.duty_slip_no')}}
+													: </strong><span id="ride_id">{{ strtoupper($ride->duty_slip_no) }}</span></label>
+													
 										</div>
 										<div class="form-group row widt-100 gendetail-col">
 											<label class="col-12 control-label"><strong>{{trans('lang.bookingtype_name')}}
@@ -377,7 +382,9 @@
 												: </strong>
 											<span id="payment_status">
 
-												@if ($ride->statut_paiement=="yes")
+												@if ($ride->statut_paiement=="yes" && $ride->id_payment_method != "5")
+												<span class="badge badge-success py-2 px-3">Paid</span>
+												@elseif ($ride->statut_paiement=="yes" && $ride->id_payment_method == "5" && $ride->statut =="Completed")
 												<span class="badge badge-success py-2 px-3">Paid</span>
 												@else
 												<span class="badge badge-warning py-2 px-3">Not paid</span>
@@ -399,13 +406,36 @@
 										</label>
 
 									</div>
+									<div class="form-group row widt-100 gendetail-col payment_method">
+									@if($ride->statut=="new" || $ride->statut=="vehicle assigned")
+									<form action="{{route('rides.cancel',$ride->id)}}" method="post" enctype="multipart/form-data"
+										id="cancelrideform">
+										@csrf
+										<div>
+										<label class="col-12 control-label"><strong>{{trans('lang.remarks')}}
+										: </strong>
+											<textarea rows="4" class="form-control coupon_description" id="cancel_remarks" name="cancel_remarks" >{{ Request::old('description')}}</textarea>
+											@if ($errors->has('cancel_remarks'))
+											<br><span class="text-danger">{{ $errors->first('cancel_remarks') }}</span>
+										@endif
+										</div>
+										
+										<button type="submit" id="btnCancelRide" class="btn btn-primary save_driver_btn"><i
+															class="fa fa-save"></i> {{ trans('lang.cancel_ride')}}
+															<!-- <span class="spinner-border" id="spinner" role="status"></span> -->
+														</button>
+												
+									</form>
+									@endif
+
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 
 					<div class="order_edit-genrl col-md-6 table">
-						@if($ride->statut=="new")
+						@if($ride->statut !="completed" && $ride->statut !="canceled")
 						<form action="{{route('rides.update',$ride->id)}}" method="post" enctype="multipart/form-data"
                             id="create_driver">
                             @csrf
@@ -459,7 +489,7 @@
 														<img class="vehicle_img rounded" src="{{ asset('assets/images/placeholder_img_car.png')}}" alt="image">
 															
 														@endif
-								<p class="vehicle_txt">{{ $value->numberplate }}</p>
+								<p class="vehicle_txt">{{ $value->numberplate }}<br><span style="font-size: 11px !important;">{{$value->model}}</span></p>
 							</div>
 							@endforeach
 							<input type="hidden" id="selected_driver_id"  name="order_status">
@@ -505,6 +535,21 @@
 										</div>
 									</div> --}}
 									<div class="row">
+									<label class="control-label">{{trans('lang.duty_slip_no')}}:</label>
+										
+											<input class="form-control coupon_description" id="duty_slip_no" name="duty_slip_no" />
+											@if ($errors->has('duty_slip_no'))
+											<br><span class="text-danger">{{ $errors->first('duty_slip_no') }}</span>
+										@endif
+										</div>
+									<div class="row">
+									<label class="control-label">{{trans('lang.remarks')}}:</label>
+											<textarea rows="4" class="form-control coupon_description" id="vehicle_assign_remarks" name="vehicle_assign_remarks" ></textarea>
+											@if ($errors->has('vehicle_assign_remarks'))
+											<br><span class="text-danger">{{ $errors->first('vehicle_assign_remarks') }}</span>
+										@endif
+										</div>
+									<div class="row">
 									<div class="form-group col-12 text-center btm-btn">
                                         <button type="submit" id="btnAssignDriver" class="btn btn-primary save_driver_btn"><i
                                                 class="fa fa-save"></i> {{ trans('lang.save')}}
@@ -519,7 +564,8 @@
 					</div>
 				</div>
 						</form>
-						@else
+					@endif
+						@if($ride->driverPrenom)
 						<div class="card">
 								<div class="card-header bg-white">
 									<h3 class="box-title">{{trans('lang.driver_detail')}}</h3>
@@ -622,6 +668,19 @@
 									<p><strong>{{trans("lang.phone")}}:</strong>
 										<span id="billing_phone">@if($ride->ride_type=="driver"){{!empty($userInfo) ? $userInfo['phone'] : '' }}@else{{$ride->user_phone}}@endif</span>
 									</p>
+									@if(!empty($ride->bookfor_others_name))
+									<p><strong>{{trans("lang.booked_for_name")}}:</strong>
+										<span id="billing_phone">{{ $ride->bookfor_others_name }}</span>
+									</p>
+									@endif
+
+									@if(!empty($ride->bookfor_others_mobileno))
+									<p><strong>{{trans("lang.booked_for_phone")}}:</strong>
+										<span id="billing_phone">{{ $ride->bookfor_others_mobileno }}</span>
+									</p>
+									@endif
+
+									 
 								</div>
 							</div>
 						</div>

@@ -16,6 +16,11 @@
     </div>
 </div>
 
+@if(session()->has('message'))
+		<div class="alert alert-danger center">
+			{{ session()->get('message') }}
+		</div>
+	@endif
 <div class="container-fluid">
   <div class="row">
     <div class="col-12">
@@ -33,7 +38,7 @@
             </ul>
         </div>
         @endif
-        <form action="{{ route('travelreport.downloadExcelTravel') }}"   method="get"  enctype="multipart/form-data" id="create_driver">
+        <form action="{{ route('travelreport.downloadExcelTravel') }}"   method="get"  enctype="multipart/form-data" id="create_driver" target="_blank">
           <!-- @csrf -->
 
           <div class="row restaurant_payout_create">
@@ -109,7 +114,7 @@
                                 <option value="">{{trans('lang.file_format')}}</option>
                                 <option value="xls">{{trans('lang.xls')}}</option>
                                 <option value="csv">{{trans('lang.csv')}}</option>
-                                <option value="pdf">{{trans('lang.pdf')}}</option>
+                                <!-- <option value="pdf">{{trans('lang.pdf')}}</option> -->
                             </select>                          
                         </div>    
                         </div>
@@ -118,7 +123,6 @@
                       </fieldset>
                    </div>              
               </div>
-          </div>
 
           <div class="form-group col-12 text-center btm-btn">
             <button type="submit" class="btn btn-primary download" ><i class="fa fa-save"></i> {{ trans('lang.download')}}</button>

@@ -19,7 +19,9 @@ class Driver extends Authenticatable
         'email',
         'prenom',
         'phone',
-        'parcel_delivery'
+        'parcel_delivery',
+        'live_latitude',
+        'live_longitude',
     ];
     
     protected $casts = [

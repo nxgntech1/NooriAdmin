@@ -147,6 +147,7 @@
                                         <th>{{trans('lang.destination_address')}}</th>--}}
                                         <th>{{trans('lang.cost_amount')}}</th>
                                         <th>{{trans('lang.status')}}</th>
+                                        <th>{{trans('lang.trip_date_time')}}</th>
                                         <th>{{trans('lang.bookingdate_time')}}</th>
                                         <th>{{trans('lang.actions')}}</th>
 
@@ -204,7 +205,11 @@
                                                 @endif
                                             </td>
                                             <td class="dt-time"><span class="date">{{ date('d F Y',strtotime($ride->bookeddatetime))}}</span>
-                                                <span class="time">{{ date('h:i A',strtotime($ride->bookeddatetime))}}</span></td>
+                                                <span class="time">{{ date('h:i A',strtotime($ride->bookeddatetime))}}</span>
+                                            </td>
+                                            <td class="dt-time"><span class="date">{{ date('d F Y',strtotime($ride->creer))}}</span>
+                                                <span class="time">{{ date('h:i A',strtotime($ride->creer))}}</span>
+                                            </td>
                                             <td class="action-btn">
                                               <a href="{{route('ride.show', ['id' => $ride->id])}}" class=""
                                                  data-toggle="tooltip" data-original-title="Details"><i

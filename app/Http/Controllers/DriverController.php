@@ -680,14 +680,7 @@ class DriverController extends Controller
             'prenom' => 'required',
             'phone' => 'required',
             'email' => 'required|email',
-            'id_type_vehicule' => 'required',
-            'brand' => 'required',
-            'model' => 'required',
-            'km' => 'required',
-            'milage' => 'required',
-            'numberplate' => 'required',
-            'color' => 'required',
-            'passenger' => 'required',
+            'password' => 'required',
             'zone' => 'required',
         ], $messages = [
             'nom.required' => 'The First Name field is required!',
@@ -696,14 +689,8 @@ class DriverController extends Controller
             'email.unique' => 'The Email field is should be unique!',
             'phone.required' => 'The Phone field is required!',
             'phone.unique' => 'The Phone field is should be unique!',
-            'id_type_vehicule.required' => 'The Vehicle type field is required!',
-            'brand.required' => 'The brand field is required!',
-            'model.required' => 'The model field is required!',
-            'km.required' => 'The km field is required!',
-            'milage.required' => 'The milage field is required!',
-            'numberplate.required' => 'The NumberPlate field is required!',
-            'color.required' => 'The Color field is required!',
-            'passenger.required' => 'The Number of Passenger field is required!',
+            'password.required' => 'The Password field is required!',
+            
         ]);
 
         if ($validator->fails()) {
@@ -718,21 +705,7 @@ class DriverController extends Controller
         $phone = $request->input('phone');
         $device_id = $request->input('device_id');
         $status = $request->input('statut');
-        $id_type_vehicule = $request->input('id_type_vehicule');
-        $brand = $request->input('brand');
-        $model = $request->input('model');
-        $color = $request->input('color');
-        $km = $request->input('km');
-        $milage = $request->input('milage');
-        $numberplate = $request->input('numberplate');
-        $passenger = $request->input('passenger');
-        $bank = $request->input('bank_name');
-        $holder = $request->input('holder_name');
-        $branch = $request->input('branch_name');
-        $acc_no = $request->input('account_number');
-        $other_info = $request->input('other_information');
-        $ifsc_code = $request->input('ifsc_code');
-        $parcel_delivery = $request->has('parcel_delivery') ? "yes" : "no";
+        $password = $request->input('password');
         $zone = $request->input('zone');
 
         if ($status == "on") {
@@ -741,25 +714,18 @@ class DriverController extends Controller
             $status = "no";
         }
 
-        $address = $request->input('address');
+        
         $email = $request->input('email');
         $user = Driver::find($id);
-        $vehicle = Vehicle::where('id_conducteur', "=", $id)->first();
+        
         if ($user) {
             $user->nom = $nom;
             $user->prenom = $prenom;
             $user->phone = $phone;
             $user->device_id = $device_id;
             $user->statut = $status;
-            $user->address = $address;
+            $user->mdp = hash('md5', $password);
             $user->email = $email;
-            $user->bank_name = $bank;
-            $user->branch_name = $branch;
-            $user->holder_name = $holder;
-            $user->account_no = $acc_no;
-            $user->other_info = $other_info;
-            $user->ifsc_code = $ifsc_code;
-            $user->parcel_delivery = $parcel_delivery;
             if ($request->hasfile('photo')) {
                 $destination = public_path('assets/images/driver/' . $user->photo_path);
                 if (File::exists($destination)) {
@@ -768,82 +734,19 @@ class DriverController extends Controller
                 $file = $request->file('photo');
                 $extenstion = $file->getClientOriginalExtension();
                 $time = time() . '.' . $extenstion;
-                $filename = 'driver_' . $id . '.' . $extenstion;
+                $filename = 'driver_image_' . $time;
                 $path = public_path('assets/images/driver/') . $filename;
                 Image::make($file->getRealPath())->resize(150, 150)->save($path);
-
+    
                 //$file->move(public_path('assets/images/driver'), $filename);
+                $image = str_replace('data:image/png;base64,', '', $file);
+                $image = str_replace(' ', '+', $image);
                 $user->photo_path = $filename;
             }
+
             $user->zone_id = $zone ? implode(',', $zone) : NULL;
             $user->save();
         }
-        $vehicle_image = vehicleImages::where('id_driver', "=", $id)->first();
-        if ($vehicle_image) {
-            if ($request->hasfile('image_path')) {
-                $destination = public_path('assets/images/vehicle/' . $vehicle_image->image_path);
-                if (File::exists($destination)) {
-                    File::delete($destination);
-                }
-                $file = $request->file('image_path');
-                $extenstion = $file->getClientOriginalExtension();
-                $time = time() . '.' . $extenstion;
-                $filename = 'vehicle_' . $id . '.' . $extenstion;
-                $file->move(public_path('assets/images/vehicle'), $filename);
-                $vehicle_image->image_path = $filename;
-                $vehicle_image->save();
-            }
-        } else {
-            $vehicle_image = new vehicleImages;
-            if ($request->hasfile('image_path')) {
-                $file = $request->file('image_path');
-
-                $extenstion = $file->getClientOriginalExtension();
-
-                $time = time() . '.' . $extenstion;
-                $filename = 'vehicle_' . $id . '.' . $extenstion;
-                $file->move(public_path('assets/images/vehicle'), $filename);
-                $vehicle_image->image_path = $filename;
-                // $vehicle_image->selected_image = $Selectedfilename;
-                $vehicle_image->id_vehicle = $vehicle->id;
-                $vehicle_image->id_driver = $id;
-                $vehicle_image->creer = date('Y-m-d H:i:s');
-                $vehicle_image->modifier = date('Y-m-d H:i:s');
-                $vehicle_image->save();
-            }
-        }
-        if ($vehicle) {
-            $vehicle->id_type_vehicule = $id_type_vehicule;
-            $vehicle->brand = $brand;
-            $vehicle->model = $model;
-            $vehicle->color = $color;
-            $vehicle->km = $km;
-            $vehicle->milage = $milage;
-            $vehicle->numberplate = $numberplate;
-            $vehicle->passenger = $passenger;
-            $vehicle->id_type_vehicule = $request->input('id_type_vehicule');
-            $vehicle->save();
-        } else {
-            $vehicle = new Vehicle;
-            $vehicle->id_type_vehicule = $id_type_vehicule;
-            $vehicle->brand = $brand;
-            $vehicle->model = $model;
-            $vehicle->color = $color;
-            $vehicle->km = $km;
-            $vehicle->milage = $milage;
-            $vehicle->numberplate = $numberplate;
-            $vehicle->passenger = $passenger;
-            $vehicle->id_conducteur = $id;
-            $vehicle->car_make = '';
-            $vehicle->statut = 'yes';
-            $vehicle->creer = date('Y-m-d H:i:s');
-            $vehicle->modifier = date('Y-m-d H:i:s');
-            $vehicle->updated_at = date('Y-m-d H:i:s');
-
-            $vehicle->save();
-        }
-
-
         return redirect('drivers');
     }
 

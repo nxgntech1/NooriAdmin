@@ -176,61 +176,63 @@
     });
 
     function getLiveLocations(){
+        //alert("I am here");
+        $.ajax({
+                url: "map/get_ride_info",
+                method: "POST",
+                dataType: "JSON",
+                beforeSend: function(){
+                    jQuery("#overlay").show();
+                },
+                data:{'drivers':null, _token: '{{csrf_token()}}',},
+                success: function (resp) {
+                    //alert("I am here1");
+                    jQuery("#overlay").hide();
+                    if(resp){
+                        loadData(resp,currentPage);
+                        dataInfo=resp;    
+                    }
+                }   
+            });
+        //var database = firebase.firestore();
         
-        var database = firebase.firestore();
+        // database.collection('ride_location_update').get().then(async function (snapshots) {
         
-        database.collection('ride_location_update').get().then(async function (snapshots) {
-        
-            var rides = [];
-            if(snapshots.docs.length > 0){
-                snapshots.docs.forEach((doc) => {
-                    var data = doc.data();
-                        data.doc_id = doc.id;
-                    var id_rel = doc.id.split('-');
+        //     var rides = [];
+        //     if(snapshots.docs.length > 0){
+        //         snapshots.docs.forEach((doc) => {
+        //             var data = doc.data();
+        //                 data.doc_id = doc.id;
+        //             var id_rel = doc.id.split('-');
                     
-                    /*if(parseInt(id_rel[0]) < parseInt(id_rel[2])){
-                        data.driver_id = id_rel[0];
-                        data.user_id = id_rel[2];
-                    }else{
-                        data.user_id = id_rel[0];
-                        data.driver_id = id_rel[2];
-                    }*/
-                    data.ride_id = id_rel[1];
-                    rides.push(data);
-                });    
-            }
+        //             /*if(parseInt(id_rel[0]) < parseInt(id_rel[2])){
+        //                 data.driver_id = id_rel[0];
+        //                 data.user_id = id_rel[2];
+        //             }else{
+        //                 data.user_id = id_rel[0];
+        //                 data.driver_id = id_rel[2];
+        //             }*/
+        //             data.ride_id = id_rel[1];
+        //             rides.push(data);
+        //         });    
+        //     }
 
-            database.collection('driver_location_update').get().then(async function (snapshots) {
+        //     database.collection('driver_location_update').get().then(async function (snapshots) {
                 
-                var drivers = [];
-                if(snapshots.docs.length > 0){
-                    snapshots.docs.forEach((doc) => {
-                        var data = doc.data();
-                        data.driver_id = doc.id;
-                        drivers.push(data);
-                    });    
-                }
+        //         var drivers = [];
+        //         if(snapshots.docs.length > 0){
+        //             snapshots.docs.forEach((doc) => {
+        //                 var data = doc.data();
+        //                 data.driver_id = doc.id;
+        //                 drivers.push(data);
+        //             });    
+        //         }
 
-                if(rides.length > 0 || drivers.length > 0){
-                    $.ajax({
-                        url: "map/get_ride_info",
-                        method: "POST",
-                        dataType: "JSON",
-                        beforeSend: function(){
-                            jQuery("#overlay").show();
-                        },
-                        data:{'drivers':drivers, _token: '{{csrf_token()}}',},
-                        success: function (resp) {
-                            jQuery("#overlay").hide();
-                            if(resp){
-                                loadData(resp,currentPage);
-                                dataInfo=resp;    
-                            }
-                        }   
-                    });
-                }
-            });    
-        });
+        //         if(rides.length > 0 || drivers.length > 0){
+                    
+        //         }
+        //     });    
+        // });
     }
 
     function loadData(data,page) {
@@ -248,7 +250,7 @@
                     if(val.flag == "on_ride"){
                         html += '<a href="/ride/show/'+val.ride_id+'" target="_blank"><i class="text-dark fs-12 fa-solid fa-circle-info" data-toggle="tooltip"></i></a>';
                     }
-                    html += '<h3 class="drier-name">{{trans("lang.driver_name")}} : '+val.driver_name+'</h3>';
+                    html += '<h3 class="drier-name">{{trans("lang.driver_name")}} : '+val.driver_name +'</h3>';
                     if(val.user_name){
                         html += '<h4 class="user-name">{{trans("lang.user_name")}} : '+val.user_name+'</h4>';
                     }

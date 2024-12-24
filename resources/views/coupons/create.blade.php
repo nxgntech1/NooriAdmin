@@ -103,15 +103,15 @@
               <label class="col-3 control-label">{{trans('lang.coupon_type')}}</label>
               <div class="col-7">
                 <select id="coupon_type" class="form-control" name="coupon_type">
-                @if (Request::old('coupon_type') == 'ride')
-                          <option value="Ride" selected>{{trans('lang.ride')}}</option>
+                @if (Request::old('coupon_type') == 'Single')
+                          <option value="Single" selected>{{trans('lang.single')}}</option>
                           @else
-                          <option value="Ride">{{trans('lang.ride')}}</option>
+                          <option value="Single">{{trans('lang.single')}}</option>
                           @endif
-                          @if (Request::old('coupon_type') == 'parcel')
-                          <option value="Parcel" selected>{{trans('lang.parcel')}}</option>
+                          @if (Request::old('coupon_type') == 'Multiple')
+                          <option value="Multiple" selected>{{trans('lang.multiple')}}</option>
                           @else
-                          <option value="Parcel">{{trans('lang.parcel')}}</option>
+                          <option value="Multiple">{{trans('lang.multiple')}}</option>
                           @endif
                 </select>
                 <div class="form-text text-muted">

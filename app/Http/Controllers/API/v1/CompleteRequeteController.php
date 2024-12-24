@@ -15,6 +15,8 @@ use App\Models\Currency;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use Carbon\Carbon;
+use Exception as exption;
+
 //require 'C:\Personal\NxGn\Projects\NoorieTravels\NooriAdminPortal\vendor\autoload.php';
 require 'C:\Websites\NooriTravels\cabme-admin-panel\vendor\autoload.php';
 
@@ -93,7 +95,7 @@ class CompleteRequeteController extends Controller
                 $pickup_Location = $row->depart_name;
                 $drop_Location = $row->destination_name;
                 $pickupdate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
-                $pickuptime = date("h:m A", strtotime($row->ride_required_on_time));
+                $pickuptime = date("h:i A", strtotime($row->ride_required_on_time));
                 $tokens = $row->fcm_id;
             }
 
@@ -195,7 +197,7 @@ class CompleteRequeteController extends Controller
                 $pickup_Location = $row->depart_name;
                 $drop_Location = $row->destination_name;
                 $pickupdate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
-                $pickuptime = date("h:m A", strtotime($row->ride_required_on_time));
+                $pickuptime = date("h:i A", strtotime($row->ride_required_on_time));
                 $tokens = $row->fcm_id;
             }
 
@@ -469,10 +471,12 @@ class CompleteRequeteController extends Controller
         $id_requete = $request->get('id_ride');
         $id_user = $request->get('id_user_app');
         $date_heure=date('Y-m-d H:i:s');
-
+        
         if(!empty($id_requete) && !empty($id_user)){
 
-            $updatedata =  DB::update('update tj_requete set statut_paiement = ? where id = ?',['yes', $id_requete]);
+            $updatedata =  DB::table('tj_requete')
+            ->where('id', $id_requete)
+            ->update(['statut_paiement' => 'yes']);
         
             $sqlride = DB::table('tj_requete')
                     ->select('tj_requete.montant')
@@ -482,23 +486,34 @@ class CompleteRequeteController extends Controller
             foreach ($sqlride as $row) {
                 $amount = $row->montant;
             }
-
-            if (!empty($updatedata)) {
-                $query = DB::insert("insert into tj_transaction(ride_id,amount,id_user_app, payment_method,payment_status,creer,modifier)
-                values('".$id_requete."','". $amount ."','".$id_user."','5','yes','".$date_heure."','".$date_heure."')");
+            
+             if (DB::table('tj_transaction')->where('ride_id', $id_requete)->where('amount', $amount)->where('id_user_app', $id_user)->doesntExist()) {
+                
+                $query = DB::table('tj_transaction')->insert([
+                    'ride_id' => $id_requete,
+                    'amount' => $amount,
+                    'id_user_app' => $id_user,
+                    'payment_method' => '5',
+                    'payment_status' => 'yes',
+                    'creer' => $date_heure,
+                    'modifier' => $date_heure,
+                ]);
+            
             }
 
-            if (!empty($updatedata)) {
+            //if (!empty($updatedata)) {
                 $response['success'] = 'success';
                 $response['error'] = null;
                 $response['message'] = 'status successfully updated';
                $response['data'] = '1';
-            }
-            else {
-                $response['success'] = 'Failed';
-                $response['error'] = 'Failed to update data';
-            }
+            // }
+            // else {
+            //     $response['success'] = 'Failed';
+            //     $response['error'] = 'Failed to update data'.$updatedata.'ride_id:'.$id_requete.'Userid:'.$id_user;
+            // }
         }
+        
+        
 
         return response()->json($response);
     }
@@ -632,7 +647,7 @@ class CompleteRequeteController extends Controller
                 'tj_requete.ride_required_on_date','tj_requete.ride_required_on_time','tj_requete.bookfor_others_mobileno','tj_requete.bookfor_others_name',
                 'tj_requete.vehicle_Id','tj_requete.id_conducteur','car_model.name as carmodel','brands.name as brandname',
                 'tj_payment_method.libelle as payment', 'tj_payment_method.image as payment_image','tj_requete.id_payment_method as paymentmethodid', 'bookingtypes.bookingtype as bookingtype',
-                'tj_vehicule.numberplate','tj_conducteur.prenom as driverfirstname','tj_conducteur.nom as driverlastname','tj_conducteur.phone as drivernumber')
+                'tj_vehicule.numberplate','tj_conducteur.prenom as driverfirstname','tj_conducteur.nom as driverlastname','tj_conducteur.phone as drivernumber','tj_requete.odometer_start_reading','tj_requete.odometer_end_reading')
                 ->where('tj_requete.id', '=', $id)
                 ->get();
             foreach ($sql as $row) {
@@ -643,16 +658,18 @@ class CompleteRequeteController extends Controller
                 $pickup_Location = $row->depart_name;
                 $drop_Location = $row->destination_name;
                 $booking_date = date("d", strtotime($row->creer)) . " " . $months[date("F", strtotime($row->creer))] . ", " . date("Y", strtotime($row->creer));
-                $booking_time = date("h:m A", strtotime($row->creer)); 
+                $booking_time = date("h:i A", strtotime($row->creer)); 
                 $payment_method = $row->payment;
                 $bookingtype = $row->bookingtype;
                 $pickupdate = date("d", strtotime($row->ride_required_on_date)) . " " . $months[date("F", strtotime($row->ride_required_on_date))] . ", " . date("Y", strtotime($row->ride_required_on_date)); 
-                $pickuptime = date("h:m A", strtotime($row->ride_required_on_time));
+                $pickuptime = date("h:i A", strtotime($row->ride_required_on_time));
                 $brandname = $row->brandname;
                 $numberplate = $row->numberplate;
                 $drivername = $row->driverfirstname.' '.$row->driverlastname;
                 $driverphone = $row->drivernumber;
-                
+                $starting_reading = $row->odometer_start_reading;
+                $ending_reading = $row->odometer_end_reading;
+
                 $car_Price = $row->car_Price;
                 if(!empty($car_Price))
                     $car_Price = $currency->symbole . "" . number_format($row->car_Price,$currency->decimal_digit);
@@ -684,6 +701,7 @@ class CompleteRequeteController extends Controller
 
                 $emailsubject = "Your ride is completed";
                 $emailmessage = file_get_contents(resource_path('views/emailtemplates/to_customer_ride_complete.html'));
+                
 
                 
                 $emailmessage = str_replace("{CustomerName}", $customer_name, $emailmessage);
@@ -703,7 +721,7 @@ class CompleteRequeteController extends Controller
                 $emailmessage = str_replace("{CarNumber}", $numberplate, $emailmessage);
                 
 
-                $admintoemail=env('ADMIN_EMAILID','govind.p.raj@gmail.com');
+                $admintoemail=env('ADMIN_EMAILID','info@nooritravels.com');
                 $notifications= new NotificationsController();
                 $response['CustomerEmailResponse'] = $notifications->sendEmail($customeremail, $emailsubject,$emailmessage);
              }
@@ -714,29 +732,64 @@ class CompleteRequeteController extends Controller
                 $emailmessage = '';
 
                 $emailsubject = "Ride completed";
-                $emailmessage = file_get_contents(resource_path('views/emailtemplates/to_admin_ride_complete.html'));
-
-                $emailmessage = str_replace("{PickupLocation}", $pickup_Location, $emailmessage);
-                $emailmessage = str_replace("{DropoffLocation}", $drop_Location, $emailmessage);
-                $emailmessage = str_replace("{AdminUrl}", $AdminUrl, $emailmessage);
+                //$emailmessage = file_get_contents(resource_path('views/emailtemplates/to_admin_ride_complete.html'));
+                $emailmessage = file_get_contents(resource_path('views/emailtemplates/complete.html'));
                 $emailmessage = str_replace("{CustomerName}", $customer_name, $emailmessage);
-                $emailmessage = str_replace("{CarNumber}", $numberplate, $emailmessage);
-                $emailmessage = str_replace("{BookingType}", $bookingtype, $emailmessage);
-                $emailmessage = str_replace("{PaymentMethod}", $payment_method, $emailmessage);
-                $emailmessage = str_replace("{DriverName}", $drivername, $emailmessage);
-                $emailmessage = str_replace("{DriverPhone}", $driverphone, $emailmessage);
-                $emailmessage = str_replace("{BrandName}", $brandname, $emailmessage);
-                $emailmessage = str_replace("{carmodel}", $carmodelandbrand, $emailmessage);
+                $emailmessage = str_replace("{CustomerNumber}", $customerphone, $emailmessage);
                 $emailmessage = str_replace("{PickupDate}", $pickupdate, $emailmessage);
                 $emailmessage = str_replace("{PickupTime}", $pickuptime, $emailmessage);
+                $emailmessage = str_replace("{BookingType}", $bookingtype, $emailmessage);
+                $emailmessage = str_replace("{BookingID}", $id, $emailmessage);
+                $emailmessage = str_replace("{StartingReading}", $starting_reading, $emailmessage);
+                $emailmessage = str_replace("{EndingReading}", $ending_reading, $emailmessage);
+                $emailmessage = str_replace("{TotalAmount}", $final_amount, $emailmessage);
+                
+                
+                // $emailmessage = str_replace("{PickupLocation}", $pickup_Location, $emailmessage);
+                // $emailmessage = str_replace("{DropoffLocation}", $drop_Location, $emailmessage);
+                // $emailmessage = str_replace("{AdminUrl}", $AdminUrl, $emailmessage);
+                
+                // $emailmessage = str_replace("{CarNumber}", $numberplate, $emailmessage);
+                
+                // $emailmessage = str_replace("{PaymentMethod}", $payment_method, $emailmessage);
+                // $emailmessage = str_replace("{DriverName}", $drivername, $emailmessage);
+                // $emailmessage = str_replace("{DriverPhone}", $driverphone, $emailmessage);
+                // $emailmessage = str_replace("{BrandName}", $brandname, $emailmessage);
+                // $emailmessage = str_replace("{carmodel}", $carmodelandbrand, $emailmessage);
+                
 
-                $admintoemail=env('ADMIN_EMAILID','govind.p.raj@gmail.com');
+                $admintoemail= env('ADMIN_EMAILID','info@nooritravels.com');
                 $notifications= new NotificationsController();
                 $response['CustomerEmailResponse'] = $notifications->sendEmail($admintoemail, $emailsubject,$emailmessage);
              }
             // return "success";
     }
 
+    public function arrivalODORequest(Request $request)
+    {
+        $id_requete = $request->get('id_ride');
+        $id_user = $request->get('id_user');
+        $odometer_arrival_reading=$request->get('odometer_arrival_reading');
+
+        if(!empty($id_requete) && !empty($id_user)){
+
+            $updatedata =  DB::update('update tj_requete set odometer_arrival_reading = ? where id = ?',[ $odometer_arrival_reading, $id_requete]);
+        
+            if (!empty($updatedata)) {
+
+                $response['success'] = 'success';
+                $response['error'] = null;
+                $response['message'] = 'status successfully updated';
+                $response['data'] = '1';
+            }
+            else {
+                $response['success'] = 'Failed';
+                $response['error'] = 'Failed to update data';
+            }
+        }
+
+        return response()->json($response);
+    }
 
 
 
