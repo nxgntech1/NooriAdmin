@@ -52,16 +52,16 @@ class ReqFeelSafeController extends Controller
           {
 
         $body = "Hey I am ".$user_cat." ".$user_name.". My Trip id is ".$trip_id.". I Reached my destination safely.";
-        $sid = 'AC603e71982ed12d846cad6359469238f4';
-        $token = '04d22b2e6c3a1ad17a9d5b3a8f8d69bd';
+        $sid = env('TWILIO_SID_NEW');
+        $token = env('TWILIO_TOKEN_NEW');
           }
           elseif($feel_safe_status == 0){
             $status = 'driver feel not safe';
             $insertdata = DB::insert("insert into tj_sos(ride_id,latitude,longitude,creer,status)
           values ('" . $trip_id . "','" . $lat . "','" . $lng . "','" . $date_heure . "','".$status."') ");
             $body = "Hey I am ".$user_cat." ".$user_name.".  My Trip id is ".$trip_id.". I am not Feeling safe! Please Help me. My Trip id is ".$trip_id;
-            $sid = 'AC603e71982ed12d846cad6359469238f4';
-            $token = '04d22b2e6c3a1ad17a9d5b3a8f8d69bd';
+            $sid = env('TWILIO_SID_NEW');
+            $token = env('TWILIO_TOKEN_NEW');
           }
 
           $response['success'] = 'success';
@@ -86,16 +86,16 @@ class ReqFeelSafeController extends Controller
               if($feel_safe_status == 1)
               {
                 $body = "Hey I am ".$user_cat." ".$user_name.". My Trip id is ".$trip_id.". I Reached my destination safely.";
-                $sid = 'AC603e71982ed12d846cad6359469238f4';
-                $token = '04d22b2e6c3a1ad17a9d5b3a8f8d69bd';
+                $sid = env('TWILIO_SID_NEW');
+                $token = env('TWILIO_TOKEN_NEW');
               }
               elseif($feel_safe_status == 0){
                 $status = 'user feel not safe';
                 $insertdata = DB::insert("insert into tj_sos(ride_id,latitude,longitude,creer,status)
               values ('" . $trip_id . "','" . $lat . "','" . $lng . "','" . $date_heure . "','".$status."') ");
                  $body = "Hey I am ".$user_cat." ".$user_name.". My Trip id is ".$trip_id. ". I am not Feeling safe! Please Help me. My Trip id is ";
-                 $sid = 'AC603e71982ed12d846cad6359469238f4';
-                 $token = '04d22b2e6c3a1ad17a9d5b3a8f8d69bd';
+                 $sid = env('TWILIO_SID_NEW');
+                 $token = env('TWILIO_TOKEN_NEW');
               }
           
                 $response['success'] = 'success';
