@@ -909,6 +909,7 @@ class RequeteRegisterController extends Controller
                 'tj_requete.bookfor_others_name',
                 'tj_requete.vehicle_Id',
                 'tj_requete.id_conducteur',
+                'tj_requete.cancel_remarks',
                 'car_model.name as carmodel',
                 'brands.name as brandname',
                 'tj_payment_method.libelle as payment',
@@ -933,6 +934,7 @@ class RequeteRegisterController extends Controller
             $customer_name = $row->prenom.' '.$row->nom;
             $customerphone = $row->customerphone;
             $bookingtype = $row->bookingtype;
+            $cacelRemarks = $row->cancel_remarks;
            
             $booking_date = date("d", strtotime($row->creer)) . " " . $months[date("F", strtotime($row->creer))] . ", " . date("Y", strtotime($row->creer));
 
@@ -945,7 +947,7 @@ class RequeteRegisterController extends Controller
             $emailmessage = str_replace("{bookingDate}", $booking_date, $emailmessage);
             $emailmessage = str_replace("{bookingId}", $ride_id, $emailmessage);
             $emailmessage = str_replace("{BookingType}", $bookingtype, $emailmessage);
-            
+            $emailmessage = str_replace("{CancelRemarks}", $cacelRemarks, $emailmessage);
             
             $notifications = new NotificationsController();
             $response['EmailResponse'] = $notifications->sendEmail($to, $emailsubject, $emailmessage);

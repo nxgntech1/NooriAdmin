@@ -1014,8 +1014,9 @@ class RideDetailsController extends Controller
                     $row->addon = $addons;
                 }
                 $totalamount=$tripamount + $addontotalamount;
-                $row->totaltripamount = $currency->symbole . "" . number_format($totalamount,$currency->decimal_digit);
+                $row->totaltripamount = $currency->symbole . "" . number_format($tripamount,$currency->decimal_digit);
                 $row->montant = $currency->symbole . "" . number_format($totalamount,$currency->decimal_digit);
+                
                 $output[] = $row;
             }
         }

@@ -616,6 +616,11 @@ public function getCarModels(Request $request)
     
     if (!empty($ride_id))
     {
+      $statusesToExclude = ['Completed', 'canceled'];
+      $query = DB::table('tj_requete')
+    ->where('tj_requete.id', $ride_id)
+    ->whereNotIn('tj_requete.statut', $statusesToExclude);
+    if ($query->exists()) {
     //   $hoursgap =DB::table('tj_requete as current_ride')
     //   ->join('tj_requete as next_ride', 'next_ride.id_conducteur', '=', 'current_ride.id_conducteur')
     //   ->select(DB::raw(
@@ -752,6 +757,11 @@ public function getCarModels(Request $request)
       $response['success']= 'Failed';
       $response['error']= 'Failed To Fetch Data';
     }
+  }
+  else{
+    $response['success']= 'Failed';
+      $response['error']= 'Trip status does not allows';
+  }
     }
     else{
       $response['success']= 'Failed';
