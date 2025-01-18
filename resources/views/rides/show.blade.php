@@ -262,6 +262,16 @@
 																			</td>
 																		</tr>
 																		@endif
+																		<tr class="grand-total">
+																			<td class="label">{{trans("lang.trip_amount")}}</td>
+																			<td class="total_price_val">
+																				@if($currency->symbol_at_right=="true")
+																				{{number_format(floatval($ride->montant),$currency->decimal_digit)."".$currency->symbole}}
+																				@else
+																				{{$currency->symbole."".number_format(floatval($ride->montant),$currency->decimal_digit)}}
+																				@endif
+																			</td>
+																		</tr>
 																		<!-- <tr>
 																			<td class="seprater" colspan="2">
 																				<hr>
@@ -310,25 +320,41 @@
 
 																		{!! $taxHtml !!}
 																		@endif
-																		@if($ride->tip_amount > 0)
+
 																		<tr>
 																			<td class="seprater" colspan="2">
 																				<hr>
-																				<span>{{trans("lang.tip")}}</span>
+																				<span>{{trans("lang.addons")}}</span>
 																			</td>
 																		</tr>
-
 																		<tr>
-																			<td class="label">{{trans("lang.tip_amount")}}</td>
 																			<td>
-																				@if($currency->symbol_at_right=="true")
-																				{{number_format(floatval($ride->tip_amount),$currency->decimal_digit)."".$currency->symbole}}
-																				@else
-																				{{$currency->symbole."".number_format(floatval($ride->tip_amount),$currency->decimal_digit)}}
-																				@endif
+																			@if($addon->isNotEmpty())
+																				<table class="table table-bordered">
+																					<thead style="text-align:center;">
+																						<tr>
+																							<th>Price</th>
+																							<th>Hours</th>
+																							<th>KMs</th>
+																							<th>AddOn Total</th>
+																						</tr>
+																					</thead>
+																					<tbody>
+																						@foreach($addon as $item)
+																							<tr>
+																								<td>{{ $item->Price }}</td>
+																								<td>{{ $item->hours }}</td>
+																								<td>{{ $item->kms }}</td>
+																								<td>{{ $item->addon_total_amount }}</td>
+																							</tr>
+																						@endforeach
+																					</tbody>
+																				</table>
+																			@else
+																				<p>No add-ons found for this booking.</p>
+																			@endif
 																			</td>
-																		</tr>
-																		@endif
+																		</tr>	
 																		<tr>
 																			<td class="seprater" colspan="2">
 																				<hr>

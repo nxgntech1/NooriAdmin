@@ -913,8 +913,11 @@ class RidesController extends Controller
         }
              
              $addon = DB::Table('addon_payments')
+             ->join('pricing_by_car_models','addon_payments.addonid','=','pricing_by_car_models.pricingid')
+             ->select('addon_payments.addon_total_amount','pricing_by_car_models.Price','pricing_by_car_models.hours','pricing_by_car_models.kms')
              ->where('bookingid','=',$id)
              ->where('payment_status','=','success')
+             ->where('pricing_by_car_models.is_Add_on','=','yes')
              ->whereNotNull('transaction_id')
              
              ->get();
@@ -1063,7 +1066,8 @@ class RidesController extends Controller
                  ->with('taxHtml', $taxHtml)
                  ->with('totalAmount', $totalAmount)
                  ->with('driverRating',$driverRating)
-                 ->with('userRating',$userRating)->with('drivers',$drivers)->with('vehicles',$vehicles)->with('localTime',$localTime);
+                 ->with('userRating',$userRating)->with('drivers',$drivers)->with('vehicles',$vehicles)->with('localTime',$localTime)
+                 ->with('addon',$addon);
          
     }
 

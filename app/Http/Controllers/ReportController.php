@@ -190,7 +190,7 @@ class ReportController extends Controller
            
            foreach ($users as $row){
 
-                $listarray=array('user.id','user.nom','user.prenom','user.email','user.phone','user.login_type','user.photo','user.photo_path','user.photo_nic','user.photo_nic_path','user.statut','user.statut_nic','user.tonotify','user.device_id','user.fcm_id','user.creer','user.updated_at','user.modifier','user.amount','user.reset_password_otp','user.reset_password_otp_modifier','user.age','user.gender','user.deleted_at','user.created_at');
+                $listarray=array('user.id as _ID','user.nom','user.prenom','user.email','user.phone','user.login_type','user.photo','user.photo_path','user.photo_nic','user.photo_nic_path','user.statut','user.statut_nic','user.tonotify','user.device_id','user.fcm_id','user.creer','user.updated_at','user.modifier','user.amount','user.reset_password_otp','user.reset_password_otp_modifier','user.age','user.gender','user.deleted_at','user.created_at');
 
                 $list = DB::table('tj_user_app as user')
                         ->select($listarray)
@@ -207,7 +207,7 @@ class ReportController extends Controller
 
                 {
 
-                    $row5['id']=$row['id'];
+                    $row5['id']=$row['_ID'];
 
                     $row5['nom']=$row['nom'];
 
@@ -574,7 +574,7 @@ class ReportController extends Controller
         ->join('car_model', 'request.model_id', '=', 'car_model.id')
         ->join('brands', 'request.brand_id', '=', 'brands.id')
         ->select(
-            'request.id as ID',
+            'request.id as _ID',
             'request.creer as DateCreated',
             DB::raw("CONCAT(DATE_FORMAT(request.ride_required_on_date , '%Y-%m-%d'), ' ', TIME_FORMAT(request.ride_required_on_time, '%H:%i:%s')) AS TripDateTime"),
             'request.depart_name as TripStart',
@@ -590,7 +590,9 @@ class ReportController extends Controller
             'request.statut_paiement',
             'tj_payment_method.libelle as payment_method',
             'request.distance',
+            'request.duty_slip_no',
             'request.montant'
+            
             
         );
 
@@ -600,7 +602,31 @@ class ReportController extends Controller
     if (isset($filters[$dateFilter])) $ridesQuery = $filters[$dateFilter]($ridesQuery);
     if ($fromDate && $toDate) $ridesQuery->whereBetween('request.creer', [$fromDate, $toDate]);
 
+
+
     $rides = $ridesQuery->get();
+
+    foreach ($rides as $row) {
+        $addon = DB::Table('addon_payments')
+                ->where('bookingid','=',$row->_ID)
+                ->where('payment_status','=','success')
+                ->whereNotNull('transaction_id')
+                
+                ->get();
+              
+                $addontotalamount = 0;
+                $totalamount = 0;
+                if(!empty($addon))
+                {
+                    foreach ($addon as $row_addon) {
+                       $totalamount= $row->montant + (int)$row_addon->addon_total_amount;
+                       $addontotalamount = $addontotalamount+ (int)$row_addon->addon_total_amount;
+                    }
+                }
+                
+                $row->totalAddonamount = $addontotalamount;
+                $row->triptotalamount = $totalamount==0 ? $row->montant : $totalamount;
+    }
 
     if ($rides->isEmpty()) {
         return back()->with('message', 'No Data Found');
@@ -628,7 +654,7 @@ private function generateCsvOrExcel($rides, $type)
         fputcsv($fp, (array)$ride);
     }
     $rides11 = array("S.No","Date Created", "Trip Date and Time", "Trip Start","Trip End", "Package", "User Name",
-    "Mobile No", "Vehicle","Driver Name","Trip Status","Paid Status","Payment Option","Trip Distance","Total Amount"); 
+    "Mobile No", "Vehicle","Driver Name","Trip Status","Paid Status","Payment Option","Trip Distance","Total Amount","Duty Slip No","total Addon amount"); 
     //fputcsv($fp, array_keys($rides11));
     //$row5=array();
     

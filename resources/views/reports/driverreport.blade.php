@@ -90,7 +90,6 @@
                           <div class="col-7">
                           <select class="form-control type" name="type" id="type">
                                 <option value="">{{trans('lang.file_format')}}</option>
-                                <option value="xls">{{trans('lang.xls')}}</option>
                                 <option value="csv">{{trans('lang.csv')}}</option>
                                 <option value="pdf">{{trans('lang.pdf')}}</option>
                             </select>                          </div>    
